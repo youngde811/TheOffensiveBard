@@ -1,6 +1,6 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
-// This file contains the code for our WillieShake main insult page.
+// This file contains the code for our TheOffensiveBard main insult page.
 
 // MIT License
 
@@ -19,12 +19,11 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
-import { Animated, Button, Clipboard, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { Surface } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
 
 import AsyncStorage from '@react-native-async-storage/async-storage';

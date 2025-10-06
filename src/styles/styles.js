@@ -1,5 +1,5 @@
 
-// This file contains stylesheet requirements for our WillieShake app.
+// This file contains stylesheet requirements for our TheOffensiveBard app.
 
 // MIT License
 

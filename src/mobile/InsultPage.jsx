@@ -22,7 +22,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Image, ImageBackground, View } from 'react-native';
+import { ActivityIndicator, ImageBackground, View } from 'react-native';
 import { useFonts } from 'expo-font';
 import { useCallback } from 'react';
 
@@ -31,14 +31,13 @@ import InsultsHeader from './InsultsHeader';
 
 import * as SplashScreen from 'expo-splash-screen';
 
-import * as Utilities from '../utils/utilities';
 import styles from '../styles/styles.js';
 
 const insults = require('../../assets/data/insults.json');
 
 SplashScreen.preventAutoHideAsync();
 
-export default function WillieShakeInsults({ appConfig, background }) {
+export default function TheOffensiveBardInsults({ appConfig, background }) {
     const [insultData, setInsultData] = useState([]);
     const [appIsReady, setAppIsReady] = useState(false);
 
