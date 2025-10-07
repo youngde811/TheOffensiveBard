@@ -23,6 +23,8 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 
+import { AppProvider } from './src/contexts/AppContext';
+
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -121,11 +123,6 @@ const screens = [
 ];
 
 export default function App() {
-  const [season, year] = Utilities.thisSeason();
-
-  global.season = season;
-  global.year = year;
-
   const masterErrorHandler = (e, isFatal) => {
     if (isFatal) {
       Alert.alert(
@@ -145,38 +142,40 @@ export default function App() {
   setJSExceptionHandler(masterErrorHandler);
 
   return (
-    <SafeAreaProvider>
-      <NavigationContainer>
-        <Drawer.Navigator
-          initialRouteName={initialRoute}
-          backBehavior="history"
-          screenOptions={{
-            headerShown: true,
-            unmountOnBlur: true,
-            drawerType: "back",
-            itemStyle: { marginVertical: 10 },
-            drawerStyle: {
-              backgroundColor: "aliceblue"
-            }
-          }}
-        >
-          {screens.map(drawer =>
-            <Drawer.Screen
-              key={drawer.key}
-              name={drawer.title}
-              component={drawer.component}
-              options={{
-                drawerIcon: ({ focused, color }) => (
-                  <Entypo name={drawer.iconName} size={24} color={focused ? { color } : "black"} />
-                ),
-                headerStyle: {
-                  backgroundColor: 'aliceblue',
-                },
-              }}
-            />
-          )}
-        </Drawer.Navigator>
-      </NavigationContainer>
-    </SafeAreaProvider>
+    <AppProvider>
+      <SafeAreaProvider>
+        <NavigationContainer>
+          <Drawer.Navigator
+            initialRouteName={initialRoute}
+            backBehavior="history"
+            screenOptions={{
+              headerShown: true,
+              unmountOnBlur: true,
+              drawerType: "back",
+              itemStyle: { marginVertical: 10 },
+              drawerStyle: {
+                backgroundColor: "aliceblue"
+              }
+            }}
+          >
+            {screens.map(drawer =>
+              <Drawer.Screen
+                key={drawer.key}
+                name={drawer.title}
+                component={drawer.component}
+                options={{
+                  drawerIcon: ({ focused, color }) => (
+                    <Entypo name={drawer.iconName} size={24} color={focused ? { color } : "black"} />
+                  ),
+                  headerStyle: {
+                    backgroundColor: 'aliceblue',
+                  },
+                }}
+              />
+            )}
+          </Drawer.Navigator>
+        </NavigationContainer>
+      </SafeAreaProvider>
+    </AppProvider>
   );
 }

@@ -1,8 +1,7 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
-// This component is used to render the "favorite insults" page. There's some code replication here
-// from the InsultEmAll component, and I might refactor later. For now, this component retrieves favorite
-// insults using AsyncStorage.
+// This component is used to render the "favorite insults" page. Refactored to use
+// modern React patterns with custom hooks and context.
 
 // MIT License
 
@@ -21,10 +20,10 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { Button, FlatList, ImageBackground, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View, ImageBackground } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,48 +38,27 @@ import PressableOpacity from './PressableOpacity';
 import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import * as Utilities from '../utils/utilities';
+import { useAppContext } from '../contexts/AppContext';
+import { useFavorites } from '../hooks/useFavorites';
+import { useClipboard } from '../hooks/useClipboard';
 
 export default function FavoriteInsults({ appConfig, background, setDismiss }) {
+    const { smstag } = useAppContext();
+    const { favorites, isLoading, fetchFavorites, removeFavorite } = useFavorites();
+    const { writeToClipboard } = useClipboard();
+    
     const [selectedInsult, setSelectedInsult] = useState(null);
-    const [allFavorites, setAllFavorites] = useState(null);
 
-    const retrieveFavoritesUsingKeys = async(keys) => {
-        let favorites = [];
-        let len = keys.length;
-
-        for (var i = 0; i < len; i++) {
-            let key = keys[i];
-            let insult = await AsyncStorage.getItem(key);
-
-            favorites.push(JSON.parse(insult));
-        }
-
-        return favorites;
-    };
-
-    const fetchFavorites = async () => {
-        let keys = [];
-        let favorites = [];
-        
-        keys = await AsyncStorage.getAllKeys();
-        favorites = await retrieveFavoritesUsingKeys(keys);
-
-        setAllFavorites(favorites.length > 0 ? favorites : []);
-    };
-
-    const insultSelect = (item) => {
+    const insultSelect = useCallback((item) => {
         if (item.insult === selectedInsult?.insult) {
             setSelectedInsult(null);
         } else {
             setSelectedInsult(item);
-            Utilities.writeClipboard(item.insult);
-        };
-    };
+            writeToClipboard(item.insult);
+        }
+    }, [selectedInsult, writeToClipboard]);
 
-    const renderInsult = ({item}) => {
+    const renderInsult = useCallback(({item}) => {
         return (
             <View style={ styles.insultItemContainer }>
               <PressableOpacity style={ null } onPress={ () => insultSelect(item) }>
@@ -90,47 +68,54 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
               </PressableOpacity>
             </View>
         );
-    };
+    }, [selectedInsult, insultSelect]);
 
-    const favoritesSeparator = () => {
+    const favoritesSeparator = useCallback(() => {
         return (
             <Divider width={1} color={"cornsilk"}/>
         );
-    };
-
-    const sendInsult = () => {
-        if (selectedInsult) {
-            Linking.openURL(global.smstag + selectedInsult.insult);
-        }
-    };
-
-    const forgetFavorite = async () => {
-        if (selectedInsult) {
-            let key = global.keyPrefix + selectedInsult.id;
-
-            await AsyncStorage.removeItem(key);
-
-            setSelectedInsult(null);
-            fetchFavorites();
-        }
-    };
-
-    useEffect (() => {
-        fetchFavorites();
     }, []);
 
+    const sendInsult = useCallback(() => {
+        if (selectedInsult) {
+            Linking.openURL(smstag + selectedInsult.insult);
+        }
+    }, [selectedInsult, smstag]);
+
+    const forgetFavorite = useCallback(async () => {
+        if (selectedInsult) {
+            const success = await removeFavorite(selectedInsult);
+            if (success) {
+                setSelectedInsult(null);
+            }
+        }
+    }, [selectedInsult, removeFavorite]);
+
+    useEffect(() => {
+        fetchFavorites();
+    }, [fetchFavorites]);
+
     const renderFavorites = () => {
-        if (allFavorites == null) {
+        if (isLoading) {
+            return (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#3b63b3" />
+                    <Text style={{ marginTop: 10, color: 'gray' }}>Loading favorites...</Text>
+                </View>
+            );
+        }
+
+        if (favorites.length === 0) {
             return null;
         }
 
         return (
             <FlashList
               ItemSeparatorComponent={ favoritesSeparator }
-              data={ allFavorites }
+              data={ favorites }
               keyExtractor={ (item) => item.id }
-              extraData = { selectedInsult }
-              estimatedItemSize = { 100 }
+              extraData={ selectedInsult }
+              estimatedItemSize={ 100 }
               renderItem={ renderInsult }/>
         );
     };
@@ -140,7 +125,7 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
             <InsultsHeader appConfig={ appConfig }/>
-            { allFavorites?.length == 0 ?
+            { favorites.length === 0 && !isLoading ?
               <NoFavorites/>
               :
               <Surface elevation={ 4 } style={ styles.favoritesSurface }>
@@ -150,17 +135,26 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
               </Surface>
             }
             <View style={ styles.favoritesFooter }>
-              <PressableOpacity style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                                title={ 'Insult' } onPress={ sendInsult } disabled={ selectedInsult == null }>
+              <PressableOpacity 
+                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                title={ 'Insult' } 
+                onPress={ sendInsult } 
+                disabled={ selectedInsult == null }>
                 <Text style={ styles.favoritesButtonText }>Insult</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
-              <PressableOpacity style={ selectedInsult ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                                title={ 'Forget' } onPress={ () => forgetFavorite() } disabled={ selectedInsult == null }>
+              <PressableOpacity 
+                style={ selectedInsult ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                title={ 'Forget' } 
+                onPress={ forgetFavorite } 
+                disabled={ selectedInsult == null }>
                 <Text style={ styles.favoritesButtonText }>Forget</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
-              <PressableOpacity style={ styles.favoritesButtons } title={ 'Dismiss' } onPress={ () => setDismiss() }>
+              <PressableOpacity 
+                style={ styles.favoritesButtons } 
+                title={ 'Dismiss' } 
+                onPress={ setDismiss }>
                 <Text style={ styles.favoritesButtonText }>Dismiss</Text>
               </PressableOpacity>
             </View>
