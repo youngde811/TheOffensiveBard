@@ -30,6 +30,7 @@ export const useFavorites = () => {
 
   const fetchFavorites = useCallback(async () => {
     setIsLoading(true);
+    
     try {
       const keys = await AsyncStorage.getAllKeys();
       const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
@@ -37,7 +38,10 @@ export const useFavorites = () => {
       
       for (const key of favoriteKeys) {
         const insult = await AsyncStorage.getItem(key);
-        if (insult) favoritesList.push(JSON.parse(insult));
+
+        if (insult) {
+          favoritesList.push(JSON.parse(insult));
+        }
       }
       
       setFavorites(favoritesList);
@@ -51,24 +55,30 @@ export const useFavorites = () => {
 
   const addFavorite = useCallback(async (item) => {
     const key = keyPrefix + item.id;
+    
     try {
       await AsyncStorage.setItem(key, JSON.stringify(item));
       await fetchFavorites();
+      
       return true;
     } catch (error) {
       console.error('Error adding favorite:', error);
+
       return false;
     }
   }, [keyPrefix, fetchFavorites]);
 
   const removeFavorite = useCallback(async (item) => {
     const key = keyPrefix + item.id;
+
     try {
       await AsyncStorage.removeItem(key);
       await fetchFavorites();
+
       return true;
     } catch (error) {
       console.error('Error removing favorite:', error);
+
       return false;
     }
   }, [keyPrefix, fetchFavorites]);
