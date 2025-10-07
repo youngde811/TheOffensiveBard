@@ -41,13 +41,12 @@ import FavoriteInsults from './src/mobile/FavoriteInsults';
 import FJB from './src/mobile/FJB';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 
-import * as Utilities from './src/utils/utilities';
 import './src/mobile/Globals.js';
 
 const appConfig = require("./assets/appconfig.json");
 const backgroundImage = require("./assets/images/willie.png");
 
-const initialRoute = "Shakespeare Slander";
+const initialRoute = "The Offensive Bard";
 
 function InsultsMainPage() {
   return (
