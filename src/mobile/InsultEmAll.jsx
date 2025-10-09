@@ -37,14 +37,12 @@ import ModalEmbeddedWebView from './ModalEmbeddedWebView';
 import ScalableText from 'react-native-text';
 
 import { useAppContext } from '../contexts/AppContext';
-import { useFavorites } from '../hooks/useFavorites';
 import { useClipboard } from '../hooks/useClipboard';
 
 import * as Utilities from '../utils/utilities';
 
 export default function InsultEmAll({ insults, appConfig }) {
-    const { season, smstag } = useAppContext();
-    const { addFavorite } = useFavorites();
+    const { season, smstag, addFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     
     const [selectedInsult, setSelectedInsult] = useState(null);

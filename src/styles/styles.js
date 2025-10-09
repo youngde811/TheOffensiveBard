@@ -69,10 +69,8 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-start',
     },
     insultTopView: {
-        position: 'absolute',
-        top: 0,
+        flex: 1,
         marginTop: 8,
-        height: '100%',
         width: '100%',
     },
     backgroundImage: {
@@ -128,12 +126,10 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
     insultFooter: {
-        bottom: 0,
-        left: 0,
-        right: 0,
-        marginBottom: '10%',
+        paddingHorizontal: 0,
+        paddingTop: 8,
+        paddingBottom: 28,
         alignItems: 'stretch',
-        position: 'absolute',
     },
     insultSelected: {
         backgroundColor: 'cadetblue',
@@ -141,8 +137,8 @@ const styles = StyleSheet.create({
     insultSurfaceParent: {
         flex: 1,
         justifyContent: 'stretch',
-        paddingBottom: '20%',
         width: '100%',
+        marginBottom: 8,
     },
     insultSurface: {
         flex: 1,
@@ -175,8 +171,7 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
     },
     flatList: {
-        flexGrow: 1,
-        height: '100%',
+        flex: 1,
         width: '100%',
         flexDirection: 'column',
     },
@@ -248,24 +243,22 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
     favoritesSurface: {
+        flex: 1,
         alignItems: 'stretch',
-        height: '95%',
         borderRadius: 10,
         marginLeft: 4,
         marginRight: 4,
+        marginBottom: 8,
     },
     favoritesListView: {
-        height: '90%',
+        flex: 1,
     },
     favoritesFooter: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        marginBottom: '8%',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        position: 'absolute',
+        paddingTop: 8,
+        paddingBottom: 28,
     },
     favoritesButtons: {
         flex: 1,

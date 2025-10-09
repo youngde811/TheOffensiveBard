@@ -39,12 +39,10 @@ import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
 
 import { useAppContext } from '../contexts/AppContext';
-import { useFavorites } from '../hooks/useFavorites';
 import { useClipboard } from '../hooks/useClipboard';
 
 export default function FavoriteInsults({ appConfig, background, setDismiss }) {
-    const { smstag } = useAppContext();
-    const { favorites, isLoading, fetchFavorites, removeFavorite } = useFavorites();
+    const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     
     const [selectedInsult, setSelectedInsult] = useState(null);
@@ -96,7 +94,7 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
     }, [fetchFavorites]);
 
     const renderFavorites = () => {
-        if (isLoading) {
+        if (isLoadingFavorites) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ActivityIndicator size="large" color="#3b63b3" />
@@ -125,7 +123,7 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
             <InsultsHeader appConfig={ appConfig }/>
-            { favorites.length === 0 && !isLoading ?
+            { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>
               :
               <Surface elevation={ 4 } style={ styles.favoritesSurface }>

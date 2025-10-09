@@ -19,7 +19,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { createContext, useContext } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Utilities from '../utils/utilities';
 
 const AppContext = createContext();
@@ -34,12 +35,77 @@ export const useAppContext = () => {
 
 export const AppProvider = ({ children }) => {
   const [season, year] = Utilities.thisSeason();
-  
+  const [favorites, setFavorites] = useState([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+
+  const keyPrefix = '@insolentbard:';
+  const smstag = 'sms://&body=';
+
+  const fetchFavorites = useCallback(async () => {
+    setIsLoadingFavorites(true);
+
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
+      const favoritesList = [];
+
+      for (const key of favoriteKeys) {
+        const insult = await AsyncStorage.getItem(key);
+
+        if (insult) {
+          favoritesList.push(JSON.parse(insult));
+        }
+      }
+
+      setFavorites(favoritesList);
+    } catch (error) {
+      console.error('Error fetching favorites:', error);
+      setFavorites([]);
+    } finally {
+      setIsLoadingFavorites(false);
+    }
+  }, []);
+
+  const addFavorite = useCallback(async (item) => {
+    const key = keyPrefix + item.id;
+
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(item));
+      await fetchFavorites();
+
+      return true;
+    } catch (error) {
+      console.error('Error adding favorite:', error);
+
+      return false;
+    }
+  }, [fetchFavorites]);
+
+  const removeFavorite = useCallback(async (item) => {
+    const key = keyPrefix + item.id;
+
+    try {
+      await AsyncStorage.removeItem(key);
+      await fetchFavorites();
+
+      return true;
+    } catch (error) {
+      console.error('Error removing favorite:', error);
+
+      return false;
+    }
+  }, [fetchFavorites]);
+
   const appConstants = {
     season,
     year,
-    smstag: 'sms://&body=',
-    keyPrefix: '@insolentbard:',
+    smstag,
+    keyPrefix,
+    favorites,
+    isLoadingFavorites,
+    fetchFavorites,
+    addFavorite,
+    removeFavorite,
   };
 
   return (

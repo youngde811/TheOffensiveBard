@@ -40,8 +40,6 @@ import InsultPage from './src/mobile/InsultPage';
 import FavoriteInsults from './src/mobile/FavoriteInsults';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 
-import './src/mobile/Globals.js';
-
 const appConfig = require("./assets/appconfig.json");
 const backgroundImage = require("./assets/images/willie.png");
 
