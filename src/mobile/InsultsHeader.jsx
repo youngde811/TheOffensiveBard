@@ -19,26 +19,25 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useState } from 'react';
 
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import styles from '../styles/styles.js';
-
-import './Globals.js';
-import * as Utilities from '../utils/utilities';
+import { useAppContext } from '../contexts/AppContext';
 
 export default function InsultsHeader({ appConfig }) {
+    const { season, year } = useAppContext();
     const [tyrannis, setTyrannis] = useState(appConfig.names.tyrannis);
-    
+
     const tyrannisDefinition = () => {
         setTyrannis(tyrannis === appConfig.names.tyrannis ? appConfig.names.tyrannisDef : appConfig.names.tyrannis);
     };
-    
+
     return (
         <View style={ styles.listHeaderView }>
           <Text style={ styles.listHeaderSeason }>
-            { global.season + ", " + global.year }
+            { season + ", " + year }
           </Text>
           <TouchableOpacity style={ styles.listHeaderTyrannis } onPress={ tyrannisDefinition }>
             <Text style={ styles.listHeaderTyrannis }>

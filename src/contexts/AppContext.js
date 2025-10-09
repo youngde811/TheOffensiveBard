@@ -38,8 +38,8 @@ export const AppProvider = ({ children }) => {
   const appConstants = {
     season,
     year,
-    smstag: 'sms:?body=',
-    keyPrefix: 'favorite_',
+    smstag: 'sms://&body=',
+    keyPrefix: '@insolentbard:',
   };
 
   return (

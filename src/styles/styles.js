@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
     backgroundImage: {
         flex: 1,
     },
-    insultList: {
+    insultListContainer: {
         flex: 1,
         paddingBottom: 50,
     },
@@ -200,16 +200,17 @@ const styles = StyleSheet.create({
         height: '90%',
     },
     webView: {
-        flex: 0,
+        flex: 1,
         height: '90%',
     },
     webFooter: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
         marginBottom: '8%',
         bottom: 0,
+        left: 0,
+        right: 0,
         position: 'absolute',
     },
     webButtons: {
@@ -257,12 +258,13 @@ const styles = StyleSheet.create({
         height: '90%',
     },
     favoritesFooter: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
         marginBottom: '8%',
         bottom: 0,
+        left: 0,
+        right: 0,
         position: 'absolute',
     },
     favoritesButtons: {
@@ -297,7 +299,7 @@ const styles = StyleSheet.create({
     },
     noFavoritesView: {
         flex: 1,
-        alignmentDirection: 'column',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
@@ -371,7 +373,7 @@ const styles = StyleSheet.create({
         marginRight: 4,
     },
     codeWordsView: {
-        flex: 100,
+        flex: 1,
         height: '100%',
         width: '100%',
     },
@@ -412,7 +414,7 @@ const styles = StyleSheet.create({
     },
     fetchErrorView: {
         flex: 1,
-        alignmentDirection: 'column',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'flex-start',
     },
