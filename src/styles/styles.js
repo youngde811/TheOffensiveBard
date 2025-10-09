@@ -70,7 +70,6 @@ const styles = StyleSheet.create({
     },
     insultTopView: {
         flex: 1,
-        marginTop: 8,
         width: '100%',
     },
     backgroundImage: {
@@ -128,7 +127,6 @@ const styles = StyleSheet.create({
     insultFooter: {
         paddingHorizontal: 0,
         paddingTop: 8,
-        paddingBottom: 28,
         alignItems: 'stretch',
     },
     insultSelected: {
@@ -258,7 +256,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         paddingTop: 8,
-        paddingBottom: 28,
     },
     favoritesButtons: {
         flex: 1,
