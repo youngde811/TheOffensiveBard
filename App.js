@@ -59,19 +59,11 @@ function FavoritesMainPage() {
   );
 }
 
-function BuckleyMainPage() {
-  const navigation = useNavigation();
-
-  return (
-    <EmbeddedWebView webPage={appConfig.wikiPage} setDismiss={() => navigation.jumpTo(initialRoute)} />
-  );
-}
-
 function AboutMainPage() {
   const navigation = useNavigation();
 
   return (
-    <EmbeddedWebView webPage={appConfig.changeLog} setDismiss={() => navigation.jumpTo(initialRoute)} />
+    <EmbeddedWebView webPage={appConfig.aboutPage} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -89,12 +81,6 @@ const screens = [
     title: "Favorite Insults",
     iconName: "heart-outlined",
     component: FavoritesMainPage
-  },
-  {
-    key: "BuckleyMainPage",
-    title: "Lord Buckley",
-    iconName: "man",
-    component: BuckleyMainPage
   },
   {
     key: "AboutMainPage",

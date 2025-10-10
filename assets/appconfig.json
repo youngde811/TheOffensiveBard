@@ -4,7 +4,6 @@
         "tyrannisDef": "Thus always to tyrants",
     },
     "projectURL": "https://github.com/youngde811/willie-the-shake",
-    "wikiPage": "https://en.wikipedia.org/wiki/Lord_Buckley",
-    "changeLog": "https://github.com/youngde811/willie-the-shake/blob/master/README.md",
+    "aboutPage": "./assets/about.html",
     "nsaCodewordsURL": "http://bosshog811.pythonanywhere.com/codewords/list",
 }

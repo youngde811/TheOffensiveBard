@@ -190,21 +190,16 @@ const styles = StyleSheet.create({
     },
     webViewTop: {
         flex: 1,
-        height: '90%',
+        flexDirection: 'column',
     },
     webView: {
         flex: 1,
-        height: '90%',
     },
     webFooter: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        marginBottom: '8%',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        position: 'absolute',
+        paddingTop: 8,
     },
     webButtons: {
         flex: 1,
