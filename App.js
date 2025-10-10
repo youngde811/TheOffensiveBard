@@ -43,7 +43,7 @@ import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 const appConfig = require("./assets/appconfig.json");
 const backgroundImage = require("./assets/images/willie.png");
 
-const initialRoute = "The Offensive Bard";
+const initialRoute = "The Insolent Bard";
 
 function InsultsMainPage() {
   return (

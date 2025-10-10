@@ -9,7 +9,7 @@
     "description": "Your personal Shakespearean insult generator with over 125,000 unique combinations",
     "primaryColor": "#5f9ea0",
     "splash": {
-      "image": "./assets/bootsplash_logo@4x.png",
+      "image": "./assets/images/willie.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -18,9 +18,18 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bosshog811.TheOffensiveBard",
+      "bundleIdentifier": "com.bosshog811.TheInsolentBard",
       "buildNumber": "1.0.0",
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "icon": "./assets/icon.png",
+      "splash": {
+        "image": "./assets/images/willie.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#000000"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
