@@ -1,11 +1,13 @@
 {
   "expo": {
-    "name": "TheOffensiveBard",
+    "name": "The Insolent Bard",
     "slug": "theoffensivebard",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/bootsplash_logo.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "description": "Your personal Shakespearean insult generator with over 125,000 unique combinations",
+    "primaryColor": "#5f9ea0",
     "splash": {
       "image": "./assets/bootsplash_logo@4x.png",
       "resizeMode": "contain",

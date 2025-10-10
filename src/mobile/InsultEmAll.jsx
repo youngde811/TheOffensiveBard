@@ -38,13 +38,15 @@ import ScalableText from 'react-native-text';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
+import { useShare } from '../hooks/useShare';
 
 import * as Utilities from '../utils/utilities';
 
 export default function InsultEmAll({ insults, appConfig }) {
     const { season, smstag, addFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
-    
+    const { shareInsult } = useShare();
+
     const [selectedInsult, setSelectedInsult] = useState(null);
     const [favoriteAdded, setFavoriteAdded] = useState(false);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
@@ -109,6 +111,12 @@ export default function InsultEmAll({ insults, appConfig }) {
         }
     }, [selectedInsult, smstag]);
 
+    const handleShare = useCallback(async () => {
+        if (selectedInsult) {
+            await shareInsult(selectedInsult);
+        }
+    }, [selectedInsult, shareInsult]);
+
     const animateFavoriteAdded = useCallback(() => {
         Animated.timing(animation, {
             toValue: 1,
@@ -162,12 +170,20 @@ export default function InsultEmAll({ insults, appConfig }) {
             </Surface>
           </View>
           <View style={ styles.insultFooter }>
-            <PressableOpacity 
+            <PressableOpacity
               style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
-              title={ 'Insult' } 
-              onPress={ sendInsult } 
+              title={ 'SMS' }
+              onPress={ sendInsult }
               disabled={ selectedInsult == null }>
-              <Text style={ styles.insultButtonText }>Insult</Text>
+              <Text style={ styles.insultButtonText }>SMS</Text>
+            </PressableOpacity>
+            <View style={ styles.spacer }/>
+            <PressableOpacity
+              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              title={ 'Share' }
+              onPress={ handleShare }
+              disabled={ selectedInsult == null }>
+              <Text style={ styles.insultButtonText }>Share</Text>
             </PressableOpacity>
           </View>
           { easterEgg != null ? 

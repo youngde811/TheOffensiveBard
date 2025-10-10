@@ -40,11 +40,13 @@ import InsultsHeader from './InsultsHeader';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
+import { useShare } from '../hooks/useShare';
 
 export default function FavoriteInsults({ appConfig, background, setDismiss }) {
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
-    
+    const { shareInsult } = useShare();
+
     const [selectedInsult, setSelectedInsult] = useState(null);
 
     const insultSelect = useCallback((item) => {
@@ -88,6 +90,12 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
             }
         }
     }, [selectedInsult, removeFavorite]);
+
+    const handleShare = useCallback(async () => {
+        if (selectedInsult) {
+            await shareInsult(selectedInsult.insult);
+        }
+    }, [selectedInsult, shareInsult]);
 
     useEffect(() => {
         fetchFavorites();
@@ -133,25 +141,33 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
               </Surface>
             }
             <View style={ styles.favoritesFooter }>
-              <PressableOpacity 
+              <PressableOpacity
                 style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                title={ 'Insult' } 
-                onPress={ sendInsult } 
+                title={ 'SMS' }
+                onPress={ sendInsult }
                 disabled={ selectedInsult == null }>
-                <Text style={ styles.favoritesButtonText }>Insult</Text>
+                <Text style={ styles.favoritesButtonText }>SMS</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
-              <PressableOpacity 
+              <PressableOpacity
+                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                title={ 'Share' }
+                onPress={ handleShare }
+                disabled={ selectedInsult == null }>
+                <Text style={ styles.favoritesButtonText }>Share</Text>
+              </PressableOpacity>
+              <View style={ styles.spacer }/>
+              <PressableOpacity
                 style={ selectedInsult ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                title={ 'Forget' } 
-                onPress={ forgetFavorite } 
+                title={ 'Forget' }
+                onPress={ forgetFavorite }
                 disabled={ selectedInsult == null }>
                 <Text style={ styles.favoritesButtonText }>Forget</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
-              <PressableOpacity 
-                style={ styles.favoritesButtons } 
-                title={ 'Dismiss' } 
+              <PressableOpacity
+                style={ styles.favoritesButtons }
+                title={ 'Dismiss' }
                 onPress={ setDismiss }>
                 <Text style={ styles.favoritesButtonText }>Dismiss</Text>
               </PressableOpacity>
