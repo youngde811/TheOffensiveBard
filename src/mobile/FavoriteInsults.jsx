@@ -23,7 +23,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, TouchableOpacity, View, ImageBackground } from 'react-native';
+import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -41,22 +41,25 @@ import InsultsHeader from './InsultsHeader';
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
+import { useHaptics } from '../hooks/useHaptics';
 
-export default function FavoriteInsults({ appConfig, background, setDismiss }) {
+export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss }) {
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
+    const haptics = useHaptics();
 
     const [selectedInsult, setSelectedInsult] = useState(null);
 
     const insultSelect = useCallback((item) => {
+        haptics.selection();
         if (item.insult === selectedInsult?.insult) {
             setSelectedInsult(null);
         } else {
             setSelectedInsult(item);
             writeToClipboard(item.insult);
         }
-    }, [selectedInsult, writeToClipboard]);
+    }, [selectedInsult, writeToClipboard, haptics]);
 
     const renderInsult = useCallback(({item}) => {
         return (
@@ -78,24 +81,27 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
 
     const sendInsult = useCallback(() => {
         if (selectedInsult) {
+            haptics.medium();
             Linking.openURL(smstag + selectedInsult.insult);
         }
-    }, [selectedInsult, smstag]);
+    }, [selectedInsult, smstag, haptics]);
 
     const forgetFavorite = useCallback(async () => {
         if (selectedInsult) {
+            haptics.light();
             const success = await removeFavorite(selectedInsult);
             if (success) {
                 setSelectedInsult(null);
             }
         }
-    }, [selectedInsult, removeFavorite]);
+    }, [selectedInsult, removeFavorite, haptics]);
 
     const handleShare = useCallback(async () => {
         if (selectedInsult) {
+            haptics.medium();
             await shareInsult(selectedInsult.insult);
         }
-    }, [selectedInsult, shareInsult]);
+    }, [selectedInsult, shareInsult, haptics]);
 
     useEffect(() => {
         fetchFavorites();
@@ -127,7 +133,7 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
     };
 
     return (
-        <ImageBackground source={ background } resizeMode='cover' style={ styles.backgroundImage }>
+        <View style={[styles.backgroundImage, { backgroundColor }]}>
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
             <InsultsHeader appConfig={ appConfig }/>
@@ -173,6 +179,6 @@ export default function FavoriteInsults({ appConfig, background, setDismiss }) {
               </PressableOpacity>
             </View>
           </SafeAreaView>
-        </ImageBackground>
+        </View>
     );
 }

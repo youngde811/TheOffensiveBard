@@ -22,7 +22,7 @@
 
 import React, { useRef, useState, useMemo, useCallback } from 'react';
 
-import { Animated, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { Surface } from 'react-native-paper';
 import { FlashList } from "@shopify/flash-list";
@@ -39,6 +39,7 @@ import ScalableText from 'react-native-text';
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
+import { useHaptics } from '../hooks/useHaptics';
 
 import * as Utilities from '../utils/utilities';
 
@@ -46,9 +47,9 @@ export default function InsultEmAll({ insults, appConfig }) {
     const { season, smstag, addFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
+    const haptics = useHaptics();
 
     const [selectedInsult, setSelectedInsult] = useState(null);
-    const [favoriteAdded, setFavoriteAdded] = useState(false);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
     const [easterEgg, setEasterEgg] = useState(null);
 
@@ -56,17 +57,17 @@ export default function InsultEmAll({ insults, appConfig }) {
     const memoizedInsults = useMemo(() => insults, [insults]);
 
     const listThreshold = 300;
-    const animation = useRef(new Animated.Value(0)).current;
     const listRef = useRef(null);
 
     const insultSelect = useCallback((item) => {
+        haptics.selection();
         if (item.insult === selectedInsult) {
             setSelectedInsult(null);
         } else {
             setSelectedInsult(item.insult);
             writeToClipboard(item.insult);
         }
-    }, [selectedInsult, writeToClipboard]);
+    }, [selectedInsult, writeToClipboard, haptics]);
 
     const showEasterEgg = useCallback((item) => {
         setEasterEgg(item.url);
@@ -75,9 +76,9 @@ export default function InsultEmAll({ insults, appConfig }) {
     const storeFavorite = useCallback(async (item) => {
         const success = await addFavorite(item);
         if (success) {
-            setFavoriteAdded(true);
+            haptics.success();
         }
-    }, [addFavorite]);
+    }, [addFavorite, haptics]);
 
     const renderInsult = useCallback(({ item }) => {
         return (
@@ -107,33 +108,17 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const sendInsult = useCallback(() => {
         if (selectedInsult) {
+            haptics.medium();
             Linking.openURL(smstag + selectedInsult);
         }
-    }, [selectedInsult, smstag]);
+    }, [selectedInsult, smstag, haptics]);
 
     const handleShare = useCallback(async () => {
         if (selectedInsult) {
+            haptics.medium();
             await shareInsult(selectedInsult);
         }
-    }, [selectedInsult, shareInsult]);
-
-    const animateFavoriteAdded = useCallback(() => {
-        Animated.timing(animation, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true
-        }).start((state) => { setFavoriteAdded(false); });
-    }, [animation]);
-
-    const notifyFavoriteAdded = useCallback(() => {
-        animateFavoriteAdded();
-
-        return (
-            <Animated.Text style={{ opacity: animation, fontSize: 12, color: 'maroon', marginTop: 4 }}>
-              Favorite added!
-            </Animated.Text>
-        );
-    }, [animateFavoriteAdded, animation]);
+    }, [selectedInsult, shareInsult, haptics]);
 
     const scrollToTop = useCallback(() => {
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -150,7 +135,6 @@ export default function InsultEmAll({ insults, appConfig }) {
     return (
         <View style={ styles.insultTopView }>
           <View style={ styles.insultSurfaceParent }>
-            { favoriteAdded && notifyFavoriteAdded() }
             <Surface elevation={ 4 } style={ styles.insultSurface }>
               <View style={ styles.flatList }>
                 <FlashList

@@ -22,7 +22,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, ImageBackground } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 
@@ -37,7 +37,7 @@ const insults = require('../../assets/data/insults.json');
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TheOffensiveBardInsults({ appConfig, background }) {
+export default function TheOffensiveBardInsults({ appConfig, backgroundColor }) {
     const [insultData, setInsultData] = useState([]);
     const [appIsReady, setAppIsReady] = useState(false);
 
@@ -65,7 +65,7 @@ export default function TheOffensiveBardInsults({ appConfig, background }) {
     }
 
     return (
-        <ImageBackground source={ background } resizeMode='cover' style={ styles.backgroundImage }>
+        <View style={[styles.backgroundImage, { backgroundColor }]}>
           <SafeAreaView style={ styles.appTopView } onLayout={ onLayoutRootView }>
             <StatusBar style="auto"/>
             <ActivityIndicator animating={ !appIsReady } size='large' color='#3b63b3'/>
@@ -75,6 +75,6 @@ export default function TheOffensiveBardInsults({ appConfig, background }) {
               :
               null }
           </SafeAreaView>
-        </ImageBackground>
+        </View>
     );
 }

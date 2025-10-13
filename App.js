@@ -41,13 +41,15 @@ import FavoriteInsults from './src/mobile/FavoriteInsults';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 
 const appConfig = require("./assets/appconfig.json");
-const backgroundImage = require("./assets/images/willie.png");
+
+// Light parchment background - perfect for a Shakespearean app!
+const backgroundColor = '#f9f8f6';
 
 const initialRoute = "The Insolent Bard";
 
 function InsultsMainPage() {
   return (
-    <InsultPage appConfig={appConfig} background={backgroundImage} />
+    <InsultPage appConfig={appConfig} backgroundColor={backgroundColor} />
   );
 }
 
@@ -55,7 +57,7 @@ function FavoritesMainPage() {
   const navigation = useNavigation();
 
   return (
-    <FavoriteInsults appConfig={appConfig} background={backgroundImage} setDismiss={() => navigation.jumpTo(initialRoute)} />
+    <FavoriteInsults appConfig={appConfig} backgroundColor={backgroundColor} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 

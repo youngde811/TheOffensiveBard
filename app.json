@@ -21,7 +21,7 @@
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
       "buildNumber": "1.0.0",
       "requireFullScreen": true,
-      "icon": "./assets/icon.png",
+      "icon": "./assets/icon-ios.png",
       "splash": {
         "image": "./assets/images/willie.png",
         "resizeMode": "contain",
