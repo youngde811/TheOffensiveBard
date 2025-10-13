@@ -25,27 +25,42 @@ import React, { useRef, useState } from 'react';
 import { Animated, Pressable } from 'react-native';
 
 export default function PressableOpacity({ children, ...props }) {
-    const animation = useRef(new Animated.Value(1)).current;
+    const opacity = useRef(new Animated.Value(1)).current;
+    const scale = useRef(new Animated.Value(1)).current;
 
     const fadeIn = () => {
-        Animated.timing(animation, {
-            toValue: 0.1,
-            duration: 100,
-            useNativeDriver: true
-        }).start();
+        Animated.parallel([
+            Animated.timing(opacity, {
+                toValue: 0.5,
+                duration: 100,
+                useNativeDriver: true
+            }),
+            Animated.spring(scale, {
+                toValue: 0.95,
+                useNativeDriver: true,
+                friction: 5,
+            })
+        ]).start();
     };
 
     const fadeOut = () => {
-        Animated.timing(animation, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true
-        }).start();
+        Animated.parallel([
+            Animated.timing(opacity, {
+                toValue: 1,
+                duration: 200,
+                useNativeDriver: true
+            }),
+            Animated.spring(scale, {
+                toValue: 1,
+                useNativeDriver: true,
+                friction: 5,
+            })
+        ]).start();
     };
 
     return (
         <Pressable onPressIn={ fadeIn } onPressOut={ fadeOut } { ...props }>
-          <Animated.View style={{ opacity: animation }}>
+          <Animated.View style={{ opacity: opacity, transform: [{ scale: scale }] }}>
             { children }
           </Animated.View>
         </Pressable>

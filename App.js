@@ -121,11 +121,13 @@ export default function App() {
             screenOptions={{
               headerShown: true,
               unmountOnBlur: true,
-              drawerType: "back",
+              drawerType: "slide",
               itemStyle: { marginVertical: 10 },
               drawerStyle: {
                 backgroundColor: "aliceblue"
-              }
+              },
+              swipeEnabled: true,
+              swipeEdgeWidth: 50,
             }}
           >
             {screens.map(drawer =>
