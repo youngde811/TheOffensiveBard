@@ -1,6 +1,6 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
-// This file contains global configuration for the entire app.
+// This file contains the entry point for our TheOffensiveBard app.
 
 // MIT License
 
@@ -19,7 +19,21 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-global.keyPrefix = "@willie:";
-global.smstag = "sms://&body=";
-global.season = "Summer";
-global.year = 2023;
+// useClipboard.js - Custom hook for clipboard operations
+
+import { useCallback } from 'react';
+import * as Utilities from '../utils/utilities';
+
+export const useClipboard = () => {
+  const writeToClipboard = useCallback((text) => {
+    try {
+      Utilities.writeClipboard(text);
+      return true;
+    } catch (error) {
+      console.error('Error writing to clipboard:', error);
+      return false;
+    }
+  }, []);
+
+  return { writeToClipboard };
+};

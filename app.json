@@ -1,13 +1,15 @@
 {
   "expo": {
-    "name": "TheOffensiveBard",
+    "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "orientation": "portrait",
-    "icon": "./assets/bootsplash_logo.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
+    "description": "Your personal Shakespearean insult generator with over 125,000 unique combinations",
+    "primaryColor": "#5f9ea0",
     "splash": {
-      "image": "./assets/bootsplash_logo@4x.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -16,14 +18,23 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.bosshog811.TheOffensiveBard",
-      "buildNumber": "1.0.0",
+      "bundleIdentifier": "com.bosshog811.TheInsolentBard",
+      "buildNumber": "1.0.3",
       "requireFullScreen": true,
+      "icon": "./assets/icon-ios.png",
+      "splash": {
+        "image": "./assets/icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#000000"
+      },
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000",
+        "backgroundColor": "#000000"
       }
     },
     "web": {

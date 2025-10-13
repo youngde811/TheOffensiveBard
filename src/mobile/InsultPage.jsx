@@ -19,12 +19,12 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, ImageBackground, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-import { useCallback } from 'react';
 
 import InsultEmAll from './InsultEmAll';
 import InsultsHeader from './InsultsHeader';
@@ -37,7 +37,7 @@ const insults = require('../../assets/data/insults.json');
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TheOffensiveBardInsults({ appConfig, background }) {
+export default function TheOffensiveBardInsults({ appConfig, backgroundColor }) {
     const [insultData, setInsultData] = useState([]);
     const [appIsReady, setAppIsReady] = useState(false);
 
@@ -65,18 +65,16 @@ export default function TheOffensiveBardInsults({ appConfig, background }) {
     }
 
     return (
-        <ImageBackground source={ background } resizeMode='cover' style={ styles.backgroundImage }>
-          <View style={[{ paddingTop: 0 }, styles.appTopView]} onLayout={ onLayoutRootView }>
+        <View style={[styles.backgroundImage, { backgroundColor }]}>
+          <SafeAreaView style={ styles.appTopView } onLayout={ onLayoutRootView }>
             <StatusBar style="auto"/>
             <ActivityIndicator animating={ !appIsReady } size='large' color='#3b63b3'/>
             <InsultsHeader appConfig={ appConfig }/>
-            <View style={ styles.insultPageView }>
-              { insultData.length > 0 ? 
-                <InsultEmAll insults={ insultData } appConfig={ appConfig }/>
-                :
-                null }
-            </View>
-          </View>
-        </ImageBackground>
+            { insultData.length > 0 ?
+              <InsultEmAll insults={ insultData } appConfig={ appConfig }/>
+              :
+              null }
+          </SafeAreaView>
+        </View>
     );
 }

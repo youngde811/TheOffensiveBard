@@ -3,8 +3,6 @@
         "tyrannis": "Sic semper tyrannis",
         "tyrannisDef": "Thus always to tyrants",
     },
-    "projectURL": "https://github.com/youngde811/willie-the-shake",
-    "wikiPage": "https://en.wikipedia.org/wiki/Lord_Buckley",
-    "changeLog": "https://github.com/youngde811/willie-the-shake/blob/master/README.md",
-    "nsaCodewordsURL": "http://bosshog811.pythonanywhere.com/codewords/list",
+    "projectURL": "https://github.com/youngde811/TheInsultingBard",
+    "aboutPage": "./assets/about.html",
 }

@@ -1,6 +1,7 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
 // This file contains the code for our TheOffensiveBard main insult page.
+// Refactored to use modern React patterns with custom hooks and context.
 
 // MIT License
 
@@ -19,14 +20,12 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 
-import { Animated, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { Surface } from 'react-native-paper';
 import { FlashList } from "@shopify/flash-list";
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import * as Linking from 'expo-linking';
 
@@ -37,111 +36,112 @@ import TouchableIcon from './TouchableIcon';
 import ModalEmbeddedWebView from './ModalEmbeddedWebView';
 import ScalableText from 'react-native-text';
 
-import './Globals';
+import { useAppContext } from '../contexts/AppContext';
+import { useClipboard } from '../hooks/useClipboard';
+import { useShare } from '../hooks/useShare';
+import { useHaptics } from '../hooks/useHaptics';
 
 import * as Utilities from '../utils/utilities';
 
 export default function InsultEmAll({ insults, appConfig }) {
+    const { season, smstag, addFavorite } = useAppContext();
+    const { writeToClipboard } = useClipboard();
+    const { shareInsult } = useShare();
+    const haptics = useHaptics();
+
     const [selectedInsult, setSelectedInsult] = useState(null);
-    const [favoriteAdded, setFavoriteAdded] = useState(false);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
     const [easterEgg, setEasterEgg] = useState(null);
 
-    const seasonalIcon = Utilities.getSeasonalIcon(global.season);
+    const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
+    const memoizedInsults = useMemo(() => insults, [insults]);
 
     const listThreshold = 300;
-    const animation = useRef(new Animated.Value(0)).current;
+    const listRef = useRef(null);
 
-    const insultSelect = (item) => {
+    const insultSelect = useCallback((item) => {
+        haptics.selection();
         if (item.insult === selectedInsult) {
             setSelectedInsult(null);
         } else {
             setSelectedInsult(item.insult);
-            Utilities.writeClipboard(item.insult);
-        };
-    };
+            writeToClipboard(item.insult);
+        }
+    }, [selectedInsult, writeToClipboard, haptics]);
 
-    const showEasterEgg = (item) => {
+    const showEasterEgg = useCallback((item) => {
         setEasterEgg(item.url);
-    };
+    }, []);
 
-    const storeFavorite = async (item) => {
-        let key = global.keyPrefix + item.id;
-        
-        await AsyncStorage.setItem(key, JSON.stringify(item));
+    const storeFavorite = useCallback(async (item) => {
+        const success = await addFavorite(item);
+        if (success) {
+            haptics.success();
+        }
+    }, [addFavorite, haptics]);
 
-        setFavoriteAdded(true);
-    };
-
-    const renderInsult = ({ item }) => {
+    const renderInsult = useCallback(({ item }) => {
         return (
             <View style={ styles.insultItemContainer }>
-              <PressableOpacity style={ null } onPress={ () => insultSelect(item) }
-                                onLongPress={ () => storeFavorite(item) } delayLongPress={ 500 }>
+              <PressableOpacity 
+                style={ null } 
+                onPress={ () => insultSelect(item) }
+                onLongPress={ () => storeFavorite(item) } 
+                delayLongPress={ 500 }>
                 <ScalableText style={ item.insult == selectedInsult ? styles.insultSelectedText : styles.insultText }>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
-              <TouchableIcon visible={ item.url.length > 0 } iconName={ seasonalIcon } onPress={ () => showEasterEgg(item) }/>
+              <TouchableIcon 
+                visible={ item.url.length > 0 } 
+                iconName={ seasonalIcon } 
+                onPress={ () => showEasterEgg(item) }/>
             </View>
         );
-    };
+    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg]);
 
-    const insultSeparator = () => {
+    const insultSeparator = useCallback(() => {
         return (
             <Divider width={ 1 } color={ "cornsilk" }/>
         );
-    };
+    }, []);
 
-    const sendInsult = () => {
+    const sendInsult = useCallback(() => {
         if (selectedInsult) {
-            Linking.openURL(global.smstag  + selectedInsult);
+            haptics.medium();
+            Linking.openURL(smstag + selectedInsult);
         }
-    };
+    }, [selectedInsult, smstag, haptics]);
 
-    const animateFavoriteAdded = () => {
-        Animated.timing(animation, {
-            toValue: 1,
-            duration: 1000,
-            useNativeDriver: true
-        }).start((state) => { setFavoriteAdded(false); });
-    };
+    const handleShare = useCallback(async () => {
+        if (selectedInsult) {
+            haptics.medium();
+            await shareInsult(selectedInsult);
+        }
+    }, [selectedInsult, shareInsult, haptics]);
 
-    const notifyFavoriteAdded = () => {
-        animateFavoriteAdded();
+    const scrollToTop = useCallback(() => {
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    }, []);
 
-        return (
-            <Animated.Text style={{ opacity: animation, fontSize: 12, color: 'maroon', marginTop: 4 }}>
-              Favorite added!
-            </Animated.Text>
-        );
-    };
-
-    const listRef = useRef(null);
-
-    const scrollToTop = () => {
-        listRef.current.scrollToOffset({ offset: 0, animated: true });
-    };
-
-    const extractKeys = (item) => {
+    const extractKeys = useCallback((item) => {
         return item.id;
-    };
+    }, []);
 
-    const setVerticalOffset = (event) => {
+    const setVerticalOffset = useCallback((event) => {
         setListVerticalOffset(event.nativeEvent.contentOffset.y);
-    };
+    }, []);
     
     return (
         <View style={ styles.insultTopView }>
           <View style={ styles.insultSurfaceParent }>
-            { favoriteAdded && notifyFavoriteAdded() }
             <Surface elevation={ 4 } style={ styles.insultSurface }>
               <View style={ styles.flatList }>
                 <FlashList
                   ref={ listRef }
                   ItemSeparatorComponent={ insultSeparator }
-                  onScroll = { setVerticalOffset }
-                  data={ insults }
+                  onScroll={ setVerticalOffset }
+                  data={ memoizedInsults }
                   keyExtractor={ extractKeys }
                   showsVerticalScrollIndicator={ true }
                   estimatedItemSize={ 100 }
@@ -154,12 +154,27 @@ export default function InsultEmAll({ insults, appConfig }) {
             </Surface>
           </View>
           <View style={ styles.insultFooter }>
-            <PressableOpacity style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
-                              title={ 'Insult' } onPress={ sendInsult } disabled={ selectedInsult == null }>
-              <Text style={ styles.insultButtonText }>Insult</Text>
+            <PressableOpacity
+              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              title={ 'SMS' }
+              onPress={ sendInsult }
+              disabled={ selectedInsult == null }>
+              <Text style={ styles.insultButtonText }>SMS</Text>
+            </PressableOpacity>
+            <View style={ styles.spacer }/>
+            <PressableOpacity
+              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              title={ 'Share' }
+              onPress={ handleShare }
+              disabled={ selectedInsult == null }>
+              <Text style={ styles.insultButtonText }>Share</Text>
             </PressableOpacity>
           </View>
-          { easterEgg != null ? <ModalEmbeddedWebView webPage={ easterEgg } setDismiss={ () => setEasterEgg(null) }/> : null }
+          { easterEgg != null ? 
+            <ModalEmbeddedWebView 
+              webPage={ easterEgg } 
+              setDismiss={ () => setEasterEgg(null) }/> 
+            : null }
         </View>
     );
 }

@@ -1,217 +1,120 @@
-# Welcome to Shakespeare Slander #
+# The Insolent Bard
 
-This project generates "Shakespearean" insults to either the terminal or via the included iOS app. Many years ago, I
-stumbled across the original implementation (I think); it was written in C. I took that code and wrote a screen saver
-for my X Window System environment on SunOS/Solaris, using _Xlib_. The documentation for the original work gave credit
-to a performer named "Lord Buckley"[^1], who had an act he called "Willie The Shake". The code author had apparently
-seen this fellow a number of times; thus the alias for this project.
+A Shakespearean insult generator with Rust CLI and iOS app.
 
-I found myself needing a distraction after a particularly challenging project at work. Having discovered a newer
-implementation of the code on _GitHub_ - Kurt Blair's "Shakespearean Insult Generator" - I forked his repository;
-re-wrote the generator in Python; and decided to include an iOS app that makes use of generated insults in an
-entertaining manner. The app is written in _React Native_ and _Expo_, and has been released to the AppStore.
+## Overview
 
-## Overview ##
+The Insolent Bard is a data-driven insult generator written in **Rust** that creates authentic-sounding
+Shakespearean insults. The project includes both a command-line interface and an iOS app published on the
+App Store as _The Insolent Bard_.
 
-The insult generator is data-driven and written in Python 3.x. There's a small model file included in the _data_
-directory, containing 50 lines of three tokens each; this file may be used to create a large number of insult
-phrases. The generator may be used to insult you from a terminal, or save a configurable number of insults to a
-file. The latter approach is used to power the app.
+The generator combines three-word phrases from a curated data file to create insults in the format:
+"Thou [adjective] [adjective] [noun]!"
 
-Displaying an insult is simple; just run `bin/generate` from the project directory with no arguments. You'll receive a
-single offensive phrase; for example: _Thou ruttish fen-sucked apple-john!_ If you need some functional information
-from this script, run `bin/generate -h`.
+With 50 phrases per column, the system can generate **125,000 unique combinations** (50³).
 
-## Usage ##
+### Quick Start
 
-The generator offers a few command-line arguments:
+```bash
+cd generator
+cargo run
+# Output: Thou gleeking flap-mouthed foot-licker!
+```
+
+## CLI Usage
+
+### Command-Line Arguments
 
 | Argument | Description |
 | :-: |:-: |
-| _-c COUNT_ | Generate COUNT number of insults, writing them to either standard output or a file. |
-| _-g PATH_ | Write some number of insults to PATH, saving them for later use. Whatever that might be. |
-| _-f PATH_ | Use PATH as the insult generator's model file, rather than the default file provided. |
-| _-o FORMAT_ | Output insults in FORMAT. The default is _text_ without the _-g_ flag; _json_ otherwise. |
+| _-c, --count COUNT_ | Generate COUNT number of insults to standard output (default: 1) |
+| _-p, --phrases PATH_ | Use PATH as the phrases source file (default: `data/phrases`) |
+| _-g, --genfile PATH_ | Generate all combinations as JSON and write them to PATH |
+| _-h, --help_ | Display help information |
+| _-V, --version_ | Display version information |
 
-As mentioned above, in the project's _bin_ directory there is a _Bash_ script that serves as a simple wrapper around the
-Python-based generator to save a small amount of typing. If you prefer, you may use your own Python interpreter
-directly: `python3 src/generator.py`. Note that Python 3 is required; the generator will **not** run on any 2.x version.
+### Examples
 
-## The Model File ##
+```bash
+# Generate a single insult
+cd generator && cargo run
 
-The generator uses a "model file" to drive insult assembly. Each insult is created by putting three words, or fragments,
-in between the tokens "Thou " and "!". Each of the fragments may be thought of as a column; fragments are picked at
-random, one from each column of words that are supplied in the data file, using a separate random number for each. The
-algorithm is actually quite simple.
+# Generate 5 insults
+cd generator && cargo run -- -c 5
 
-Using the included model file, there are 50 lines of three tokens each, allowing for 573,800 combinations: $$C(n,r) = \frac{n!}{r!(n-r)!}$$
+# Use a custom phrases file
+cd generator && cargo run -- -p /path/to/custom/phrases
 
-You may use your own model file if you wish. If you create your own, it **must** follow a strict format: _three tokens
-per line; each token separated by a single tab character_. The generator makes an attempt to validate a model file, and
-fail cleanly if it gets angry.
+# Generate JSON file for the app
+cd generator && cargo run -- -g ../assets/insults.json
+```
 
-## Current Work ##
+For production use, build the optimized release binary:
 
-The offical release of the project, including the app, is _1.9.0_. The app itself (_Shakespeare Slander_, alias
-_WillieShake_) is available on the AppStore. _Shakespeare Slander_ is supplied with a JSON file containing insults
-generated by _generate.py_; it presents those insults as a list (along with a few pretty buttons and such). You may
-select one of the insults, and use your phone's default messaging app to insult anyone you wish.
+```bash
+cd generator && cargo build --release
+./target/release/genrust -c 10
+```
 
-### Annoying Codewords ###
+## Phrases File Format
 
-As of relese _1.8.0_, _Shakespeare Slander_ has a new drawer page that will retrieve hundreds of "code words"
-intended to annoy our Three Letter Agencies if they're snooping illegally (they always are). The app talks with a
-Python Django server I wrote that runs somewhere in the ether, and populates the new drawer page with nifty code words
-sure to attract attention. The Django server currently exposes just a handful of endpoints; more might be added if
-necessary.
+The generator uses a tab-delimited phrases file located in `generator/data/phrases`. Each line contains three
+tab-separated tokens representing two adjectives and one noun.
 
-I plan to add the ability to generate new sets of these codewords from the app itself. Coming soon.
+### Format Requirements
 
-### General React Native Thoughts ###
+- **Three columns per line**: `[adjective]\t[adjective]\t[noun]`
+- **Tab-separated values**: Single tab character between each token
+- **50 lines**: Creates 125,000 possible combinations (50³)
 
-For the most part, React Native is awesome. However, certain major components are frustrating to use and
-unreliable. First thing that comes to mind is React Navigation. In a word, it's awful. When it works, great. But in my
-exprerience, 60% of the time it's unpredicatable and a massive time sink. For example, no matter what I tried in this
-project, the hook _useRoute()_ would always work, and yet the hook _useNavigation()_ always returned _{ }_. Even
-applying the basic examples. I'm not the only engineer in the community with complaints regarding navigation, so I've
-decided to stay far away from it.
+### Custom Phrases
 
-#### Navigation Update ####
+You can provide your own phrases file using the `-p` flag. The generator validates the format and provides
+helpful error messages for malformed files.
 
-I changed my mind, and decided to give the Navigation Drawer components a try. It works now, but a lot of effort and
-reading when into the implementation. This stuff remains poorly documented, requiring much trial and error. But in the
-end, it looks nice.
+Example line:
+```
+gleeking	flap-mouthed	foot-licker
+```
 
-## License ##
+## Architecture
 
-This software is made available under the _MIT License_. See _LICENSE.md_ for details.
+### Rust Generator
 
-## Attributions ##
+- **Modular Design**: Separated into focused modules (`parser`, `generator`, `error`)
+- **Embedded Data**: Phrases file compiled into binary using `include_str!()` for zero-dependency execution
+- **Performance**: jemalloc allocator for optimized memory management
+- **CLI**: clap for robust argument parsing and automatic help generation
+- **Error Handling**: Comprehensive error types with helpful messages
+- **Type Safety**: Compile-time guarantees via Rust's type system
 
-The insult generator itself is based on the work of Kurt Blair's [Shakespearean Insult Generator](https://github.com/Kurt-Blair/Shakespearean-Insult-Generator).
+### iOS App
 
-Thank you to the following individuals for contributing excellent ideas for this project:
+**The Insolent Bard** (v1.0.0) is available on the App Store. The app displays insults generated by the Rust
+CLI in a JSON file and provides an intuitive interface for browsing, saving, and sharing them via SMS.
 
-- My wife Jennifer.
-- My son Adam.
-- My sister Amy.
+**Tech Stack:**
+- React Native 0.81 + Expo 54
+- FlashList for optimized list rendering
+- Custom hooks architecture (`useFavorites`, `useClipboard`, `useAppContext`)
+- AsyncStorage for persistent favorites
 
-## Latest News ##
+**Features:**
+- Navigation drawer with multiple pages (insults, favorites, info)
+- Long-press to save favorites
+- Tap to copy to clipboard
+- Seasonal easter eggs
 
-- _05/06/2024_: Version 1.9.0 is on the AppStore.
-  - Use the cool ScalableText component for portable text scaling on different devices.
+## License
 
-- _05/05/2024_: Version 1.8.4 is on the AppStore.
-  - Added minimum font scaling.
+MIT License. See [LICENSE.md](LICENSE.md) for details.
 
-- _05/04/2024_: Version 1.8.3 is on the AppStore.
-  - Fixed font scaling across device sizes.
-  - Flying Fickle Finger of Fate.
+## Credits
 
-- _05/03/2024_: Version 1.8.2 is on the AppStore.
-  - Added cool header to codewords drawer.
+Based on [Kurt Blair's Shakespearean Insult Generator](https://github.com/Kurt-Blair/Shakespearean-Insult-Generator).
 
-- _05/03/2024_: Version 1.8.1 is on the AppStore.
-  - Added better fetch() error handling.
+Inspired by [Lord Buckley's](http://www.lordbuckley.com/the-word-new/transcriptions/willie-the-shake.html) "Willie The Shake" performance.
 
-- _05/02/2024_: Version 1.8.0 is on the AppStore.
-  - Added more codeword annoyance colors.
-  - Name change to _Shakespeare Slander_.
+## Author
 
-- _05/01/2024_: Version 1.7.0 is on the AppStore.
-  - Added codeword annoyance page.
-
-- _01/14/2024_: Version 1.6.7 is on the AppStore.
-  - Fixed season calculation algorithm.
-
-- _09/26/2023_: Version 1.6.5 is on the AppStore.
-  - Removed unnecessary console logging code.
-
-- _09/25/2023_: Version 1.6.4 is available on the AppStore.
-  - More accurate seasonal-change algorithm.
-  - Small stylistic changes.
-
-- _09/04/2023_: Version 1.6.2 is available on the AppStore.
-  - New seasonal "easter egg" icons!
-  
-- _09/02/2023_: Version 1.5.3 is available on the AppStore.
-  - Very nice header on the main and favorites insult pages.
-  - New drawer navigation.
-  - Much faster list performance.
-
-- _09/01/2023_: Version 1.5.1 is on TestFlight now.
-  - Switched to _FlashList_ component for better list rendering and performance.
-  - Nicer color scheme for drawer menu.
-
-- _08/31/2023_: Version 1.5.0 is on TestFlight for exercising.
-  - New Navigation Drawer offering the menu options that used to be in the AppBar.
-  - Stylistic improvements.
-
-- _08/17/2023_: Version 1.4.1 is out. A major release to the AppStore:
-  - Context-sensitive buttons.
-  - Hidden "Easter eggs".
-  - Animation improvements.
-  - Usability improvements.
-
-- _08/11/2023_: Version 1.2.3 is out. Another minor feature release:
-  - Added a floating icon to the insult list that, when pressed, will return to the list top and disappear.
-
-- _08/03/2023_: Version 1.2.2 is now available; a minor feature release:
-  - The clipboard is now supported on the insult lists. Just pressing an insult makes it available for pasting wherever that
-    behavior is supported on your device.
-
-- _08/01/2023_: Version 1.2.1 is being released to the AppStore:
-  - Added nice-looking image background to Favorites modal.
-  - Added master exception handler for app-level fatal errors. The handler provides users with an explanation at least;
-    allowing them to restart the app.
-
-- _07/31/2023_: Version 1.2.0 has been released. There is a secret level here that must be found!
-
-- _07/25/2023_: Version 1.1.4 of the app has been approved for release on the AppStore!
-
-- _07/24/2023_: Version 1.1.3 of the _WillieShake_ app is available:
-  - First official submission to the AppStore review process!
-  - Gesture handling was added to the WebView component.
-  - Documentation improvements.
-  
-- _07/21/2023_: Version 1.0.0 of the app is now available on _TestApp_, and is fully functional:
-  - There's a new button that opens a WebView Modal, taking you to the _Wikipedia_ page on Lord Buckley.
-  - Stability and style improvements.
-
-- _07/17/2023_: Version 0.7.2 of the app is available on _TestApp_. Another minor release that offers just a few
-  enhancements:
-  - An activity indicator is shown during app loading, if your internet connection is slow.
-  - There's now a config file that offers some flexible properties for the app. Later I might add a capability to
-    make changes to this file.
-
-- _07/14/2023_: Version 0.7.1 of the app is available on _TestApp_. This is a small release, and really just offers a
-  few visible improvements:
-  - Buttons now offer feedback animation, using the React _Pressable_ API.
-  - One or two font improvements.
-
-- _07/13/2023_: Version 0.7.0 of the app has been released onto _TestApp.io_. This release offers several enhancements:
-  - Much nicer splash screen.
-  - Very nice main page background image.
-  - Nicer color scheme overall.
-  - An AppBar button that opens your default browser and takes you directly to the GitHub project page.
-  - More efficient rendering.
-  - Better documentation.
-
-## Internal Testers ##
-
-The current app release may be found [here](https://portal.testapp.io/apps/install/eLDOGzZngbjgg).
-
-## References ##
-
-- [Lord Buckley's](http://www.lordbuckley.com/the-word-new/transcriptions/willie-the-shake.html) "Willie The Shake".
-- [Git Flow](https://nvie.com/posts/a-successful-git-branching-model/): A successful Git branching model.
-- [React Native](https://reactnative.dev/): A fabulous iOS and Android portable development language.
-- [TestApp.io](https://testapp.io/): A generous and reliable place to host and share apps for testing.
-- [Expo.dev](https://expo.dev/): Another generous developer site that hosts app builds for both iOS and Android.
-
-## Author ##
-
-[David E. Young](mailto://youngde811@pobox.com)
-
-[^1]: [Lord Buckley](https://en.wikipedia.org/wiki/Lord_Buckley) was a weird dude, as were all of those fellows into the
-    Beat scene.
+[David E. Young](mailto:youngde811@pobox.com)
