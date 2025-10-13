@@ -21,8 +21,10 @@ import React, { useEffect, useRef } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/styles.js';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SearchBar({ isVisible, searchQuery, onSearchChange, onClear, resultCount }) {
+    const { colors } = useTheme();
     const slideAnim = useRef(new Animated.Value(0)).current;
     const inputRef = useRef(null);
 
@@ -53,14 +55,14 @@ export default function SearchBar({ isVisible, searchQuery, onSearchChange, onCl
     }
 
     return (
-        <Animated.View style={[styles.searchBarContainer, { height, opacity }]}>
+        <Animated.View style={[styles.searchBarContainer, { height, opacity, backgroundColor: colors.surface }]}>
             <View style={styles.searchBarContent}>
-                <Ionicons name="search" size={20} color="#5f9ea0" style={styles.searchIcon} />
+                <Ionicons name="search" size={20} color={colors.primary} style={styles.searchIcon} />
                 <TextInput
                     ref={inputRef}
-                    style={styles.searchInput}
+                    style={[styles.searchInput, { color: colors.text }]}
                     placeholder="Search insults..."
-                    placeholderTextColor="#999"
+                    placeholderTextColor={colors.textMuted}
                     value={searchQuery}
                     onChangeText={onSearchChange}
                     autoCapitalize="none"
@@ -69,11 +71,11 @@ export default function SearchBar({ isVisible, searchQuery, onSearchChange, onCl
                 />
                 {searchQuery.length > 0 && (
                     <>
-                        <Text style={styles.searchResultCount}>
+                        <Text style={[styles.searchResultCount, { color: colors.primary }]}>
                             {resultCount}
                         </Text>
                         <TouchableOpacity onPress={onClear} style={styles.searchClearButton}>
-                            <Ionicons name="close-circle" size={20} color="#999" />
+                            <Ionicons name="close-circle" size={20} color={colors.textMuted} />
                         </TouchableOpacity>
                     </>
                 )}

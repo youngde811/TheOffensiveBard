@@ -42,8 +42,10 @@ import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
+import { useTheme } from '../contexts/ThemeContext';
 
-export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss }) {
+export default function FavoriteInsults({ appConfig, setDismiss }) {
+    const { colors } = useTheme();
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
@@ -65,19 +67,22 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
         return (
             <View style={ styles.insultItemContainer }>
               <PressableOpacity style={ null } onPress={ () => insultSelect(item) }>
-                <ScalableText style={ item === selectedInsult ? styles.insultSelectedText : styles.insultText }>
+                <ScalableText style={[
+                  item === selectedInsult ? styles.insultSelectedText : styles.insultText,
+                  { color: item === selectedInsult ? colors.textSelected : colors.text }
+                ]}>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
             </View>
         );
-    }, [selectedInsult, insultSelect]);
+    }, [selectedInsult, insultSelect, colors]);
 
     const favoritesSeparator = useCallback(() => {
         return (
-            <Divider width={1} color={"cornsilk"}/>
+            <Divider width={1} color={colors.divider}/>
         );
-    }, []);
+    }, [colors]);
 
     const sendInsult = useCallback(() => {
         if (selectedInsult) {
@@ -111,8 +116,8 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
         if (isLoadingFavorites) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#3b63b3" />
-                    <Text style={{ marginTop: 10, color: 'gray' }}>Loading favorites...</Text>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{ marginTop: 10, color: colors.textMuted }}>Loading favorites...</Text>
                 </View>
             );
         }
@@ -133,17 +138,17 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
     };
 
     return (
-        <View style={[styles.backgroundImage, { backgroundColor }]}>
+        <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
-            { !isLoadingFavorites && favorites.length === 0 && <ActivityIndicator animating={ true } size='large' color='#3b63b3'/> }
+            { !isLoadingFavorites && favorites.length === 0 && <ActivityIndicator animating={ true } size='large' color={colors.primary}/> }
             <View style={{ zIndex: 1000, elevation: 10 }}>
               <InsultsHeader appConfig={ appConfig }/>
             </View>
             { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>
               :
-              <View style={ [styles.favoritesSurface, { flex: 1, backgroundColor: 'white', borderRadius: 10, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }] }>
+              <View style={ [styles.favoritesSurface, { flex: 1, backgroundColor: colors.surface, borderRadius: 10, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }] }>
                 <View style={ styles.favoritesListView }>
                   { renderFavorites() }
                 </View>

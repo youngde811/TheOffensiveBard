@@ -26,13 +26,15 @@ import { Ionicons } from '@expo/vector-icons';
 
 import styles from '../styles/styles.js';
 import { useAppContext } from '../contexts/AppContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive }) {
     const { season, year } = useAppContext();
+    const { colors } = useTheme();
 
     return (
-        <View style={ styles.listHeaderView }>
-          <Text style={ styles.listHeaderSeason }>
+        <View style={ [styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }] }>
+          <Text style={ [styles.listHeaderSeason, { color: colors.primary }] }>
             { season + ", " + year }
           </Text>
           {onSearchPress && (
@@ -40,7 +42,7 @@ export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive
               <Ionicons
                 name={isSearchActive ? "close" : "search"}
                 size={22}
-                color="teal"
+                color={colors.primary}
               />
             </TouchableOpacity>
           )}

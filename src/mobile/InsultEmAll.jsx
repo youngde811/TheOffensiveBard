@@ -42,6 +42,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
+import { useTheme } from '../contexts/ThemeContext';
 
 import * as Utilities from '../utils/utilities';
 
@@ -50,6 +51,7 @@ export default function InsultEmAll({ insults, appConfig }) {
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
     const haptics = useHaptics();
+    const { colors } = useTheme();
 
     const [selectedInsult, setSelectedInsult] = useState(null);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
@@ -99,28 +101,31 @@ export default function InsultEmAll({ insults, appConfig }) {
     const renderInsult = useCallback(({ item }) => {
         return (
             <View style={ styles.insultItemContainer }>
-              <PressableOpacity 
-                style={ null } 
+              <PressableOpacity
+                style={ null }
                 onPress={ () => insultSelect(item) }
-                onLongPress={ () => storeFavorite(item) } 
+                onLongPress={ () => storeFavorite(item) }
                 delayLongPress={ 500 }>
-                <ScalableText style={ item.insult == selectedInsult ? styles.insultSelectedText : styles.insultText }>
+                <ScalableText style={[
+                  item.insult == selectedInsult ? styles.insultSelectedText : styles.insultText,
+                  { color: item.insult == selectedInsult ? colors.textSelected : colors.text }
+                ]}>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
-              <TouchableIcon 
-                visible={ item.url.length > 0 } 
-                iconName={ seasonalIcon } 
+              <TouchableIcon
+                visible={ item.url.length > 0 }
+                iconName={ seasonalIcon }
                 onPress={ () => showEasterEgg(item) }/>
             </View>
         );
-    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg]);
+    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors]);
 
     const insultSeparator = useCallback(() => {
         return (
-            <Divider width={ 1 } color={ "cornsilk" }/>
+            <Divider width={ 1 } color={ colors.divider }/>
         );
-    }, []);
+    }, [colors]);
 
     const sendInsult = useCallback(() => {
         if (selectedInsult) {
@@ -197,7 +202,7 @@ export default function InsultEmAll({ insults, appConfig }) {
             />
           </View>
           <View style={ styles.insultSurfaceParent }>
-            <View style={ styles.insultSurface }>
+            <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
               <View style={ styles.flatList }>
                 <FlashList
                   ref={ listRef }
