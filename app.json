@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#5f9ea0"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -23,9 +23,9 @@
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
-        "image": "./assets/icon.png",
+        "image": "./assets/icon-ios.png",
         "resizeMode": "contain",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#5f9ea0"
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
