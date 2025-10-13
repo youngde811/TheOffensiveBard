@@ -20,7 +20,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
 import { Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
@@ -33,7 +33,7 @@ import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
 import TouchableIcon from './TouchableIcon';
-import ModalEmbeddedWebView from './ModalEmbeddedWebView';
+import OldEnglishOverlay from './OldEnglishOverlay';
 import ScalableText from 'react-native-text';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
@@ -55,11 +55,31 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const [selectedInsult, setSelectedInsult] = useState(null);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
-    const [easterEgg, setEasterEgg] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchVisible, setIsSearchVisible] = useState(false);
+    const [easterEggIndices, setEasterEggIndices] = useState(new Set());
+    const [overlayVisible, setOverlayVisible] = useState(false);
+    const [overlayInsult, setOverlayInsult] = useState('');
+    const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
 
     const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
+
+    // Select 4 random insults for easter eggs on mount
+    useEffect(() => {
+        const selectRandomEggs = () => {
+            const indices = new Set();
+            const maxIndex = insults.length;
+
+            while (indices.size < 4) {
+                const randomIndex = Math.floor(Math.random() * maxIndex);
+                indices.add(randomIndex);
+            }
+
+            setEasterEggIndices(indices);
+        };
+
+        selectRandomEggs();
+    }, [insults]);
 
     // Filter insults based on search query
     const filteredInsults = useMemo(() => {
@@ -87,9 +107,12 @@ export default function InsultEmAll({ insults, appConfig }) {
         }
     }, [selectedInsult, writeToClipboard, haptics]);
 
-    const showEasterEgg = useCallback((item) => {
-        setEasterEgg(item.url);
-    }, []);
+    const showEasterEgg = useCallback((item, position) => {
+        haptics.light();
+        setOverlayPosition(position);
+        setOverlayInsult(item.insult);
+        setOverlayVisible(true);
+    }, [haptics]);
 
     const storeFavorite = useCallback(async (item) => {
         const success = await addFavorite(item);
@@ -98,7 +121,9 @@ export default function InsultEmAll({ insults, appConfig }) {
         }
     }, [addFavorite, haptics]);
 
-    const renderInsult = useCallback(({ item }) => {
+    const renderInsult = useCallback(({ item, index }) => {
+        const hasEgg = easterEggIndices.has(index);
+
         return (
             <View style={ styles.insultItemContainer }>
               <PressableOpacity
@@ -114,12 +139,12 @@ export default function InsultEmAll({ insults, appConfig }) {
                 </ScalableText>
               </PressableOpacity>
               <TouchableIcon
-                visible={ item.url.length > 0 }
+                visible={ hasEgg }
                 iconName={ seasonalIcon }
-                onPress={ () => showEasterEgg(item) }/>
+                onPress={ (position) => showEasterEgg(item, position) }/>
             </View>
         );
-    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors]);
+    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
 
     const insultSeparator = useCallback(() => {
         return (
@@ -238,11 +263,12 @@ export default function InsultEmAll({ insults, appConfig }) {
               <Text style={ styles.insultButtonText }>Share</Text>
             </PressableOpacity>
           </View>
-          { easterEgg != null ? 
-            <ModalEmbeddedWebView 
-              webPage={ easterEgg } 
-              setDismiss={ () => setEasterEgg(null) }/> 
-            : null }
+          <OldEnglishOverlay
+            insultText={ overlayInsult }
+            visible={ overlayVisible }
+            onDismiss={ () => setOverlayVisible(false) }
+            position={ overlayPosition }
+          />
         </View>
     );
 }

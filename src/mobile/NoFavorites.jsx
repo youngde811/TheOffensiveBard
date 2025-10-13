@@ -24,14 +24,17 @@ import { Text, View } from 'react-native';
 import ScalableText from 'react-native-text';
 
 import styles from '../styles/styles.js';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function NoFavorites() {
+    const { colors } = useTheme();
+
     return (
         <View style={ styles.noFavoritesView }>
-          <ScalableText style={ styles.noFavoritesText }>
+          <ScalableText style={ [styles.noFavoritesText, { color: colors.textSecondary, marginTop: 20 }] }>
             You have created no favorites yet.
           </ScalableText>
-          <ScalableText style={ styles.noFavoritesText }>
+          <ScalableText style={ [styles.noFavoritesText, { color: colors.textSecondary }] }>
             Find the secret to adding them!
           </ScalableText>
         </View>

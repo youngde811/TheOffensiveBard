@@ -105,6 +105,11 @@ function ThemedDrawerNavigator() {
         drawerStyle: {
           backgroundColor: colors.drawerBackground
         },
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: colors.text,
+        drawerLabelStyle: {
+          color: colors.text,
+        },
         swipeEnabled: true,
         swipeEdgeWidth: 50,
         headerStyle: {

@@ -141,7 +141,6 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
-            { !isLoadingFavorites && favorites.length === 0 && <ActivityIndicator animating={ true } size='large' color={colors.primary}/> }
             <View style={{ zIndex: 1000, elevation: 10 }}>
               <InsultsHeader appConfig={ appConfig }/>
             </View>
