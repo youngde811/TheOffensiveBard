@@ -51,32 +51,42 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const { shareInsult } = useShare();
     const haptics = useHaptics();
 
-    const [selectedInsult, setSelectedInsult] = useState(null);
+    const [selectedInsults, setSelectedInsults] = useState([]);
 
     const insultSelect = useCallback((item) => {
         haptics.selection();
-        if (item.insult === selectedInsult?.insult) {
-            setSelectedInsult(null);
+
+        const isSelected = selectedInsults.some(selected => selected.id === item.id);
+
+        if (isSelected) {
+            // Remove from selection
+            setSelectedInsults(selectedInsults.filter(selected => selected.id !== item.id));
         } else {
-            setSelectedInsult(item);
-            writeToClipboard(item.insult);
+            // Add to selection
+            const newSelection = [...selectedInsults, item];
+            setSelectedInsults(newSelection);
+            // Copy all selected insults to clipboard
+            const insultTexts = newSelection.map(i => i.insult).join('\n');
+            writeToClipboard(insultTexts);
         }
-    }, [selectedInsult, writeToClipboard, haptics]);
+    }, [selectedInsults, writeToClipboard, haptics]);
 
     const renderInsult = useCallback(({item}) => {
+        const isSelected = selectedInsults.some(selected => selected.id === item.id);
+
         return (
             <View style={ styles.insultItemContainer }>
               <PressableOpacity style={ null } onPress={ () => insultSelect(item) }>
                 <ScalableText style={[
-                  item === selectedInsult ? styles.insultSelectedText : styles.insultText,
-                  { color: item === selectedInsult ? colors.textSelected : colors.text }
+                  isSelected ? styles.insultSelectedText : styles.insultText,
+                  { color: isSelected ? colors.textSelected : colors.text }
                 ]}>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
             </View>
         );
-    }, [selectedInsult, insultSelect, colors]);
+    }, [selectedInsults, insultSelect, colors]);
 
     const favoritesSeparator = useCallback(() => {
         return (
@@ -85,28 +95,31 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     }, [colors]);
 
     const sendInsult = useCallback(() => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            Linking.openURL(smstag + selectedInsult.insult);
+            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+            Linking.openURL(smstag + combinedInsults);
         }
-    }, [selectedInsult, smstag, haptics]);
+    }, [selectedInsults, smstag, haptics]);
 
     const forgetFavorite = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.light();
-            const success = await removeFavorite(selectedInsult);
-            if (success) {
-                setSelectedInsult(null);
+            // Remove all selected favorites
+            for (const item of selectedInsults) {
+                await removeFavorite(item);
             }
+            setSelectedInsults([]);
         }
-    }, [selectedInsult, removeFavorite, haptics]);
+    }, [selectedInsults, removeFavorite, haptics]);
 
     const handleShare = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            await shareInsult(selectedInsult.insult);
+            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+            await shareInsult(combinedInsults);
         }
-    }, [selectedInsult, shareInsult, haptics]);
+    }, [selectedInsults, shareInsult, haptics]);
 
     useEffect(() => {
         fetchFavorites();
@@ -131,7 +144,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
               ItemSeparatorComponent={ favoritesSeparator }
               data={ favorites }
               keyExtractor={ (item) => item.id }
-              extraData={ selectedInsult }
+              extraData={ selectedInsults }
               estimatedItemSize={ 100 }
               renderItem={ renderInsult }/>
         );
@@ -155,26 +168,26 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
             }
             <View style={ styles.favoritesFooter }>
               <PressableOpacity
-                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'SMS' }
                 onPress={ sendInsult }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>SMS</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
               <PressableOpacity
-                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'Share' }
                 onPress={ handleShare }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>Share</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
               <PressableOpacity
-                style={ selectedInsult ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'Forget' }
                 onPress={ forgetFavorite }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>Forget</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>

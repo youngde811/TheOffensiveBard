@@ -53,7 +53,7 @@ export default function InsultEmAll({ insults, appConfig }) {
     const haptics = useHaptics();
     const { colors } = useTheme();
 
-    const [selectedInsult, setSelectedInsult] = useState(null);
+    const [selectedInsults, setSelectedInsults] = useState([]);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -99,13 +99,20 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const insultSelect = useCallback((item) => {
         haptics.selection();
-        if (item.insult === selectedInsult) {
-            setSelectedInsult(null);
+
+        const isSelected = selectedInsults.some(selected => selected === item.insult);
+
+        if (isSelected) {
+            // Remove from selection
+            setSelectedInsults(selectedInsults.filter(selected => selected !== item.insult));
         } else {
-            setSelectedInsult(item.insult);
-            writeToClipboard(item.insult);
+            // Add to selection
+            const newSelection = [...selectedInsults, item.insult];
+            setSelectedInsults(newSelection);
+            // Copy all selected insults to clipboard
+            writeToClipboard(newSelection.join('\n'));
         }
-    }, [selectedInsult, writeToClipboard, haptics]);
+    }, [selectedInsults, writeToClipboard, haptics]);
 
     const showEasterEgg = useCallback((item, position) => {
         haptics.light();
@@ -123,6 +130,7 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const renderInsult = useCallback(({ item, index }) => {
         const hasEgg = easterEggIndices.has(index);
+        const isSelected = selectedInsults.some(selected => selected === item.insult);
 
         return (
             <View style={ styles.insultItemContainer }>
@@ -132,8 +140,8 @@ export default function InsultEmAll({ insults, appConfig }) {
                 onLongPress={ () => storeFavorite(item) }
                 delayLongPress={ 500 }>
                 <ScalableText style={[
-                  item.insult == selectedInsult ? styles.insultSelectedText : styles.insultText,
-                  { color: item.insult == selectedInsult ? colors.textSelected : colors.text }
+                  isSelected ? styles.insultSelectedText : styles.insultText,
+                  { color: isSelected ? colors.textSelected : colors.text }
                 ]}>
                   { item.insult }
                 </ScalableText>
@@ -144,7 +152,7 @@ export default function InsultEmAll({ insults, appConfig }) {
                 onPress={ (position) => showEasterEgg(item, position) }/>
             </View>
         );
-    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
+    }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
 
     const insultSeparator = useCallback(() => {
         return (
@@ -153,18 +161,20 @@ export default function InsultEmAll({ insults, appConfig }) {
     }, [colors]);
 
     const sendInsult = useCallback(() => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            Linking.openURL(smstag + selectedInsult);
+            const combinedInsults = selectedInsults.join('\n');
+            Linking.openURL(smstag + combinedInsults);
         }
-    }, [selectedInsult, smstag, haptics]);
+    }, [selectedInsults, smstag, haptics]);
 
     const handleShare = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            await shareInsult(selectedInsult);
+            const combinedInsults = selectedInsults.join('\n');
+            await shareInsult(combinedInsults);
         }
-    }, [selectedInsult, shareInsult, haptics]);
+    }, [selectedInsults, shareInsult, haptics]);
 
     const scrollToTop = useCallback(() => {
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -237,7 +247,7 @@ export default function InsultEmAll({ insults, appConfig }) {
                   keyExtractor={ extractKeys }
                   showsVerticalScrollIndicator={ true }
                   estimatedItemSize={ 40 }
-                  extraData={ selectedInsult }
+                  extraData={ selectedInsults }
                   contentContainerStyle={{ paddingTop: 10 }}
                   renderItem={ renderInsult }/>
                 { listVerticalOffset > listThreshold && (
@@ -248,18 +258,18 @@ export default function InsultEmAll({ insults, appConfig }) {
           </View>
           <View style={ styles.insultFooter }>
             <PressableOpacity
-              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
               title={ 'SMS' }
               onPress={ sendInsult }
-              disabled={ selectedInsult == null }>
+              disabled={ selectedInsults.length === 0 }>
               <Text style={ styles.insultButtonText }>SMS</Text>
             </PressableOpacity>
             <View style={ styles.spacer }/>
             <PressableOpacity
-              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
               title={ 'Share' }
               onPress={ handleShare }
-              disabled={ selectedInsult == null }>
+              disabled={ selectedInsults.length === 0 }>
               <Text style={ styles.insultButtonText }>Share</Text>
             </PressableOpacity>
           </View>
