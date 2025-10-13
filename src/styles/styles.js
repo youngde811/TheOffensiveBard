@@ -247,6 +247,7 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         marginHorizontal: 4,
         alignItems: 'stretch',
+        marginTop: -40,
     },
     favoritesHeadingView: {
         alignItems: 'center',

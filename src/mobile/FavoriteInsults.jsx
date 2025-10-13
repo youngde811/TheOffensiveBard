@@ -136,15 +136,18 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
         <View style={[styles.backgroundImage, { backgroundColor }]}>
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
-            <InsultsHeader appConfig={ appConfig }/>
+            { !isLoadingFavorites && favorites.length === 0 && <ActivityIndicator animating={ true } size='large' color='#3b63b3'/> }
+            <View style={{ zIndex: 1000, elevation: 10 }}>
+              <InsultsHeader appConfig={ appConfig }/>
+            </View>
             { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>
               :
-              <Surface elevation={ 4 } style={ styles.favoritesSurface }>
+              <View style={ [styles.favoritesSurface, { flex: 1, backgroundColor: 'white', borderRadius: 10, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }] }>
                 <View style={ styles.favoritesListView }>
                   { renderFavorites() }
                 </View>
-              </Surface>
+              </View>
             }
             <View style={ styles.favoritesFooter }>
               <PressableOpacity
