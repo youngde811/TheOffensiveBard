@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
     insultTopView: {
         flex: 1,
         width: '100%',
+        marginTop: -40,
     },
     backgroundImage: {
         flex: 1,
@@ -145,27 +146,34 @@ const styles = StyleSheet.create({
     },
     insultSurfaceParent: {
         flex: 1,
-        justifyContent: 'stretch',
+        justifyContent: 'flex-start',
         width: '100%',
         marginBottom: 8,
     },
     insultSurface: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'stretch',
+        justifyContent: 'flex-start',
         borderRadius: 10,
+        padding: 0,
+        backgroundColor: 'white',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 4,
     },
     listHeaderView: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        position: 'absolute',
-        top: 2,
         borderRadius: 5,
         width: '100%',
-        marginTop: 6,
+        paddingVertical: 6,
+        paddingHorizontal: 4,
+        marginHorizontal: 4,
         backgroundColor: 'ghostwhite',
-        opacity: 0.5,
+        opacity: 0.95,
     },
     listHeaderSeason: {
         color: 'teal',
@@ -183,6 +191,8 @@ const styles = StyleSheet.create({
         flex: 1,
         width: '100%',
         flexDirection: 'column',
+        paddingTop: 0,
+        marginTop: 0,
     },
     insultList: {
         flexDirection: 'column',
@@ -424,6 +434,45 @@ const styles = StyleSheet.create({
         color: 'maroon',
         fontSize: 12,
         paddingBottom: 10,
+    },
+    searchBarContainer: {
+        overflow: 'hidden',
+        backgroundColor: 'white',
+        borderRadius: 10,
+        marginHorizontal: 8,
+        marginTop: 4,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+    },
+    searchBarContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+    },
+    searchIcon: {
+        marginRight: 8,
+    },
+    searchInput: {
+        flex: 1,
+        fontSize: 16,
+        color: '#333',
+        padding: 0,
+    },
+    searchResultCount: {
+        fontSize: 14,
+        color: '#5f9ea0',
+        fontWeight: '600',
+        marginRight: 8,
+    },
+    searchClearButton: {
+        padding: 4,
+    },
+    searchToggleButton: {
+        padding: 4,
     },
 });
 

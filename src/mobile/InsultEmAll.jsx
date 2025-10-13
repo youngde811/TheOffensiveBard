@@ -35,6 +35,8 @@ import FloatingPressable from './FloatingPressable';
 import TouchableIcon from './TouchableIcon';
 import ModalEmbeddedWebView from './ModalEmbeddedWebView';
 import ScalableText from 'react-native-text';
+import SearchBar from './SearchBar';
+import InsultsHeader from './InsultsHeader';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
@@ -52,9 +54,23 @@ export default function InsultEmAll({ insults, appConfig }) {
     const [selectedInsult, setSelectedInsult] = useState(null);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
     const [easterEgg, setEasterEgg] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
 
     const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
-    const memoizedInsults = useMemo(() => insults, [insults]);
+
+    // Filter insults based on search query
+    const filteredInsults = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return insults;
+        }
+        const query = searchQuery.toLowerCase();
+        return insults.filter(item =>
+            item.insult.toLowerCase().includes(query)
+        );
+    }, [insults, searchQuery]);
+
+    const memoizedInsults = useMemo(() => filteredInsults, [filteredInsults]);
 
     const listThreshold = 300;
     const listRef = useRef(null);
@@ -131,11 +147,57 @@ export default function InsultEmAll({ insults, appConfig }) {
     const setVerticalOffset = useCallback((event) => {
         setListVerticalOffset(event.nativeEvent.contentOffset.y);
     }, []);
-    
+
+    const toggleSearch = useCallback(() => {
+        haptics.light();
+        setIsSearchVisible(!isSearchVisible);
+        if (isSearchVisible && searchQuery) {
+            setSearchQuery('');
+        }
+    }, [isSearchVisible, searchQuery, haptics]);
+
+    const clearSearch = useCallback(() => {
+        haptics.light();
+        setSearchQuery('');
+    }, [haptics]);
+
+    const renderListHeader = useCallback(() => {
+        return (
+            <>
+              <InsultsHeader
+                appConfig={ appConfig }
+                onSearchPress={ toggleSearch }
+                isSearchActive={ isSearchVisible }
+              />
+              <SearchBar
+                isVisible={ isSearchVisible }
+                searchQuery={ searchQuery }
+                onSearchChange={ setSearchQuery }
+                onClear={ clearSearch }
+                resultCount={ filteredInsults.length }
+              />
+            </>
+        );
+    }, [appConfig, toggleSearch, isSearchVisible, searchQuery, filteredInsults.length, clearSearch]);
+
     return (
         <View style={ styles.insultTopView }>
+          <View style={{ zIndex: 1000, elevation: 10 }}>
+            <InsultsHeader
+              appConfig={ appConfig }
+              onSearchPress={ toggleSearch }
+              isSearchActive={ isSearchVisible }
+            />
+            <SearchBar
+              isVisible={ isSearchVisible }
+              searchQuery={ searchQuery }
+              onSearchChange={ setSearchQuery }
+              onClear={ clearSearch }
+              resultCount={ filteredInsults.length }
+            />
+          </View>
           <View style={ styles.insultSurfaceParent }>
-            <Surface elevation={ 4 } style={ styles.insultSurface }>
+            <View style={ styles.insultSurface }>
               <View style={ styles.flatList }>
                 <FlashList
                   ref={ listRef }
@@ -144,14 +206,15 @@ export default function InsultEmAll({ insults, appConfig }) {
                   data={ memoizedInsults }
                   keyExtractor={ extractKeys }
                   showsVerticalScrollIndicator={ true }
-                  estimatedItemSize={ 100 }
+                  estimatedItemSize={ 40 }
                   extraData={ selectedInsult }
+                  contentContainerStyle={{ paddingTop: 10 }}
                   renderItem={ renderInsult }/>
                 { listVerticalOffset > listThreshold && (
                     <FloatingPressable onPress={ scrollToTop }/>
                 )}
               </View>
-            </Surface>
+            </View>
           </View>
           <View style={ styles.insultFooter }>
             <PressableOpacity

@@ -27,7 +27,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 
 import InsultEmAll from './InsultEmAll';
-import InsultsHeader from './InsultsHeader';
 
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -68,8 +67,7 @@ export default function TheOffensiveBardInsults({ appConfig, backgroundColor }) 
         <View style={[styles.backgroundImage, { backgroundColor }]}>
           <SafeAreaView style={ styles.appTopView } onLayout={ onLayoutRootView }>
             <StatusBar style="auto"/>
-            <ActivityIndicator animating={ !appIsReady } size='large' color='#3b63b3'/>
-            <InsultsHeader appConfig={ appConfig }/>
+            { !appIsReady && <ActivityIndicator animating={ true } size='large' color='#3b63b3'/> }
             { insultData.length > 0 ?
               <InsultEmAll insults={ insultData } appConfig={ appConfig }/>
               :
