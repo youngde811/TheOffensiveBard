@@ -9,7 +9,7 @@
     "description": "Your personal Shakespearean insult generator with over 125,000 unique combinations",
     "primaryColor": "#5f9ea0",
     "splash": {
-      "image": "./assets/images/willie.png",
+      "image": "./assets/icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
@@ -23,7 +23,7 @@
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
-        "image": "./assets/images/willie.png",
+        "image": "./assets/icon.png",
         "resizeMode": "contain",
         "backgroundColor": "#000000"
       },
