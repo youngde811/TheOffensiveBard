@@ -24,6 +24,7 @@ import 'react-native-gesture-handler';
 import React from 'react';
 
 import { AppProvider } from './src/contexts/AppContext';
+import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -42,14 +43,11 @@ import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 
 const appConfig = require("./assets/appconfig.json");
 
-// Light parchment background - perfect for a Shakespearean app!
-const backgroundColor = '#f9f8f6';
-
 const initialRoute = "The Insolent Bard";
 
 function InsultsMainPage() {
   return (
-    <InsultPage appConfig={appConfig} backgroundColor={backgroundColor} />
+    <InsultPage appConfig={appConfig} />
   );
 }
 
@@ -57,7 +55,7 @@ function FavoritesMainPage() {
   const navigation = useNavigation();
 
   return (
-    <FavoriteInsults appConfig={appConfig} backgroundColor={backgroundColor} setDismiss={() => navigation.jumpTo(initialRoute)} />
+    <FavoriteInsults appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -71,7 +69,10 @@ function AboutMainPage() {
 
 const Drawer = createDrawerNavigator();
 
-const screens = [
+function ThemedDrawerNavigator() {
+  const { colors } = useTheme();
+
+  const screens = [
   {
     key: "AvailableInsults",
     title: initialRoute,
@@ -91,6 +92,47 @@ const screens = [
     component: AboutMainPage
   },
 ];
+
+  return (
+    <Drawer.Navigator
+      initialRouteName={initialRoute}
+      backBehavior="history"
+      screenOptions={{
+        headerShown: true,
+        unmountOnBlur: true,
+        drawerType: "slide",
+        itemStyle: { marginVertical: 10 },
+        drawerStyle: {
+          backgroundColor: colors.drawerBackground
+        },
+        drawerActiveTintColor: colors.primary,
+        drawerInactiveTintColor: colors.text,
+        drawerLabelStyle: {
+          color: colors.text,
+        },
+        swipeEnabled: true,
+        swipeEdgeWidth: 50,
+        headerStyle: {
+          backgroundColor: colors.headerBackground,
+        },
+        headerTintColor: colors.text,
+      }}
+    >
+      {screens.map(drawer =>
+        <Drawer.Screen
+          key={drawer.key}
+          name={drawer.title}
+          component={drawer.component}
+          options={{
+            drawerIcon: ({ focused, color }) => (
+              <Entypo name={drawer.iconName} size={24} color={focused ? colors.primary : colors.text} />
+            ),
+          }}
+        />
+      )}
+    </Drawer.Navigator>
+  );
+}
 
 export default function App() {
   const masterErrorHandler = (e, isFatal) => {
@@ -112,40 +154,14 @@ export default function App() {
   setJSExceptionHandler(masterErrorHandler);
 
   return (
-    <AppProvider>
-      <SafeAreaProvider>
-        <NavigationContainer>
-          <Drawer.Navigator
-            initialRouteName={initialRoute}
-            backBehavior="history"
-            screenOptions={{
-              headerShown: true,
-              unmountOnBlur: true,
-              drawerType: "back",
-              itemStyle: { marginVertical: 10 },
-              drawerStyle: {
-                backgroundColor: "aliceblue"
-              }
-            }}
-          >
-            {screens.map(drawer =>
-              <Drawer.Screen
-                key={drawer.key}
-                name={drawer.title}
-                component={drawer.component}
-                options={{
-                  drawerIcon: ({ focused, color }) => (
-                    <Entypo name={drawer.iconName} size={24} color={focused ? { color } : "black"} />
-                  ),
-                  headerStyle: {
-                    backgroundColor: 'aliceblue',
-                  },
-                }}
-              />
-            )}
-          </Drawer.Navigator>
-        </NavigationContainer>
-      </SafeAreaProvider>
-    </AppProvider>
+    <ThemeProvider>
+      <AppProvider>
+        <SafeAreaProvider>
+          <NavigationContainer>
+            <ThemedDrawerNavigator />
+          </NavigationContainer>
+        </SafeAreaProvider>
+      </AppProvider>
+    </ThemeProvider>
   );
 }

@@ -21,7 +21,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { View } from 'react-native';
 import { IconButton } from '@react-native-material/core';
@@ -32,10 +32,20 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 import styles from '../styles/styles.js';
 
 export default function TouchableIcon({ visible, iconName, onPress, ...props }) {
+    const viewRef = useRef(null);
+
+    const handlePress = () => {
+        if (viewRef.current) {
+            viewRef.current.measure((x, y, width, height, pageX, pageY) => {
+                onPress({ x: pageX, y: pageY });
+            });
+        }
+    };
+
     return (visible ?
-            <View style={ styles.touchableIconView }>
+            <View ref={viewRef} style={ styles.touchableIconView }>
               <IconButton
-                icon={ props => <Icon name={ iconName } { ...props }/> } color="orchid" opacity={ 0.4 } onPress={ () => onPress() }/>
+                icon={ props => <Icon name={ iconName } { ...props }/> } color="orchid" opacity={ 0.4 } onPress={ handlePress }/>
             </View>
             :
             <View style={ styles.touchableSpacerView }/>

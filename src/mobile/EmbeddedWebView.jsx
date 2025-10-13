@@ -30,16 +30,18 @@ import { ActivityIndicator } from 'react-native';
 import { Asset } from 'expo-asset';
 
 import PressableOpacity from './PressableOpacity';
+import { useTheme } from '../contexts/ThemeContext';
 
 import styles from '../styles/styles.js';
 
-function LoadingIndicator() {
+function LoadingIndicator({ colors }) {
     return (
-        <ActivityIndicator color='#009b88' size='large'/>
+        <ActivityIndicator color={colors.primary} size='large'/>
     );
 }
 
 export default function EmbeddedWebView({ webPage, setDismiss }) {
+    const { colors, isDark } = useTheme();
     const [htmlContent, setHtmlContent] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -52,7 +54,51 @@ export default function EmbeddedWebView({ webPage, setDismiss }) {
                     const asset = Asset.fromModule(htmlFile);
                     await asset.downloadAsync();
                     const response = await fetch(asset.localUri || asset.uri);
-                    const html = await response.text();
+                    let html = await response.text();
+
+                    // Inject theme-aware CSS
+                    const themeStyles = `
+                        <style>
+                            body {
+                                background-color: ${colors.background} !important;
+                                color: ${colors.text} !important;
+                            }
+                            a {
+                                color: ${colors.primary} !important;
+                            }
+                            h1, h2, h3, h4, h5, h6 {
+                                color: ${colors.text} !important;
+                                border-color: ${colors.primary} !important;
+                            }
+                            p, li, span, div, strong {
+                                color: ${colors.text} !important;
+                            }
+                            .section {
+                                background-color: ${colors.surface} !important;
+                                box-shadow: 0 2px 4px rgba(0,0,0,${isDark ? '0.3' : '0.1'}) !important;
+                            }
+                            .highlight {
+                                background-color: ${colors.surfaceSecondary} !important;
+                                border-left-color: ${colors.primary} !important;
+                            }
+                            .version, .license, .author {
+                                color: ${colors.textSecondary} !important;
+                            }
+                            .license {
+                                border-top-color: ${colors.divider} !important;
+                            }
+                        </style>
+                    `;
+
+                    // Inject styles before closing </head> tag or at the beginning if no head tag
+                    if (html.includes('</head>')) {
+                        html = html.replace('</head>', `${themeStyles}</head>`);
+                    } else if (html.includes('<head>')) {
+                        html = html.replace('<head>', `<head>${themeStyles}`);
+                    } else {
+                        html = themeStyles + html;
+                    }
+
                     setHtmlContent(html);
                 } catch (error) {
                     console.error('Error loading local HTML:', error);
@@ -61,12 +107,12 @@ export default function EmbeddedWebView({ webPage, setDismiss }) {
             setIsLoading(false);
         }
         loadContent();
-    }, [webPage]);
+    }, [webPage, colors, isDark]);
 
     if (isLoading) {
         return (
-            <SafeAreaView style={styles.webViewTop}>
-                <LoadingIndicator />
+            <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
+                <LoadingIndicator colors={colors} />
             </SafeAreaView>
         );
     }
@@ -81,17 +127,17 @@ export default function EmbeddedWebView({ webPage, setDismiss }) {
         : ['https://*'];
 
     return (
-        <SafeAreaView style={styles.webViewTop}>
-          <StatusBar style="auto"/>
+        <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
+          <StatusBar style={isDark ? "light" : "dark"}/>
           <WebView
-              style={ styles.webView }
+              style={ [styles.webView, { backgroundColor: colors.background }] }
               originWhitelist={ originWhitelist }
               source={ webViewSource }
               startInLoadingState={ true }
-              renderLoading={ LoadingIndicator }
+              renderLoading={ () => <LoadingIndicator colors={colors} /> }
               allowsBackForwardNavigationGestures={ true }
               decelerationRate={ 'normal' }/>
-          <View style={ styles.webFooter }>
+          <View style={ [styles.webFooter, { backgroundColor: colors.surface }] }>
             <PressableOpacity style={ styles.webButtons } title={ 'Dismiss' } onPress={ setDismiss }>
               <Text style={ styles.webText }>Dismiss</Text>
             </PressableOpacity>

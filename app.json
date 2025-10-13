@@ -2,16 +2,16 @@
   "expo": {
     "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "1.0.3",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "description": "Your personal Shakespearean insult generator with over 125,000 unique combinations",
     "primaryColor": "#5f9ea0",
     "splash": {
       "image": "./assets/icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#5f9ea0"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -19,13 +19,13 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "1.0.3",
+      "buildNumber": "1.0.10",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
-        "image": "./assets/icon.png",
+        "image": "./assets/icon-ios.png",
         "resizeMode": "contain",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#5f9ea0"
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false

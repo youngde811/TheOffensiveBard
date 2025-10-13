@@ -27,17 +27,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 
 import InsultEmAll from './InsultEmAll';
-import InsultsHeader from './InsultsHeader';
 
 import * as SplashScreen from 'expo-splash-screen';
 
 import styles from '../styles/styles.js';
+import { useTheme } from '../contexts/ThemeContext';
 
 const insults = require('../../assets/data/insults.json');
 
 SplashScreen.preventAutoHideAsync();
 
-export default function TheOffensiveBardInsults({ appConfig, backgroundColor }) {
+export default function TheOffensiveBardInsults({ appConfig }) {
+    const { colors, isDark } = useTheme();
     const [insultData, setInsultData] = useState([]);
     const [appIsReady, setAppIsReady] = useState(false);
 
@@ -65,11 +66,10 @@ export default function TheOffensiveBardInsults({ appConfig, backgroundColor }) 
     }
 
     return (
-        <View style={[styles.backgroundImage, { backgroundColor }]}>
+        <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
           <SafeAreaView style={ styles.appTopView } onLayout={ onLayoutRootView }>
-            <StatusBar style="auto"/>
-            <ActivityIndicator animating={ !appIsReady } size='large' color='#3b63b3'/>
-            <InsultsHeader appConfig={ appConfig }/>
+            <StatusBar style={isDark ? "light" : "dark"}/>
+            { !appIsReady && <ActivityIndicator animating={ true } size='large' color={colors.primary}/> }
             { insultData.length > 0 ?
               <InsultEmAll insults={ insultData } appConfig={ appConfig }/>
               :

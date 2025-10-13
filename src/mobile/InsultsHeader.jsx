@@ -22,28 +22,30 @@
 import React, { useState } from 'react';
 
 import { Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import styles from '../styles/styles.js';
 import { useAppContext } from '../contexts/AppContext';
+import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig }) {
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive }) {
     const { season, year } = useAppContext();
-    const [tyrannis, setTyrannis] = useState(appConfig.names.tyrannis);
-
-    const tyrannisDefinition = () => {
-        setTyrannis(tyrannis === appConfig.names.tyrannis ? appConfig.names.tyrannisDef : appConfig.names.tyrannis);
-    };
+    const { colors } = useTheme();
 
     return (
-        <View style={ styles.listHeaderView }>
-          <Text style={ styles.listHeaderSeason }>
+        <View style={ [styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }] }>
+          <Text style={ [styles.listHeaderSeason, { color: colors.primary }] }>
             { season + ", " + year }
           </Text>
-          <TouchableOpacity style={ styles.listHeaderTyrannis } onPress={ tyrannisDefinition }>
-            <Text style={ styles.listHeaderTyrannis }>
-              { tyrannis }
-            </Text>
-          </TouchableOpacity>
+          {onSearchPress && (
+            <TouchableOpacity style={ styles.searchToggleButton } onPress={ onSearchPress }>
+              <Ionicons
+                name={isSearchActive ? "close" : "search"}
+                size={22}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          )}
         </View>
     );
 }

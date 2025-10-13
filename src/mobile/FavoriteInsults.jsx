@@ -42,66 +42,84 @@ import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
+import { useTheme } from '../contexts/ThemeContext';
 
-export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss }) {
+export default function FavoriteInsults({ appConfig, setDismiss }) {
+    const { colors } = useTheme();
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
     const haptics = useHaptics();
 
-    const [selectedInsult, setSelectedInsult] = useState(null);
+    const [selectedInsults, setSelectedInsults] = useState([]);
 
     const insultSelect = useCallback((item) => {
         haptics.selection();
-        if (item.insult === selectedInsult?.insult) {
-            setSelectedInsult(null);
+
+        const isSelected = selectedInsults.some(selected => selected.id === item.id);
+
+        if (isSelected) {
+            // Remove from selection
+            setSelectedInsults(selectedInsults.filter(selected => selected.id !== item.id));
         } else {
-            setSelectedInsult(item);
-            writeToClipboard(item.insult);
+            // Add to selection
+            const newSelection = [...selectedInsults, item];
+            setSelectedInsults(newSelection);
+            // Copy all selected insults to clipboard
+            const insultTexts = newSelection.map(i => i.insult).join('\n');
+            writeToClipboard(insultTexts);
         }
-    }, [selectedInsult, writeToClipboard, haptics]);
+    }, [selectedInsults, writeToClipboard, haptics]);
 
     const renderInsult = useCallback(({item}) => {
+        const isSelected = selectedInsults.some(selected => selected.id === item.id);
+
         return (
             <View style={ styles.insultItemContainer }>
               <PressableOpacity style={ null } onPress={ () => insultSelect(item) }>
-                <ScalableText style={ item === selectedInsult ? styles.insultSelectedText : styles.insultText }>
+                <ScalableText style={[
+                  isSelected ? styles.insultSelectedText : styles.insultText,
+                  { color: isSelected ? colors.textSelected : colors.text }
+                ]}>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
             </View>
         );
-    }, [selectedInsult, insultSelect]);
+    }, [selectedInsults, insultSelect, colors]);
 
     const favoritesSeparator = useCallback(() => {
         return (
-            <Divider width={1} color={"cornsilk"}/>
+            <Divider width={1} color={colors.divider}/>
         );
-    }, []);
+    }, [colors]);
 
     const sendInsult = useCallback(() => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            Linking.openURL(smstag + selectedInsult.insult);
+            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+            Linking.openURL(smstag + combinedInsults);
         }
-    }, [selectedInsult, smstag, haptics]);
+    }, [selectedInsults, smstag, haptics]);
 
     const forgetFavorite = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.light();
-            const success = await removeFavorite(selectedInsult);
-            if (success) {
-                setSelectedInsult(null);
+            // Remove all selected favorites
+            for (const item of selectedInsults) {
+                await removeFavorite(item);
             }
+            setSelectedInsults([]);
         }
-    }, [selectedInsult, removeFavorite, haptics]);
+    }, [selectedInsults, removeFavorite, haptics]);
 
     const handleShare = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            await shareInsult(selectedInsult.insult);
+            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+            await shareInsult(combinedInsults);
         }
-    }, [selectedInsult, shareInsult, haptics]);
+    }, [selectedInsults, shareInsult, haptics]);
 
     useEffect(() => {
         fetchFavorites();
@@ -111,8 +129,8 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
         if (isLoadingFavorites) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color="#3b63b3" />
-                    <Text style={{ marginTop: 10, color: 'gray' }}>Loading favorites...</Text>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={{ marginTop: 10, color: colors.textMuted }}>Loading favorites...</Text>
                 </View>
             );
         }
@@ -126,48 +144,50 @@ export default function FavoriteInsults({ appConfig, backgroundColor, setDismiss
               ItemSeparatorComponent={ favoritesSeparator }
               data={ favorites }
               keyExtractor={ (item) => item.id }
-              extraData={ selectedInsult }
+              extraData={ selectedInsults }
               estimatedItemSize={ 100 }
               renderItem={ renderInsult }/>
         );
     };
 
     return (
-        <View style={[styles.backgroundImage, { backgroundColor }]}>
+        <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
-            <InsultsHeader appConfig={ appConfig }/>
+            <View style={{ zIndex: 1000, elevation: 10 }}>
+              <InsultsHeader appConfig={ appConfig }/>
+            </View>
             { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>
               :
-              <Surface elevation={ 4 } style={ styles.favoritesSurface }>
+              <View style={ [styles.favoritesSurface, { flex: 1, backgroundColor: colors.surface, borderRadius: 10, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }] }>
                 <View style={ styles.favoritesListView }>
                   { renderFavorites() }
                 </View>
-              </Surface>
+              </View>
             }
             <View style={ styles.favoritesFooter }>
               <PressableOpacity
-                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'SMS' }
                 onPress={ sendInsult }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>SMS</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
               <PressableOpacity
-                style={ selectedInsult != null ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'Share' }
                 onPress={ handleShare }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>Share</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>
               <PressableOpacity
-                style={ selectedInsult ? styles.favoritesButtons : styles.disabledFavoritesButtons }
+                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
                 title={ 'Forget' }
                 onPress={ forgetFavorite }
-                disabled={ selectedInsult == null }>
+                disabled={ selectedInsults.length === 0 }>
                 <Text style={ styles.favoritesButtonText }>Forget</Text>
               </PressableOpacity>
               <View style={ styles.spacer }/>

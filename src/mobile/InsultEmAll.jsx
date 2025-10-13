@@ -20,7 +20,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
 import { Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
@@ -33,13 +33,16 @@ import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
 import TouchableIcon from './TouchableIcon';
-import ModalEmbeddedWebView from './ModalEmbeddedWebView';
+import OldEnglishOverlay from './OldEnglishOverlay';
 import ScalableText from 'react-native-text';
+import SearchBar from './SearchBar';
+import InsultsHeader from './InsultsHeader';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
+import { useTheme } from '../contexts/ThemeContext';
 
 import * as Utilities from '../utils/utilities';
 
@@ -48,30 +51,75 @@ export default function InsultEmAll({ insults, appConfig }) {
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
     const haptics = useHaptics();
+    const { colors } = useTheme();
 
-    const [selectedInsult, setSelectedInsult] = useState(null);
+    const [selectedInsults, setSelectedInsults] = useState([]);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
-    const [easterEgg, setEasterEgg] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isSearchVisible, setIsSearchVisible] = useState(false);
+    const [easterEggIndices, setEasterEggIndices] = useState(new Set());
+    const [overlayVisible, setOverlayVisible] = useState(false);
+    const [overlayInsult, setOverlayInsult] = useState('');
+    const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
 
     const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
-    const memoizedInsults = useMemo(() => insults, [insults]);
+
+    // Select 4 random insults for easter eggs on mount
+    useEffect(() => {
+        const selectRandomEggs = () => {
+            const indices = new Set();
+            const maxIndex = insults.length;
+
+            while (indices.size < 4) {
+                const randomIndex = Math.floor(Math.random() * maxIndex);
+                indices.add(randomIndex);
+            }
+
+            setEasterEggIndices(indices);
+        };
+
+        selectRandomEggs();
+    }, [insults]);
+
+    // Filter insults based on search query
+    const filteredInsults = useMemo(() => {
+        if (!searchQuery.trim()) {
+            return insults;
+        }
+        const query = searchQuery.toLowerCase();
+        return insults.filter(item =>
+            item.insult.toLowerCase().includes(query)
+        );
+    }, [insults, searchQuery]);
+
+    const memoizedInsults = useMemo(() => filteredInsults, [filteredInsults]);
 
     const listThreshold = 300;
     const listRef = useRef(null);
 
     const insultSelect = useCallback((item) => {
         haptics.selection();
-        if (item.insult === selectedInsult) {
-            setSelectedInsult(null);
-        } else {
-            setSelectedInsult(item.insult);
-            writeToClipboard(item.insult);
-        }
-    }, [selectedInsult, writeToClipboard, haptics]);
 
-    const showEasterEgg = useCallback((item) => {
-        setEasterEgg(item.url);
-    }, []);
+        const isSelected = selectedInsults.some(selected => selected === item.insult);
+
+        if (isSelected) {
+            // Remove from selection
+            setSelectedInsults(selectedInsults.filter(selected => selected !== item.insult));
+        } else {
+            // Add to selection
+            const newSelection = [...selectedInsults, item.insult];
+            setSelectedInsults(newSelection);
+            // Copy all selected insults to clipboard
+            writeToClipboard(newSelection.join('\n'));
+        }
+    }, [selectedInsults, writeToClipboard, haptics]);
+
+    const showEasterEgg = useCallback((item, position) => {
+        haptics.light();
+        setOverlayPosition(position);
+        setOverlayInsult(item.insult);
+        setOverlayVisible(true);
+    }, [haptics]);
 
     const storeFavorite = useCallback(async (item) => {
         const success = await addFavorite(item);
@@ -80,45 +128,53 @@ export default function InsultEmAll({ insults, appConfig }) {
         }
     }, [addFavorite, haptics]);
 
-    const renderInsult = useCallback(({ item }) => {
+    const renderInsult = useCallback(({ item, index }) => {
+        const hasEgg = easterEggIndices.has(index);
+        const isSelected = selectedInsults.some(selected => selected === item.insult);
+
         return (
             <View style={ styles.insultItemContainer }>
-              <PressableOpacity 
-                style={ null } 
+              <PressableOpacity
+                style={ null }
                 onPress={ () => insultSelect(item) }
-                onLongPress={ () => storeFavorite(item) } 
+                onLongPress={ () => storeFavorite(item) }
                 delayLongPress={ 500 }>
-                <ScalableText style={ item.insult == selectedInsult ? styles.insultSelectedText : styles.insultText }>
+                <ScalableText style={[
+                  isSelected ? styles.insultSelectedText : styles.insultText,
+                  { color: isSelected ? colors.textSelected : colors.text }
+                ]}>
                   { item.insult }
                 </ScalableText>
               </PressableOpacity>
-              <TouchableIcon 
-                visible={ item.url.length > 0 } 
-                iconName={ seasonalIcon } 
-                onPress={ () => showEasterEgg(item) }/>
+              <TouchableIcon
+                visible={ hasEgg }
+                iconName={ seasonalIcon }
+                onPress={ (position) => showEasterEgg(item, position) }/>
             </View>
         );
-    }, [selectedInsult, seasonalIcon, insultSelect, storeFavorite, showEasterEgg]);
+    }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
 
     const insultSeparator = useCallback(() => {
         return (
-            <Divider width={ 1 } color={ "cornsilk" }/>
+            <Divider width={ 1 } color={ colors.divider }/>
         );
-    }, []);
+    }, [colors]);
 
     const sendInsult = useCallback(() => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            Linking.openURL(smstag + selectedInsult);
+            const combinedInsults = selectedInsults.join('\n');
+            Linking.openURL(smstag + combinedInsults);
         }
-    }, [selectedInsult, smstag, haptics]);
+    }, [selectedInsults, smstag, haptics]);
 
     const handleShare = useCallback(async () => {
-        if (selectedInsult) {
+        if (selectedInsults.length > 0) {
             haptics.medium();
-            await shareInsult(selectedInsult);
+            const combinedInsults = selectedInsults.join('\n');
+            await shareInsult(combinedInsults);
         }
-    }, [selectedInsult, shareInsult, haptics]);
+    }, [selectedInsults, shareInsult, haptics]);
 
     const scrollToTop = useCallback(() => {
         listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -131,11 +187,57 @@ export default function InsultEmAll({ insults, appConfig }) {
     const setVerticalOffset = useCallback((event) => {
         setListVerticalOffset(event.nativeEvent.contentOffset.y);
     }, []);
-    
+
+    const toggleSearch = useCallback(() => {
+        haptics.light();
+        setIsSearchVisible(!isSearchVisible);
+        if (isSearchVisible && searchQuery) {
+            setSearchQuery('');
+        }
+    }, [isSearchVisible, searchQuery, haptics]);
+
+    const clearSearch = useCallback(() => {
+        haptics.light();
+        setSearchQuery('');
+    }, [haptics]);
+
+    const renderListHeader = useCallback(() => {
+        return (
+            <>
+              <InsultsHeader
+                appConfig={ appConfig }
+                onSearchPress={ toggleSearch }
+                isSearchActive={ isSearchVisible }
+              />
+              <SearchBar
+                isVisible={ isSearchVisible }
+                searchQuery={ searchQuery }
+                onSearchChange={ setSearchQuery }
+                onClear={ clearSearch }
+                resultCount={ filteredInsults.length }
+              />
+            </>
+        );
+    }, [appConfig, toggleSearch, isSearchVisible, searchQuery, filteredInsults.length, clearSearch]);
+
     return (
         <View style={ styles.insultTopView }>
+          <View style={{ zIndex: 1000, elevation: 10 }}>
+            <InsultsHeader
+              appConfig={ appConfig }
+              onSearchPress={ toggleSearch }
+              isSearchActive={ isSearchVisible }
+            />
+            <SearchBar
+              isVisible={ isSearchVisible }
+              searchQuery={ searchQuery }
+              onSearchChange={ setSearchQuery }
+              onClear={ clearSearch }
+              resultCount={ filteredInsults.length }
+            />
+          </View>
           <View style={ styles.insultSurfaceParent }>
-            <Surface elevation={ 4 } style={ styles.insultSurface }>
+            <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
               <View style={ styles.flatList }>
                 <FlashList
                   ref={ listRef }
@@ -144,37 +246,39 @@ export default function InsultEmAll({ insults, appConfig }) {
                   data={ memoizedInsults }
                   keyExtractor={ extractKeys }
                   showsVerticalScrollIndicator={ true }
-                  estimatedItemSize={ 100 }
-                  extraData={ selectedInsult }
+                  estimatedItemSize={ 40 }
+                  extraData={ selectedInsults }
+                  contentContainerStyle={{ paddingTop: 10 }}
                   renderItem={ renderInsult }/>
                 { listVerticalOffset > listThreshold && (
                     <FloatingPressable onPress={ scrollToTop }/>
                 )}
               </View>
-            </Surface>
+            </View>
           </View>
           <View style={ styles.insultFooter }>
             <PressableOpacity
-              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
               title={ 'SMS' }
               onPress={ sendInsult }
-              disabled={ selectedInsult == null }>
+              disabled={ selectedInsults.length === 0 }>
               <Text style={ styles.insultButtonText }>SMS</Text>
             </PressableOpacity>
             <View style={ styles.spacer }/>
             <PressableOpacity
-              style={ selectedInsult != null ? styles.insultButtons : styles.disabledInsultButtons }
+              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
               title={ 'Share' }
               onPress={ handleShare }
-              disabled={ selectedInsult == null }>
+              disabled={ selectedInsults.length === 0 }>
               <Text style={ styles.insultButtonText }>Share</Text>
             </PressableOpacity>
           </View>
-          { easterEgg != null ? 
-            <ModalEmbeddedWebView 
-              webPage={ easterEgg } 
-              setDismiss={ () => setEasterEgg(null) }/> 
-            : null }
+          <OldEnglishOverlay
+            insultText={ overlayInsult }
+            visible={ overlayVisible }
+            onDismiss={ () => setOverlayVisible(false) }
+            position={ overlayPosition }
+          />
         </View>
     );
 }
