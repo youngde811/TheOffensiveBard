@@ -1,6 +1,6 @@
 # The Insolent Bard
 
-A Shakespearean insult generator iOS app powered by Rust, bringing 400 years of eloquent invective to your fingertips.
+A Shakespearean insult generator iOS app powered by React Native, Expo and Rust, bringing 400 years of eloquent invective to your fingertips.
 
 ## Overview
 
@@ -193,12 +193,6 @@ TheOffensiveBard/
 
 MIT License. See [LICENSE.md](LICENSE.md) for details.
 
-## Credits
-
-Based on [Kurt Blair's Shakespearean Insult Generator](https://github.com/Kurt-Blair/Shakespearean-Insult-Generator).
-
-Inspired by [Lord Buckley's](http://www.lordbuckley.com/the-word-new/transcriptions/willie-the-shake.html) "Willie The Shake" performance.
-
 ## Author
 
-[David E. Young](mailto:youngde811@pobox.com)
+[David E. Young](mailto:sporty-iron883@protonmail.com)
