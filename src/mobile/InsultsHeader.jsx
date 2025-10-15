@@ -28,7 +28,7 @@ import styles from '../styles/styles.js';
 import { useAppContext } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive }) {
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress }) {
     const { season, year } = useAppContext();
     const { colors } = useTheme();
 
@@ -37,15 +37,26 @@ export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive
           <Text style={ [styles.listHeaderSeason, { color: colors.primary }] }>
             { season + ", " + year }
           </Text>
-          {onSearchPress && (
-            <TouchableOpacity style={ styles.searchToggleButton } onPress={ onSearchPress }>
-              <Ionicons
-                name={isSearchActive ? "close" : "search"}
-                size={22}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {onRefreshPress && (
+              <TouchableOpacity style={ styles.searchToggleButton } onPress={ onRefreshPress }>
+                <Ionicons
+                  name="refresh"
+                  size={22}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            )}
+            {onSearchPress && (
+              <TouchableOpacity style={ styles.searchToggleButton } onPress={ onSearchPress }>
+                <Ionicons
+                  name={isSearchActive ? "close" : "search"}
+                  size={22}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
     );
 }

@@ -25,6 +25,7 @@ import React from 'react';
 
 import { AppProvider } from './src/contexts/AppContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
+import { SettingsProvider } from './src/contexts/SettingsContext';
 
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -39,6 +40,7 @@ import RNRestart from 'react-native-restart';
 
 import InsultPage from './src/mobile/InsultPage';
 import FavoriteInsults from './src/mobile/FavoriteInsults';
+import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 
 const appConfig = require("./assets/appconfig.json");
@@ -56,6 +58,14 @@ function FavoritesMainPage() {
 
   return (
     <FavoriteInsults appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
+  );
+}
+
+function SettingsMainPage() {
+  const navigation = useNavigation();
+
+  return (
+    <Settings appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -84,6 +94,12 @@ function ThemedDrawerNavigator() {
     title: "Favorite Insults",
     iconName: "heart-outlined",
     component: FavoritesMainPage
+  },
+  {
+    key: "SettingsMainPage",
+    title: "Settings",
+    iconName: "cog",
+    component: SettingsMainPage
   },
   {
     key: "AboutMainPage",
@@ -155,13 +171,15 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppProvider>
-        <SafeAreaProvider>
-          <NavigationContainer>
-            <ThemedDrawerNavigator />
-          </NavigationContainer>
-        </SafeAreaProvider>
-      </AppProvider>
+      <SettingsProvider>
+        <AppProvider>
+          <SafeAreaProvider>
+            <NavigationContainer>
+              <ThemedDrawerNavigator />
+            </NavigationContainer>
+          </SafeAreaProvider>
+        </AppProvider>
+      </SettingsProvider>
     </ThemeProvider>
   );
 }
