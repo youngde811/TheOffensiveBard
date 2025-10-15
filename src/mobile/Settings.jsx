@@ -29,13 +29,13 @@ import InsultsHeader from './InsultsHeader';
 
 import { useSettings, EASTER_EGG_FREQUENCY } from '../contexts/SettingsContext';
 import { useAppContext } from '../contexts/AppContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
-    const { colors } = useTheme();
+    const { colors, themePreference, setThemeMode } = useTheme();
     const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency } = useSettings();
     const { keyPrefix, fetchFavorites } = useAppContext();
     const haptics = useHaptics();
@@ -82,6 +82,11 @@ export default function Settings({ appConfig, setDismiss }) {
         setEasterEggFrequency(frequency);
     }, [setEasterEggFrequency, haptics]);
 
+    const handleThemeChange = useCallback((mode) => {
+        haptics.selection();
+        setThemeMode(mode);
+    }, [setThemeMode, haptics]);
+
     const openGitHub = useCallback(() => {
         haptics.light();
         Linking.openURL(appConfig.projectURL);
@@ -96,6 +101,41 @@ export default function Settings({ appConfig, setDismiss }) {
                 </View>
 
                 <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+                    {/* Appearance */}
+                    <View style={[styles.section, { backgroundColor: colors.surface }]}>
+                        <Text style={[styles.sectionTitle, { color: colors.text }]}>Appearance</Text>
+                        <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+                            Choose your preferred theme
+                        </Text>
+
+                        {Object.entries(THEME_MODES).map(([key, value]) => (
+                            <PressableOpacity
+                                key={key}
+                                style={styles.frequencyOption}
+                                onPress={() => handleThemeChange(value)}
+                            >
+                                <View style={styles.radioRow}>
+                                    <View style={[
+                                        styles.radio,
+                                        { borderColor: colors.primary }
+                                    ]}>
+                                        {themePreference === value && (
+                                            <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
+                                        )}
+                                    </View>
+                                    <View style={styles.frequencyInfo}>
+                                        <Text style={[styles.frequencyLabel, { color: colors.text }]}>
+                                            {key === 'SYSTEM' ? 'System Default' : key.charAt(0) + key.slice(1).toLowerCase()}
+                                        </Text>
+                                        <Text style={[styles.frequencyPercentage, { color: colors.textMuted }]}>
+                                            {key === 'SYSTEM' ? 'Follow device' : ''}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </PressableOpacity>
+                        ))}
+                    </View>
+
                     {/* Haptics Toggle */}
                     <View style={[styles.section, { backgroundColor: colors.surface }]}>
                         <Text style={[styles.sectionTitle, { color: colors.text }]}>Preferences</Text>

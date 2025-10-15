@@ -1,31 +1,71 @@
 // Theme context for managing light/dark mode
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { lightColors, darkColors } from '../styles/colors';
 
 const ThemeContext = createContext();
 
+const THEME_PREFERENCE_KEY = '@insolentbard:settings:themePreference';
+
+// Theme preference options
+export const THEME_MODES = {
+    SYSTEM: 'system',
+    LIGHT: 'light',
+    DARK: 'dark',
+};
+
 export function ThemeProvider({ children }) {
     const systemColorScheme = useColorScheme(); // 'light', 'dark', or null
-    const [theme, setTheme] = useState(systemColorScheme || 'light');
+    const [themePreference, setThemePreference] = useState(THEME_MODES.SYSTEM);
+    const [actualTheme, setActualTheme] = useState(systemColorScheme || 'light');
 
-    // Update theme when system preference changes
+    // Load theme preference from storage on mount
     useEffect(() => {
-        console.log('System color scheme detected:', systemColorScheme);
-        if (systemColorScheme) {
-            setTheme(systemColorScheme);
-            console.log('Theme updated to:', systemColorScheme);
-        }
-    }, [systemColorScheme]);
+        const loadThemePreference = async () => {
+            try {
+                const saved = await AsyncStorage.getItem(THEME_PREFERENCE_KEY);
+                if (saved) {
+                    setThemePreference(saved);
+                }
+            } catch (error) {
+                console.error('Error loading theme preference:', error);
+            }
+        };
+        loadThemePreference();
+    }, []);
 
-    const colors = theme === 'dark' ? darkColors : lightColors;
+    // Update actual theme based on preference and system setting
+    useEffect(() => {
+        if (themePreference === THEME_MODES.SYSTEM) {
+            // Follow system preference
+            setActualTheme(systemColorScheme || 'light');
+        } else {
+            // Use user's explicit preference
+            setActualTheme(themePreference);
+        }
+    }, [themePreference, systemColorScheme]);
+
+    // Set theme preference and save to storage
+    const setThemeMode = useCallback(async (mode) => {
+        try {
+            setThemePreference(mode);
+            await AsyncStorage.setItem(THEME_PREFERENCE_KEY, mode);
+        } catch (error) {
+            console.error('Error saving theme preference:', error);
+        }
+    }, []);
+
+    const colors = actualTheme === 'dark' ? darkColors : lightColors;
 
     const value = {
-        theme,
+        theme: actualTheme,
+        themePreference,
         colors,
-        isDark: theme === 'dark',
-        setTheme, // Allow manual override if needed in the future
+        isDark: actualTheme === 'dark',
+        setTheme: setActualTheme, // Direct theme setter (for backwards compatibility)
+        setThemeMode, // Preference-based theme setter
     };
 
     return (
