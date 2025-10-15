@@ -35,6 +35,7 @@ import * as Linking from 'expo-linking';
 
 import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
+import ParchmentBorder from './ParchmentBorder';
 import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
 
@@ -160,10 +161,14 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
             { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>
               :
-              <View style={ [styles.favoritesSurface, { flex: 1, backgroundColor: colors.surface, borderRadius: 10, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }] }>
-                <View style={ styles.favoritesListView }>
-                  { renderFavorites() }
-                </View>
+              <View style={ styles.favoritesSurface }>
+                <ParchmentBorder>
+                  <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }}>
+                    <View style={ styles.favoritesListView }>
+                      { renderFavorites() }
+                    </View>
+                  </View>
+                </ParchmentBorder>
               </View>
             }
             <View style={ styles.favoritesFooter }>

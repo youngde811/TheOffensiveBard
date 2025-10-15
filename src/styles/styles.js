@@ -148,13 +148,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'flex-start',
         width: '100%',
+        marginTop: 8,
         marginBottom: 8,
     },
     insultSurface: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'flex-start',
-        borderRadius: 10,
+        borderRadius: 16,
         padding: 0,
         backgroundColor: 'white',
         shadowColor: '#000',
@@ -265,6 +266,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         marginLeft: 4,
         marginRight: 4,
+        marginTop: 8,
         marginBottom: 8,
     },
     favoritesListView: {
