@@ -10,27 +10,32 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ## iOS App
 
-**The Insolent Bard** (v1.0.10) delivers authentic Shakespearean insults with a modern, intuitive interface.
+**The Insolent Bard** (v1.1.0) delivers authentic Shakespearean insults with a modern, intuitive interface.
 
 ### Features
 
-- **Browse & Search** - Scroll through 125,000+ insults with real-time search filtering
+- **Browse & Search** - Scroll through 1,000 randomly-sampled insults with real-time search filtering
+- **Refresh for More** - Tap the refresh icon to load a new random batch from 10,000+ insults
 - **Multi-Select** - Tap multiple insults to select them all at once
 - **Smart Clipboard** - Selected insults automatically copied, each on its own line
 - **Share Anywhere** - Send via SMS or share to any app on your device
 - **Save Favorites** - Long-press any insult to save it for later
 - **Bulk Operations** - Select and share/forget multiple favorites at once
 - **Seasonal Easter Eggs** - Discover random insults with elegant overlay surprises
+- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, manage favorites
 - **Dark Mode** - Automatic light/dark theme matching your device settings
-- **Optimized Performance** - FlashList rendering for smooth scrolling through thousands of insults
+- **Parchment Aesthetic** - Weathered borders for authentic Shakespearean feel
+- **Optimized Performance** - FlashList rendering for smooth scrolling, only 0.81MB data file
 
 ### Tech Stack
 
 - **React Native 19.1** + **Expo 54** for cross-platform mobile development
-- **FlashList** for optimized list rendering with 125K+ items
+- **FlashList** for optimized list rendering with 1,000+ items
+- **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
 - **Custom Hooks Architecture** for clean state management
-  - `useClipboard`, `useShare`, `useHaptics`, `useFavorites`, `useAppContext`
-- **AsyncStorage** for persistent favorites
+  - `useClipboard`, `useShare`, `useHaptics`, `useSettings`, `useAppContext`
+- **AsyncStorage** for persistent favorites and settings
+- **Context Providers** - Theme, Settings, and App state management
 - **Theme System** with automatic dark/light mode detection
 - **Animated API** for smooth UI transitions
 
@@ -62,7 +67,7 @@ cargo run
 
 | Argument | Description |
 | :-: |:-: |
-| _-c, --count COUNT_ | Generate COUNT number of insults to standard output (default: 1) |
+| _-c, --count COUNT_ | Generate COUNT number of insults to standard output (default: 1, max: 20000) |
 | _-p, --phrases PATH_ | Use PATH as the phrases source file (default: `data/phrases`) |
 | _-g, --genfile PATH_ | Generate all combinations as JSON and write them to PATH |
 | _-h, --help_ | Display help information |
@@ -140,8 +145,10 @@ This will enable the iOS app to fetch new insults dynamically rather than relyin
 - **Component-Based**: Modular React components with single responsibility
 - **Context Providers**: Global state management for app settings, theme, and favorites
 - **Custom Hooks**: Reusable logic for clipboard, sharing, haptics, and data fetching
-- **Persistent Storage**: AsyncStorage for favorites with automatic serialization
+- **Persistent Storage**: AsyncStorage for favorites and settings with automatic serialization
+- **Random Sampling**: Fisher-Yates algorithm for unbiased insult selection from 10k pool
 - **Theme System**: Dynamic color palette with automatic light/dark mode detection
+- **Settings Management**: User preferences for haptics, easter eggs, and favorites
 - **Optimized Rendering**: FlashList with memoization and callback optimization
 
 ## Development
