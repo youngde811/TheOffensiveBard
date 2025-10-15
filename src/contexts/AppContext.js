@@ -50,10 +50,24 @@ export const AppProvider = ({ children }) => {
       const favoritesList = [];
 
       for (const key of favoriteKeys) {
-        const insult = await AsyncStorage.getItem(key);
+        try {
+          const insult = await AsyncStorage.getItem(key);
 
-        if (insult) {
-          favoritesList.push(JSON.parse(insult));
+          if (insult) {
+            const parsed = JSON.parse(insult);
+            // Validate that it has the expected structure
+            if (parsed && parsed.id !== undefined && parsed.insult) {
+              favoritesList.push(parsed);
+            } else {
+              // Remove corrupted entry
+              console.warn('Removing corrupted favorite:', key);
+              await AsyncStorage.removeItem(key);
+            }
+          }
+        } catch (parseError) {
+          // Skip corrupted entries and remove them
+          console.warn('Failed to parse favorite, removing:', key, parseError.message);
+          await AsyncStorage.removeItem(key);
         }
       }
 

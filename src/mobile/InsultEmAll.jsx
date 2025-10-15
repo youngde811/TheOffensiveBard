@@ -48,7 +48,7 @@ import { useSettings } from '../contexts/SettingsContext';
 
 import * as Utilities from '../utils/utilities';
 
-export default function InsultEmAll({ insults, appConfig }) {
+export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     const { season, smstag, addFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
@@ -212,23 +212,12 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const handleRefresh = useCallback(() => {
         haptics.medium();
-        // Re-select easter eggs by retriggering the effect
-        const eggCount = getEasterEggCount(insults.length);
-        const indices = new Set();
-        const maxIndex = insults.length;
-
-        if (eggCount === 0) {
-            setEasterEggIndices(new Set());
-            return;
+        // Call parent's refresh function to reload insults
+        if (onRefresh) {
+            onRefresh();
         }
-
-        while (indices.size < eggCount) {
-            const randomIndex = Math.floor(Math.random() * maxIndex);
-            indices.add(randomIndex);
-        }
-
-        setEasterEggIndices(indices);
-    }, [insults, getEasterEggCount, haptics]);
+        // Easter eggs will be re-selected automatically via useEffect when insults change
+    }, [onRefresh, haptics]);
 
     const renderListHeader = useCallback(() => {
         return (
