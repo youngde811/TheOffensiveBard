@@ -36,7 +36,9 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ### Download
 
-Available on the App Store (link coming after approval).
+[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/app/the-insolent-bard/id6753878386)
+
+Available now on the [App Store](https://apps.apple.com/app/the-insolent-bard/id6753878386).
 
 ## Rust CLI Generator
 
