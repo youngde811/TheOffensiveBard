@@ -42,6 +42,7 @@ import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
+import { useSound } from '../hooks/useSound';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
 
@@ -52,6 +53,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
     const haptics = useHaptics();
+    const { playFavoriteSound } = useSound();
     const { colors } = useTheme();
     const { getEasterEggCount } = useSettings();
 
@@ -133,8 +135,9 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
         const success = await addFavorite(item);
         if (success) {
             haptics.success();
+            await playFavoriteSound();
         }
-    }, [addFavorite, haptics]);
+    }, [addFavorite, haptics, playFavoriteSound]);
 
     const renderInsult = useCallback(({ item, index }) => {
         const hasEgg = easterEggIndices.has(index);
