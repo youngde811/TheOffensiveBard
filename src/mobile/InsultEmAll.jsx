@@ -34,7 +34,6 @@ import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
 import TouchableIcon from './TouchableIcon';
 import OldEnglishOverlay from './OldEnglishOverlay';
-import ParchmentBorder from './ParchmentBorder';
 import ScalableText from 'react-native-text';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
@@ -256,26 +255,24 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
             />
           </View>
           <View style={ styles.insultSurfaceParent }>
-            <ParchmentBorder>
-              <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
-                <View style={ styles.flatList }>
-                  <FlashList
-                    ref={ listRef }
-                    ItemSeparatorComponent={ insultSeparator }
-                    onScroll={ setVerticalOffset }
-                    data={ memoizedInsults }
-                    keyExtractor={ extractKeys }
-                    showsVerticalScrollIndicator={ true }
-                    estimatedItemSize={ 40 }
-                    extraData={ selectedInsults }
-                    contentContainerStyle={{ paddingTop: 10 }}
-                    renderItem={ renderInsult }/>
-                  { listVerticalOffset > listThreshold && (
-                      <FloatingPressable onPress={ scrollToTop }/>
-                  )}
-                </View>
+            <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
+              <View style={ styles.flatList }>
+                <FlashList
+                  ref={ listRef }
+                  ItemSeparatorComponent={ insultSeparator }
+                  onScroll={ setVerticalOffset }
+                  data={ memoizedInsults }
+                  keyExtractor={ extractKeys }
+                  showsVerticalScrollIndicator={ true }
+                  estimatedItemSize={ 40 }
+                  extraData={ selectedInsults }
+                  contentContainerStyle={{ paddingTop: 10 }}
+                  renderItem={ renderInsult }/>
+                { listVerticalOffset > listThreshold && (
+                    <FloatingPressable onPress={ scrollToTop }/>
+                )}
               </View>
-            </ParchmentBorder>
+            </View>
           </View>
           <View style={ styles.insultFooter }>
             <PressableOpacity
