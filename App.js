@@ -35,13 +35,14 @@ import { useNavigation, NavigationContainer } from '@react-navigation/native';
 
 import { Entypo } from '@expo/vector-icons';
 
-import { setJSExceptionHandler } from 'react-native-exception-handler';
+import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 
 import InsultPage from './src/mobile/InsultPage';
 import FavoriteInsults from './src/mobile/FavoriteInsults';
 import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 const appConfig = require("./assets/appconfig.json");
 
@@ -163,23 +164,49 @@ export default function App() {
         [{ text: 'Restart', onPress: () => { RNRestart.Restart(); } }]
       );
     } else {
+      // Show user feedback for non-fatal errors
       console.log('TheOffensiveBard: exception: ' + e);
+      Alert.alert(
+        'Error',
+        `An error occurred: ${e.message}\n\nThe app will continue to function, but some features may not work as expected.`,
+        [{ text: 'OK' }]
+      );
     }
+  };
+
+  // Handle unhandled promise rejections
+  const promiseRejectionHandler = (reason, promise) => {
+    console.error('Unhandled Promise Rejection:', reason);
+    Alert.alert(
+      'Error',
+      `An unexpected error occurred: ${reason}\n\nPlease try again or restart the app if the problem persists.`,
+      [
+        { text: 'OK' },
+        { text: 'Restart', onPress: () => { RNRestart.Restart(); } }
+      ]
+    );
   };
 
   setJSExceptionHandler(masterErrorHandler);
 
+  // Set up promise rejection tracking
+  if (typeof global.Promise !== 'undefined') {
+    global.Promise.prototype._rejectionHandler = promiseRejectionHandler;
+  }
+
   return (
-    <ThemeProvider>
-      <SettingsProvider>
-        <AppProvider>
-          <SafeAreaProvider>
-            <NavigationContainer>
-              <ThemedDrawerNavigator />
-            </NavigationContainer>
-          </SafeAreaProvider>
-        </AppProvider>
-      </SettingsProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <SettingsProvider>
+          <AppProvider>
+            <SafeAreaProvider>
+              <NavigationContainer>
+                <ThemedDrawerNavigator />
+              </NavigationContainer>
+            </SafeAreaProvider>
+          </AppProvider>
+        </SettingsProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

@@ -1,8 +1,8 @@
 {
-    "names": {
-        "tyrannis": "Sic semper tyrannis",
-        "tyrannisDef": "Thus always to tyrants",
-    },
-    "projectURL": "https://github.com/youngde811/TheInsultingBard",
-    "aboutPage": "./assets/about.html",
+  "names": {
+    "tyrannis": "Sic semper tyrannis",
+    "tyrannisDef": "Thus always to tyrants",
+  },
+  "projectURL": "https://github.com/youngde811/TheOffensiveBard/tree/master",
+  "aboutPage": "./assets/about.html",
 }
