@@ -65,8 +65,8 @@ use generator::{print_insults, write_insults_json};
 static GLOBAL: Jemalloc = Jemalloc;
 
 // Constants
-const MAX_INSULTS: u16 = 500;
-const MIN_INSULTS: u16 = 1;
+const MAX_INSULTS: u32 = 20000;
+const MIN_INSULTS: u32 = 1;
 const DEFAULT_PHRASES_FILE: &str = "data/phrases";
 
 // Embed the default phrases file at compile time. This feature is
@@ -94,8 +94,8 @@ struct Args {
     ///
     /// if not provided, the default is 1
     #[clap(short = 'c', long, default_value_t = MIN_INSULTS)]
-    #[arg(value_parser = clap::value_parser!(u16).range(MIN_INSULTS as i64..=MAX_INSULTS as i64))]
-    count: u16,
+    #[arg(value_parser = clap::value_parser!(u32).range(MIN_INSULTS as i64..=MAX_INSULTS as i64))]
+    count: u32,
 
     /// the location of the phrases source file
     ///

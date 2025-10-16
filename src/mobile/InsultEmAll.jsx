@@ -34,6 +34,7 @@ import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
 import TouchableIcon from './TouchableIcon';
 import OldEnglishOverlay from './OldEnglishOverlay';
+import ParchmentBorder from './ParchmentBorder';
 import ScalableText from 'react-native-text';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
@@ -43,15 +44,17 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
+import { useSettings } from '../contexts/SettingsContext';
 
 import * as Utilities from '../utils/utilities';
 
-export default function InsultEmAll({ insults, appConfig }) {
+export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     const { season, smstag, addFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
     const haptics = useHaptics();
     const { colors } = useTheme();
+    const { getEasterEggCount } = useSettings();
 
     const [selectedInsults, setSelectedInsults] = useState([]);
     const [listVerticalOffset, setListVerticalOffset] = useState(0);
@@ -64,13 +67,19 @@ export default function InsultEmAll({ insults, appConfig }) {
 
     const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
 
-    // Select 4 random insults for easter eggs on mount
+    // Select random insults for easter eggs based on settings
     useEffect(() => {
         const selectRandomEggs = () => {
+            const eggCount = getEasterEggCount(insults.length);
             const indices = new Set();
             const maxIndex = insults.length;
 
-            while (indices.size < 4) {
+            if (eggCount === 0) {
+                setEasterEggIndices(new Set());
+                return;
+            }
+
+            while (indices.size < eggCount) {
                 const randomIndex = Math.floor(Math.random() * maxIndex);
                 indices.add(randomIndex);
             }
@@ -79,7 +88,7 @@ export default function InsultEmAll({ insults, appConfig }) {
         };
 
         selectRandomEggs();
-    }, [insults]);
+    }, [insults, getEasterEggCount]);
 
     // Filter insults based on search query
     const filteredInsults = useMemo(() => {
@@ -201,6 +210,15 @@ export default function InsultEmAll({ insults, appConfig }) {
         setSearchQuery('');
     }, [haptics]);
 
+    const handleRefresh = useCallback(() => {
+        haptics.medium();
+        // Call parent's refresh function to reload insults
+        if (onRefresh) {
+            onRefresh();
+        }
+        // Easter eggs will be re-selected automatically via useEffect when insults change
+    }, [onRefresh, haptics]);
+
     const renderListHeader = useCallback(() => {
         return (
             <>
@@ -225,6 +243,7 @@ export default function InsultEmAll({ insults, appConfig }) {
           <View style={{ zIndex: 1000, elevation: 10 }}>
             <InsultsHeader
               appConfig={ appConfig }
+              onRefreshPress={ handleRefresh }
               onSearchPress={ toggleSearch }
               isSearchActive={ isSearchVisible }
             />
@@ -237,24 +256,26 @@ export default function InsultEmAll({ insults, appConfig }) {
             />
           </View>
           <View style={ styles.insultSurfaceParent }>
-            <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
-              <View style={ styles.flatList }>
-                <FlashList
-                  ref={ listRef }
-                  ItemSeparatorComponent={ insultSeparator }
-                  onScroll={ setVerticalOffset }
-                  data={ memoizedInsults }
-                  keyExtractor={ extractKeys }
-                  showsVerticalScrollIndicator={ true }
-                  estimatedItemSize={ 40 }
-                  extraData={ selectedInsults }
-                  contentContainerStyle={{ paddingTop: 10 }}
-                  renderItem={ renderInsult }/>
-                { listVerticalOffset > listThreshold && (
-                    <FloatingPressable onPress={ scrollToTop }/>
-                )}
+            <ParchmentBorder>
+              <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
+                <View style={ styles.flatList }>
+                  <FlashList
+                    ref={ listRef }
+                    ItemSeparatorComponent={ insultSeparator }
+                    onScroll={ setVerticalOffset }
+                    data={ memoizedInsults }
+                    keyExtractor={ extractKeys }
+                    showsVerticalScrollIndicator={ true }
+                    estimatedItemSize={ 40 }
+                    extraData={ selectedInsults }
+                    contentContainerStyle={{ paddingTop: 10 }}
+                    renderItem={ renderInsult }/>
+                  { listVerticalOffset > listThreshold && (
+                      <FloatingPressable onPress={ scrollToTop }/>
+                  )}
+                </View>
               </View>
-            </View>
+            </ParchmentBorder>
           </View>
           <View style={ styles.insultFooter }>
             <PressableOpacity

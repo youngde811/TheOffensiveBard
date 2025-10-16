@@ -19,42 +19,59 @@
 
 import { useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
+import { useSettings } from '../contexts/SettingsContext';
 
 export const useHaptics = () => {
+  const { hapticsEnabled } = useSettings();
+
   // Light impact - for selections, taps
   const light = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+  }, [hapticsEnabled]);
 
   // Medium impact - for button presses
   const medium = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  }, [hapticsEnabled]);
 
   // Heavy impact - for important actions
   const heavy = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    }
+  }, [hapticsEnabled]);
 
   // Success notification - for completed actions (adding favorite)
   const success = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    }
+  }, [hapticsEnabled]);
 
   // Warning notification - for warnings
   const warning = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
+  }, [hapticsEnabled]);
 
   // Error notification - for errors
   const error = useCallback(() => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  }, [hapticsEnabled]);
 
   // Selection changed - for picker/selection changes
   const selection = useCallback(() => {
-    Haptics.selectionAsync();
-  }, []);
+    if (hapticsEnabled) {
+      Haptics.selectionAsync();
+    }
+  }, [hapticsEnabled]);
 
   return {
     light,
