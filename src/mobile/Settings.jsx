@@ -27,7 +27,7 @@ import { StatusBar } from 'expo-status-bar';
 import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 
-import { useSettings, EASTER_EGG_FREQUENCY } from '../contexts/SettingsContext';
+import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
 import { useAppContext } from '../contexts/AppContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
@@ -36,7 +36,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
     const { colors, themePreference, setThemeMode } = useTheme();
-    const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency } = useSettings();
+    const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect } = useSettings();
     const { keyPrefix, fetchFavorites } = useAppContext();
     const haptics = useHaptics();
 
@@ -86,6 +86,11 @@ export default function Settings({ appConfig, setDismiss }) {
         haptics.selection();
         setThemeMode(mode);
     }, [setThemeMode, haptics]);
+
+    const handleSoundEffectChange = useCallback((effect) => {
+        haptics.selection();
+        setSoundEffect(effect);
+    }, [setSoundEffect, haptics]);
 
     const openGitHub = useCallback(() => {
         haptics.light();
@@ -153,6 +158,37 @@ export default function Settings({ appConfig, setDismiss }) {
                                 trackColor={{ false: colors.divider, true: colors.primary }}
                                 thumbColor={hapticsEnabled ? colors.surface : colors.textMuted}
                             />
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.settingGroup}>
+                            <Text style={[styles.settingLabel, { color: colors.text }]}>Favorite Sound Effect</Text>
+                            <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                                Sound to play when adding favorites (only when haptics are off)
+                            </Text>
+
+                            {Object.entries(SOUND_EFFECTS).map(([key, value]) => (
+                                <PressableOpacity
+                                    key={key}
+                                    style={styles.frequencyOption}
+                                    onPress={() => handleSoundEffectChange(value)}
+                                >
+                                    <View style={styles.radioRow}>
+                                        <View style={[
+                                            styles.radio,
+                                            { borderColor: colors.primary }
+                                        ]}>
+                                            {soundEffect === value && (
+                                                <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
+                                            )}
+                                        </View>
+                                        <Text style={[styles.frequencyLabel, { color: colors.text }]}>
+                                            {key.charAt(0) + key.slice(1).toLowerCase()}
+                                        </Text>
+                                    </View>
+                                </PressableOpacity>
+                            ))}
                         </View>
                     </View>
 
@@ -336,6 +372,14 @@ const styles = StyleSheet.create({
     },
     frequencyPercentage: {
         fontSize: 14,
+    },
+    divider: {
+        height: StyleSheet.hairlineWidth,
+        backgroundColor: '#e0e0e0',
+        marginVertical: 16,
+    },
+    settingGroup: {
+        marginTop: 8,
     },
     dangerButton: {
         backgroundColor: '#dc3545',

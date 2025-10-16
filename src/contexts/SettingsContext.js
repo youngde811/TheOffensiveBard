@@ -30,23 +30,32 @@ export const EASTER_EGG_FREQUENCY = {
   MANY: { label: 'Many', percentage: 0.15 },     // 15%
 };
 
+// Sound effect types
+export const SOUND_EFFECTS = {
+  CHIME: 'chime',
+  POP: 'pop',
+};
+
 const SETTINGS_KEYS = {
   HAPTICS_ENABLED: '@insolentbard:settings:haptics',
   EASTER_EGG_FREQUENCY: '@insolentbard:settings:easterEggFrequency',
+  SOUND_EFFECT: '@insolentbard:settings:soundEffect',
 };
 
 export function SettingsProvider({ children }) {
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [easterEggFrequency, setEasterEggFrequency] = useState('NORMAL');
+  const [soundEffect, setSoundEffect] = useState(SOUND_EFFECTS.CHIME);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from AsyncStorage on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [haptics, frequency] = await Promise.all([
+        const [haptics, frequency, sound] = await Promise.all([
           AsyncStorage.getItem(SETTINGS_KEYS.HAPTICS_ENABLED),
           AsyncStorage.getItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY),
+          AsyncStorage.getItem(SETTINGS_KEYS.SOUND_EFFECT),
         ]);
 
         if (haptics !== null) {
@@ -54,6 +63,9 @@ export function SettingsProvider({ children }) {
         }
         if (frequency !== null) {
           setEasterEggFrequency(frequency);
+        }
+        if (sound !== null) {
+          setSoundEffect(sound);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -92,12 +104,24 @@ export function SettingsProvider({ children }) {
     return Math.floor(insultCount * percentage);
   }, [easterEggFrequency]);
 
+  // Set sound effect preference
+  const setSoundEffectPref = useCallback(async (effect) => {
+    try {
+      setSoundEffect(effect);
+      await AsyncStorage.setItem(SETTINGS_KEYS.SOUND_EFFECT, effect);
+    } catch (error) {
+      console.error('Error saving sound effect setting:', error);
+    }
+  }, []);
+
   const value = {
     hapticsEnabled,
     toggleHaptics,
     easterEggFrequency,
     setEasterEggFrequency: setEasterEggFreq,
     getEasterEggCount,
+    soundEffect,
+    setSoundEffect: setSoundEffectPref,
     isLoading,
   };
 

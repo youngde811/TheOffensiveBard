@@ -22,9 +22,9 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **Save Favorites** - Long-press any insult to save it for later
 - **Bulk Operations** - Select and share/forget multiple favorites at once
 - **Seasonal Easter Eggs** - Discover random insults with elegant overlay surprises
-- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, manage favorites
+- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, choose sound effects
+- **Sound Effects** - Audible feedback when adding favorites (when haptics are off) with choice of chime or pop
 - **Dark Mode** - Automatic light/dark theme matching your device settings
-- **Parchment Aesthetic** - Weathered borders for authentic Shakespearean feel
 - **Optimized Performance** - FlashList rendering for smooth scrolling, only 0.81MB data file
 
 ### Tech Stack
@@ -33,7 +33,8 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **FlashList** for optimized list rendering with 1,000+ items
 - **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
 - **Custom Hooks Architecture** for clean state management
-  - `useClipboard`, `useShare`, `useHaptics`, `useSettings`, `useAppContext`
+  - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`
+- **expo-av** for audio playback with configurable sound effects
 - **AsyncStorage** for persistent favorites and settings
 - **Context Providers** - Theme, Settings, and App state management
 - **Theme System** with automatic dark/light mode detection
