@@ -24,62 +24,62 @@ import styles from '../styles/styles.js';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function SearchBar({ isVisible, searchQuery, onSearchChange, onClear, resultCount }) {
-    const { colors } = useTheme();
-    const slideAnim = useRef(new Animated.Value(0)).current;
-    const inputRef = useRef(null);
+  const { colors } = useTheme();
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const inputRef = useRef(null);
 
-    useEffect(() => {
-        Animated.timing(slideAnim, {
-            toValue: isVisible ? 1 : 0,
-            duration: 300,
-            useNativeDriver: false,
-        }).start();
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: isVisible ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
 
-        if (isVisible) {
-            setTimeout(() => inputRef.current?.focus(), 300);
-        }
-    }, [isVisible]);
-
-    const height = slideAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 60],
-    });
-
-    const opacity = slideAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, 1],
-    });
-
-    if (!isVisible && searchQuery === '') {
-        return null;
+    if (isVisible) {
+      setTimeout(() => inputRef.current?.focus(), 300);
     }
+  }, [isVisible]);
 
-    return (
-        <Animated.View style={[styles.searchBarContainer, { height, opacity, backgroundColor: colors.surface }]}>
-            <View style={styles.searchBarContent}>
-                <Ionicons name="search" size={20} color={colors.primary} style={styles.searchIcon} />
-                <TextInput
-                    ref={inputRef}
-                    style={[styles.searchInput, { color: colors.text }]}
-                    placeholder="Search insults..."
-                    placeholderTextColor={colors.textMuted}
-                    value={searchQuery}
-                    onChangeText={onSearchChange}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    returnKeyType="search"
-                />
-                {searchQuery.length > 0 && (
-                    <>
-                        <Text style={[styles.searchResultCount, { color: colors.primary }]}>
-                            {resultCount}
-                        </Text>
-                        <TouchableOpacity onPress={onClear} style={styles.searchClearButton}>
-                            <Ionicons name="close-circle" size={20} color={colors.textMuted} />
-                        </TouchableOpacity>
-                    </>
-                )}
-            </View>
-        </Animated.View>
-    );
+  const height = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 60],
+  });
+
+  const opacity = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  if (!isVisible && searchQuery === '') {
+    return null;
+  }
+
+  return (
+    <Animated.View style={[styles.searchBarContainer, { height, opacity, backgroundColor: colors.surface }]}>
+      <View style={styles.searchBarContent}>
+        <Ionicons name="search" size={20} color={colors.primary} style={styles.searchIcon} />
+        <TextInput
+          ref={inputRef}
+          style={[styles.searchInput, { color: colors.text }]}
+          placeholder="Search insults..."
+          placeholderTextColor={colors.textMuted}
+          value={searchQuery}
+          onChangeText={onSearchChange}
+          autoCapitalize="none"
+          autoCorrect={false}
+          returnKeyType="search"
+        />
+        {searchQuery.length > 0 && (
+          <>
+            <Text style={[styles.searchResultCount, { color: colors.primary }]}>
+              {resultCount}
+            </Text>
+            <TouchableOpacity onPress={onClear} style={styles.searchClearButton}>
+              <Ionicons name="close-circle" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          </>
+        )}
+      </View>
+    </Animated.View>
+  );
 }

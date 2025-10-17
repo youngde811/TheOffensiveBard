@@ -24,6 +24,7 @@ export const useShare = () => {
   const shareText = useCallback(async (text, options = {}) => {
     if (!text) {
       console.warn('No text provided to share');
+      
       return false;
     }
 
@@ -48,19 +49,23 @@ export const useShare = () => {
           // Shared (Android)
           console.log('Content shared successfully');
         }
+        
         return true;
       } else if (result.action === Share.dismissedAction) {
         // User dismissed the share sheet
         console.log('Share cancelled');
+        
         return false;
       }
     } catch (error) {
       console.error('Error sharing:', error);
+      
       Alert.alert(
         'Share Failed',
         'Unable to share this content. Please try again.',
         [{ text: 'OK' }]
       );
+      
       return false;
     }
   }, []);

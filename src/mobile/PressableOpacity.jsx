@@ -20,49 +20,49 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 import { Animated, Pressable } from 'react-native';
 
 export default function PressableOpacity({ children, ...props }) {
-    const opacity = useRef(new Animated.Value(1)).current;
-    const scale = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(1)).current;
 
-    const fadeIn = () => {
-        Animated.parallel([
-            Animated.timing(opacity, {
-                toValue: 0.5,
-                duration: 100,
-                useNativeDriver: true
-            }),
-            Animated.spring(scale, {
-                toValue: 0.95,
-                useNativeDriver: true,
-                friction: 5,
-            })
-        ]).start();
-    };
+  const fadeIn = () => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 0.5,
+        duration: 100,
+        useNativeDriver: true
+      }),
+      Animated.spring(scale, {
+        toValue: 0.95,
+        useNativeDriver: true,
+        friction: 5,
+      })
+    ]).start();
+  };
 
-    const fadeOut = () => {
-        Animated.parallel([
-            Animated.timing(opacity, {
-                toValue: 1,
-                duration: 200,
-                useNativeDriver: true
-            }),
-            Animated.spring(scale, {
-                toValue: 1,
-                useNativeDriver: true,
-                friction: 5,
-            })
-        ]).start();
-    };
+  const fadeOut = () => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        useNativeDriver: true,
+        friction: 5,
+      })
+    ]).start();
+  };
 
-    return (
-        <Pressable onPressIn={ fadeIn } onPressOut={ fadeOut } { ...props }>
-          <Animated.View style={{ opacity: opacity, transform: [{ scale: scale }] }}>
-            { children }
-          </Animated.View>
-        </Pressable>
-    );
+  return (
+    <Pressable onPressIn={fadeIn} onPressOut={fadeOut} {...props}>
+      <Animated.View style={{ opacity: opacity, transform: [{ scale: scale }] }}>
+        {children}
+      </Animated.View>
+    </Pressable>
+  );
 };

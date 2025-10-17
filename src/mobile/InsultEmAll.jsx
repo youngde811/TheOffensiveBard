@@ -24,7 +24,6 @@ import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 
 import { Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
-import { Surface } from 'react-native-paper';
 import { FlashList } from "@shopify/flash-list";
 
 import * as Linking from 'expo-linking';
@@ -49,257 +48,251 @@ import { useSettings } from '../contexts/SettingsContext';
 import * as Utilities from '../utils/utilities';
 
 export default function InsultEmAll({ insults, appConfig, onRefresh }) {
-    const { season, smstag, addFavorite } = useAppContext();
-    const { writeToClipboard } = useClipboard();
-    const { shareInsult } = useShare();
-    const haptics = useHaptics();
-    const { playFavoriteSound } = useSound();
-    const { colors } = useTheme();
-    const { getEasterEggCount } = useSettings();
+  const { season, smstag, addFavorite } = useAppContext();
+  const { writeToClipboard } = useClipboard();
+  const { shareInsult } = useShare();
+  
+  const haptics = useHaptics();
 
-    const [selectedInsults, setSelectedInsults] = useState([]);
-    const [listVerticalOffset, setListVerticalOffset] = useState(0);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [isSearchVisible, setIsSearchVisible] = useState(false);
-    const [easterEggIndices, setEasterEggIndices] = useState(new Set());
-    const [overlayVisible, setOverlayVisible] = useState(false);
-    const [overlayInsult, setOverlayInsult] = useState('');
-    const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
+  const { playFavoriteSound } = useSound();
+  const { colors } = useTheme();
+  const { getEasterEggCount } = useSettings();
 
-    const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
+  const [selectedInsults, setSelectedInsults] = useState([]);
+  const [listVerticalOffset, setListVerticalOffset] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [easterEggIndices, setEasterEggIndices] = useState(new Set());
+  const [overlayVisible, setOverlayVisible] = useState(false);
+  const [overlayInsult, setOverlayInsult] = useState('');
+  const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
 
-    // Select random insults for easter eggs based on settings
-    useEffect(() => {
-        const selectRandomEggs = () => {
-            const eggCount = getEasterEggCount(insults.length);
-            const indices = new Set();
-            const maxIndex = insults.length;
+  const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
 
-            if (eggCount === 0) {
-                setEasterEggIndices(new Set());
-                return;
-            }
+  // Select random insults for easter eggs based on settings
+  useEffect(() => {
+    const selectRandomEggs = () => {
+      const eggCount = getEasterEggCount(insults.length);
+      const indices = new Set();
+      const maxIndex = insults.length;
 
-            while (indices.size < eggCount) {
-                const randomIndex = Math.floor(Math.random() * maxIndex);
-                indices.add(randomIndex);
-            }
+      if (eggCount === 0) {
+        setEasterEggIndices(new Set());
+        
+        return;
+      }
 
-            setEasterEggIndices(indices);
-        };
+      while (indices.size < eggCount) {
+        const randomIndex = Math.floor(Math.random() * maxIndex);
+        indices.add(randomIndex);
+      }
 
-        selectRandomEggs();
-    }, [insults, getEasterEggCount]);
+      setEasterEggIndices(indices);
+    };
 
-    // Filter insults based on search query
-    const filteredInsults = useMemo(() => {
-        if (!searchQuery.trim()) {
-            return insults;
-        }
-        const query = searchQuery.toLowerCase();
-        return insults.filter(item =>
-            item.insult.toLowerCase().includes(query)
-        );
-    }, [insults, searchQuery]);
+    selectRandomEggs();
+  }, [insults, getEasterEggCount]);
 
-    const memoizedInsults = useMemo(() => filteredInsults, [filteredInsults]);
+  // Filter insults based on search query
+  const filteredInsults = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return insults;
+    }
+    
+    const query = searchQuery.toLowerCase();
 
-    const listThreshold = 300;
-    const listRef = useRef(null);
+    return insults.filter(item =>
+      item.insult.toLowerCase().includes(query)
+    );
+  }, [insults, searchQuery]);
 
-    const insultSelect = useCallback((item) => {
-        haptics.selection();
+  const memoizedInsults = useMemo(() => filteredInsults, [filteredInsults]);
 
-        const isSelected = selectedInsults.some(selected => selected === item.insult);
+  const listThreshold = 300;
+  const listRef = useRef(null);
 
-        if (isSelected) {
-            // Remove from selection
-            setSelectedInsults(selectedInsults.filter(selected => selected !== item.insult));
-        } else {
-            // Add to selection
-            const newSelection = [...selectedInsults, item.insult];
-            setSelectedInsults(newSelection);
-            // Copy all selected insults to clipboard
-            writeToClipboard(newSelection.join('\n'));
-        }
-    }, [selectedInsults, writeToClipboard, haptics]);
+  const insultSelect = useCallback((item) => {
+    haptics.selection();
 
-    const showEasterEgg = useCallback((item, position) => {
-        haptics.light();
-        setOverlayPosition(position);
-        setOverlayInsult(item.insult);
-        setOverlayVisible(true);
-    }, [haptics]);
+    const isSelected = selectedInsults.some(selected => selected === item.insult);
 
-    const storeFavorite = useCallback(async (item) => {
-        const success = await addFavorite(item);
-        if (success) {
-            haptics.success();
-            await playFavoriteSound();
-        }
-    }, [addFavorite, haptics, playFavoriteSound]);
+    if (isSelected) {
+      // Remove from selection
+      setSelectedInsults(selectedInsults.filter(selected => selected !== item.insult));
+    } else {
+      // Add to selection
+      const newSelection = [...selectedInsults, item.insult];
+      setSelectedInsults(newSelection);
+      
+      // Copy all selected insults to clipboard
+      writeToClipboard(newSelection.join('\n'));
+    }
+  }, [selectedInsults, writeToClipboard, haptics]);
 
-    const renderInsult = useCallback(({ item, index }) => {
-        const hasEgg = easterEggIndices.has(index);
-        const isSelected = selectedInsults.some(selected => selected === item.insult);
+  const showEasterEgg = useCallback((item, position) => {
+    haptics.light();
+    setOverlayPosition(position);
+    setOverlayInsult(item.insult);
+    setOverlayVisible(true);
+  }, [haptics]);
 
-        return (
-            <View style={ styles.insultItemContainer }>
-              <PressableOpacity
-                style={ null }
-                onPress={ () => insultSelect(item) }
-                onLongPress={ () => storeFavorite(item) }
-                delayLongPress={ 500 }>
-                <ScalableText style={[
-                  isSelected ? styles.insultSelectedText : styles.insultText,
-                  { color: isSelected ? colors.textSelected : colors.text }
-                ]}>
-                  { item.insult }
-                </ScalableText>
-              </PressableOpacity>
-              <TouchableIcon
-                visible={ hasEgg }
-                iconName={ seasonalIcon }
-                onPress={ (position) => showEasterEgg(item, position) }/>
-            </View>
-        );
-    }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
+  const storeFavorite = useCallback(async (item) => {
+    const success = await addFavorite(item);
+    
+    if (success) {
+      haptics.success();
 
-    const insultSeparator = useCallback(() => {
-        return (
-            <Divider width={ 1 } color={ colors.divider }/>
-        );
-    }, [colors]);
+      await playFavoriteSound();
+    }
+  }, [addFavorite, haptics, playFavoriteSound]);
 
-    const sendInsult = useCallback(() => {
-        if (selectedInsults.length > 0) {
-            haptics.medium();
-            const combinedInsults = selectedInsults.join('\n');
-            Linking.openURL(smstag + combinedInsults);
-        }
-    }, [selectedInsults, smstag, haptics]);
-
-    const handleShare = useCallback(async () => {
-        if (selectedInsults.length > 0) {
-            haptics.medium();
-            const combinedInsults = selectedInsults.join('\n');
-            await shareInsult(combinedInsults);
-        }
-    }, [selectedInsults, shareInsult, haptics]);
-
-    const scrollToTop = useCallback(() => {
-        listRef.current?.scrollToOffset({ offset: 0, animated: true });
-    }, []);
-
-    const extractKeys = useCallback((item) => {
-        return item.id;
-    }, []);
-
-    const setVerticalOffset = useCallback((event) => {
-        setListVerticalOffset(event.nativeEvent.contentOffset.y);
-    }, []);
-
-    const toggleSearch = useCallback(() => {
-        haptics.light();
-        setIsSearchVisible(!isSearchVisible);
-        if (isSearchVisible && searchQuery) {
-            setSearchQuery('');
-        }
-    }, [isSearchVisible, searchQuery, haptics]);
-
-    const clearSearch = useCallback(() => {
-        haptics.light();
-        setSearchQuery('');
-    }, [haptics]);
-
-    const handleRefresh = useCallback(() => {
-        haptics.medium();
-        // Call parent's refresh function to reload insults
-        if (onRefresh) {
-            onRefresh();
-        }
-        // Easter eggs will be re-selected automatically via useEffect when insults change
-    }, [onRefresh, haptics]);
-
-    const renderListHeader = useCallback(() => {
-        return (
-            <>
-              <InsultsHeader
-                appConfig={ appConfig }
-                onSearchPress={ toggleSearch }
-                isSearchActive={ isSearchVisible }
-              />
-              <SearchBar
-                isVisible={ isSearchVisible }
-                searchQuery={ searchQuery }
-                onSearchChange={ setSearchQuery }
-                onClear={ clearSearch }
-                resultCount={ filteredInsults.length }
-              />
-            </>
-        );
-    }, [appConfig, toggleSearch, isSearchVisible, searchQuery, filteredInsults.length, clearSearch]);
+  const renderInsult = useCallback(({ item, index }) => {
+    const hasEgg = easterEggIndices.has(index);
+    const isSelected = selectedInsults.some(selected => selected === item.insult);
 
     return (
-        <View style={ styles.insultTopView }>
-          <View style={{ zIndex: 1000, elevation: 10 }}>
-            <InsultsHeader
-              appConfig={ appConfig }
-              onRefreshPress={ handleRefresh }
-              onSearchPress={ toggleSearch }
-              isSearchActive={ isSearchVisible }
-            />
-            <SearchBar
-              isVisible={ isSearchVisible }
-              searchQuery={ searchQuery }
-              onSearchChange={ setSearchQuery }
-              onClear={ clearSearch }
-              resultCount={ filteredInsults.length }
-            />
-          </View>
-          <View style={ styles.insultSurfaceParent }>
-            <View style={ [styles.insultSurface, { backgroundColor: colors.surface }] }>
-              <View style={ styles.flatList }>
-                <FlashList
-                  ref={ listRef }
-                  ItemSeparatorComponent={ insultSeparator }
-                  onScroll={ setVerticalOffset }
-                  data={ memoizedInsults }
-                  keyExtractor={ extractKeys }
-                  showsVerticalScrollIndicator={ true }
-                  estimatedItemSize={ 40 }
-                  extraData={ selectedInsults }
-                  contentContainerStyle={{ paddingTop: 10 }}
-                  renderItem={ renderInsult }/>
-                { listVerticalOffset > listThreshold && (
-                    <FloatingPressable onPress={ scrollToTop }/>
-                )}
-              </View>
-            </View>
-          </View>
-          <View style={ styles.insultFooter }>
-            <PressableOpacity
-              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
-              title={ 'SMS' }
-              onPress={ sendInsult }
-              disabled={ selectedInsults.length === 0 }>
-              <Text style={ styles.insultButtonText }>SMS</Text>
-            </PressableOpacity>
-            <View style={ styles.spacer }/>
-            <PressableOpacity
-              style={ selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons }
-              title={ 'Share' }
-              onPress={ handleShare }
-              disabled={ selectedInsults.length === 0 }>
-              <Text style={ styles.insultButtonText }>Share</Text>
-            </PressableOpacity>
-          </View>
-          <OldEnglishOverlay
-            insultText={ overlayInsult }
-            visible={ overlayVisible }
-            onDismiss={ () => setOverlayVisible(false) }
-            position={ overlayPosition }
-          />
-        </View>
+      <View style={styles.insultItemContainer}>
+        <PressableOpacity
+          style={null}
+          onPress={() => insultSelect(item)}
+          onLongPress={() => storeFavorite(item)}
+          delayLongPress={500}>
+          <ScalableText style={[
+            isSelected ? styles.insultSelectedText : styles.insultText,
+            { color: isSelected ? colors.textSelected : colors.text }
+          ]}>
+            {item.insult}
+          </ScalableText>
+        </PressableOpacity>
+        <TouchableIcon
+          visible={hasEgg}
+          iconName={seasonalIcon}
+          onPress={(position) => showEasterEgg(item, position)} />
+      </View>
     );
+  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
+
+  const insultSeparator = useCallback(() => {
+    return (
+      <Divider width={1} color={colors.divider} />
+    );
+  }, [colors]);
+
+  const sendInsult = useCallback(() => {
+    if (selectedInsults.length > 0) {
+      haptics.medium();
+      
+      const combinedInsults = selectedInsults.join('\n');
+      Linking.openURL(smstag + combinedInsults);
+    }
+  }, [selectedInsults, smstag, haptics]);
+
+  const handleShare = useCallback(async () => {
+    if (selectedInsults.length > 0) {
+      haptics.medium();
+      
+      const combinedInsults = selectedInsults.join('\n');
+      await shareInsult(combinedInsults);
+    }
+  }, [selectedInsults, shareInsult, haptics]);
+
+  const scrollToTop = useCallback(() => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  }, []);
+
+  const extractKeys = useCallback((item) => {
+    return item.id;
+  }, []);
+
+  const setVerticalOffset = useCallback((event) => {
+    setListVerticalOffset(event.nativeEvent.contentOffset.y);
+  }, []);
+
+  const toggleSearch = useCallback(() => {
+    haptics.light();
+    
+    setIsSearchVisible(!isSearchVisible);
+
+    if (isSearchVisible && searchQuery) {
+      setSearchQuery('');
+    }
+  }, [isSearchVisible, searchQuery, haptics]);
+
+  const clearSearch = useCallback(() => {
+    haptics.light();
+    
+    setSearchQuery('');
+  }, [haptics]);
+
+  const handleRefresh = useCallback(() => {
+    haptics.medium();
+    // Call parent's refresh function to reload insults
+    if (onRefresh) {
+      onRefresh();
+    }
+    // Easter eggs will be re-selected automatically via useEffect when insults change
+  }, [onRefresh, haptics]);
+
+  return (
+    <View style={styles.insultTopView}>
+      <View style={{ zIndex: 1000, elevation: 10 }}>
+        <InsultsHeader
+          appConfig={appConfig}
+          onRefreshPress={handleRefresh}
+          onSearchPress={toggleSearch}
+          isSearchActive={isSearchVisible}
+        />
+        <SearchBar
+          isVisible={isSearchVisible}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onClear={clearSearch}
+          resultCount={filteredInsults.length}
+        />
+      </View>
+      <View style={styles.insultSurfaceParent}>
+        <View style={[styles.insultSurface, { backgroundColor: colors.surface }]}>
+          <View style={styles.flatList}>
+            <FlashList
+              ref={listRef}
+              ItemSeparatorComponent={insultSeparator}
+              onScroll={setVerticalOffset}
+              data={memoizedInsults}
+              keyExtractor={extractKeys}
+              showsVerticalScrollIndicator={true}
+              estimatedItemSize={40}
+              extraData={selectedInsults}
+              contentContainerStyle={{ paddingTop: 10 }}
+              renderItem={renderInsult} />
+            {listVerticalOffset > listThreshold && (
+              <FloatingPressable onPress={scrollToTop} />
+            )}
+          </View>
+        </View>
+      </View>
+      <View style={styles.insultFooter}>
+        <PressableOpacity
+          style={selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons}
+          title={'SMS'}
+          onPress={sendInsult}
+          disabled={selectedInsults.length === 0}>
+          <Text style={styles.insultButtonText}>SMS</Text>
+        </PressableOpacity>
+        <View style={styles.spacer} />
+        <PressableOpacity
+          style={selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons}
+          title={'Share'}
+          onPress={handleShare}
+          disabled={selectedInsults.length === 0}>
+          <Text style={styles.insultButtonText}>Share</Text>
+        </PressableOpacity>
+      </View>
+      <OldEnglishOverlay
+        insultText={overlayInsult}
+        visible={overlayVisible}
+        onDismiss={() => setOverlayVisible(false)}
+        position={overlayPosition}
+      />
+    </View>
+  );
 }

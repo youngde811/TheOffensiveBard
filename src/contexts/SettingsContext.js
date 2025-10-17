@@ -91,6 +91,7 @@ export function SettingsProvider({ children }) {
     try {
       const newValue = !hapticsEnabled;
       setHapticsEnabled(newValue);
+      
       await AsyncStorage.setItem(SETTINGS_KEYS.HAPTICS_ENABLED, JSON.stringify(newValue));
     } catch (error) {
       console.error('Error saving haptics setting:', error);
@@ -101,6 +102,7 @@ export function SettingsProvider({ children }) {
   const setEasterEggFreq = useCallback(async (frequency) => {
     try {
       setEasterEggFrequency(frequency);
+      
       await AsyncStorage.setItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY, frequency);
     } catch (error) {
       console.error('Error saving easter egg frequency:', error);
@@ -110,6 +112,7 @@ export function SettingsProvider({ children }) {
   // Calculate number of easter eggs based on insult count
   const getEasterEggCount = useCallback((insultCount) => {
     const percentage = EASTER_EGG_FREQUENCY[easterEggFrequency].percentage;
+    
     return Math.floor(insultCount * percentage);
   }, [easterEggFrequency]);
 
@@ -117,6 +120,7 @@ export function SettingsProvider({ children }) {
   const setSoundEffectPref = useCallback(async (effect) => {
     try {
       setSoundEffect(effect);
+      
       await AsyncStorage.setItem(SETTINGS_KEYS.SOUND_EFFECT, effect);
     } catch (error) {
       console.error('Error saving sound effect setting:', error);
@@ -127,6 +131,7 @@ export function SettingsProvider({ children }) {
   const setSoundVolumePref = useCallback(async (volume) => {
     try {
       setSoundVolume(volume);
+      
       await AsyncStorage.setItem(SETTINGS_KEYS.SOUND_VOLUME, volume.toString());
     } catch (error) {
       console.error('Error saving sound volume setting:', error);
@@ -155,8 +160,10 @@ export function SettingsProvider({ children }) {
 
 export function useSettings() {
   const context = useContext(SettingsContext);
+  
   if (!context) {
     throw new Error('useSettings must be used within SettingsProvider');
   }
+
   return context;
 }

@@ -20,15 +20,15 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Icon } from '@rneui/themed';
 
 import styles from '../styles/styles.js';
 
 export default function FloatingPressable({ onPress }) {
-    return (
-        <Icon name="north" type="material" raised={ true } reverse={ false } size={ 14 } containerStyle={ styles.floatingPressable }
-              onPress={ () => onPress() }/>
-    );
+  return (
+    <Icon name="north" type="material" raised={true} reverse={false} size={14} containerStyle={styles.floatingPressable}
+      onPress={() => onPress()} />
+  );
 };
