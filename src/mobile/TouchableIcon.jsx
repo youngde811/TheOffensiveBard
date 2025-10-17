@@ -30,21 +30,33 @@ import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
 import styles from '../styles/styles.js';
 
-export default function TouchableIcon({ visible, iconName, onPress, ...props }) {
+export default function TouchableIcon({ visible, iconName, onPress, onLongPress, ...props }) {
     const viewRef = useRef(null);
 
     const handlePress = () => {
-        if (viewRef.current) {
+        if (viewRef.current && onPress) {
             viewRef.current.measure((x, y, width, height, pageX, pageY) => {
                 onPress({ x: pageX, y: pageY });
             });
         }
     };
 
+    const handleLongPress = () => {
+        if (onLongPress) {
+            onLongPress();
+        }
+    };
+
     return (visible ?
             <View ref={viewRef} style={ styles.touchableIconView }>
               <IconButton
-                icon={ props => <Icon name={ iconName } { ...props }/> } color="orchid" opacity={ 0.4 } onPress={ handlePress }/>
+                icon={ props => <Icon name={ iconName } { ...props }/> }
+                color="orchid"
+                opacity={ 0.4 }
+                onPress={ handlePress }
+                onLongPress={ handleLongPress }
+                delayLongPress={ 500 }
+              />
             </View>
             :
             <View style={ styles.touchableSpacerView }/>

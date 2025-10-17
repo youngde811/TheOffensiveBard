@@ -22,9 +22,10 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
-import { Text, View } from 'react-native';
+import { Text, View, TouchableOpacity } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { FlashList } from "@shopify/flash-list";
+import { Ionicons } from '@expo/vector-icons';
 
 import * as Linking from 'expo-linking';
 
@@ -36,6 +37,7 @@ import OldEnglishOverlay from './OldEnglishOverlay';
 import ScalableText from 'react-native-text';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
+import InsultImageTemplate from '../components/InsultImageTemplate';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
@@ -44,6 +46,8 @@ import { useHaptics } from '../hooks/useHaptics';
 import { useSound } from '../hooks/useSound';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
+import { useImageShare } from '../hooks/useImageShare';
 
 import * as Utilities from '../utils/utilities';
 
@@ -57,8 +61,11 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
   const { playFavoriteSound } = useSound();
   const { colors } = useTheme();
   const { getEasterEggCount } = useSettings();
+  const { currentInsult: insultOfTheHour, isRefreshing, refreshInsult } = useInsultOfTheHour(insults);
+  const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
   const [selectedInsults, setSelectedInsults] = useState([]);
+  const [insultToShare, setInsultToShare] = useState(null);
   const [listVerticalOffset, setListVerticalOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchVisible, setIsSearchVisible] = useState(false);
@@ -136,6 +143,12 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     setOverlayVisible(true);
   }, [haptics]);
 
+  const shareEasterEgg = useCallback((item) => {
+    haptics.medium();
+    const insultText = item.insult || item;
+    setInsultToShare(insultText);
+  }, [haptics]);
+
   const storeFavorite = useCallback(async (item) => {
     const success = await addFavorite(item);
     
@@ -167,10 +180,11 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
         <TouchableIcon
           visible={hasEgg}
           iconName={seasonalIcon}
-          onPress={(position) => showEasterEgg(item, position)} />
+          onPress={(position) => showEasterEgg(item, position)}
+          onLongPress={() => shareEasterEgg(item)} />
       </View>
     );
-  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, colors, easterEggIndices]);
+  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, shareEasterEgg, colors, easterEggIndices]);
 
   const insultSeparator = useCallback(() => {
     return (
@@ -233,6 +247,29 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     // Easter eggs will be re-selected automatically via useEffect when insults change
   }, [onRefresh, haptics]);
 
+  const handleInsultOfTheHourPress = useCallback(async () => {
+    if (insultOfTheHour) {
+      haptics.light();
+      const insultText = insultOfTheHour.insult || insultOfTheHour;
+      setInsultToShare(insultText);
+    }
+  }, [insultOfTheHour, haptics]);
+
+  const handleShareInsultAsImage = useCallback((item) => {
+    haptics.light();
+    const insultText = item.insult || item;
+    setInsultToShare(insultText);
+  }, [haptics]);
+
+  // Trigger image sharing when insultToShare is set
+  useEffect(() => {
+    if (insultToShare && !isGenerating) {
+      shareAsImage(insultToShare).then(() => {
+        setInsultToShare(null);
+      });
+    }
+  }, [insultToShare, isGenerating, shareAsImage]);
+
   return (
     <View style={styles.insultTopView}>
       <View style={{ zIndex: 1000, elevation: 10 }}>
@@ -241,6 +278,9 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
           onRefreshPress={handleRefresh}
           onSearchPress={toggleSearch}
           isSearchActive={isSearchVisible}
+          insultOfTheHour={insultOfTheHour}
+          isRefreshing={isRefreshing}
+          onInsultPress={handleInsultOfTheHourPress}
         />
         <SearchBar
           isVisible={isSearchVisible}
@@ -293,6 +333,12 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
         onDismiss={() => setOverlayVisible(false)}
         position={overlayPosition}
       />
+      {/* Hidden view for image generation */}
+      <View style={{ position: 'absolute', left: -10000, top: -10000 }} collapsable={false}>
+        <View ref={imageRef} collapsable={false}>
+          <InsultImageTemplate insultText={insultToShare || ''} />
+        </View>
+      </View>
     </View>
   );
 }
