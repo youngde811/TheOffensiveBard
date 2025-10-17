@@ -44,6 +44,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import { useSound } from '../hooks/useSound';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
+import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 
 import * as Utilities from '../utils/utilities';
 
@@ -57,6 +58,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
   const { playFavoriteSound } = useSound();
   const { colors } = useTheme();
   const { getEasterEggCount } = useSettings();
+  const { currentInsult: insultOfTheHour, isRefreshing, refreshInsult } = useInsultOfTheHour(insults);
 
   const [selectedInsults, setSelectedInsults] = useState([]);
   const [listVerticalOffset, setListVerticalOffset] = useState(0);
@@ -233,6 +235,15 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     // Easter eggs will be re-selected automatically via useEffect when insults change
   }, [onRefresh, haptics]);
 
+  const handleInsultOfTheHourPress = useCallback(async () => {
+    if (insultOfTheHour) {
+      haptics.light();
+      // For now, share as text. Will be replaced with image sharing later
+      const insultText = insultOfTheHour.insult || insultOfTheHour;
+      await shareInsult(insultText);
+    }
+  }, [insultOfTheHour, shareInsult, haptics]);
+
   return (
     <View style={styles.insultTopView}>
       <View style={{ zIndex: 1000, elevation: 10 }}>
@@ -241,6 +252,9 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
           onRefreshPress={handleRefresh}
           onSearchPress={toggleSearch}
           isSearchActive={isSearchVisible}
+          insultOfTheHour={insultOfTheHour}
+          isRefreshing={isRefreshing}
+          onInsultPress={handleInsultOfTheHourPress}
         />
         <SearchBar
           isVisible={isSearchVisible}

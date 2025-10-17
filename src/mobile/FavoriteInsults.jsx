@@ -42,14 +42,16 @@ import { useClipboard } from '../hooks/useClipboard';
 import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
+import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 
 export default function FavoriteInsults({ appConfig, setDismiss }) {
     const { colors } = useTheme();
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
-  
+
     const haptics = useHaptics();
+    const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
 
     const [selectedInsults, setSelectedInsults] = useState([]);
 
@@ -121,11 +123,20 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const handleShare = useCallback(async () => {
         if (selectedInsults.length > 0) {
             haptics.medium();
-          
+
             const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
             await shareInsult(combinedInsults);
         }
     }, [selectedInsults, shareInsult, haptics]);
+
+    const handleInsultOfTheHourPress = useCallback(async () => {
+        if (insultOfTheHour) {
+            haptics.light();
+            // For now, share as text. Will be replaced with image sharing later
+            const insultText = insultOfTheHour.insult || insultOfTheHour;
+            await shareInsult(insultText);
+        }
+    }, [insultOfTheHour, shareInsult, haptics]);
 
     useEffect(() => {
         fetchFavorites();
@@ -161,7 +172,12 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
           <SafeAreaView style={ styles.favoritesTopView }>
             <StatusBar style="auto"/>
             <View style={{ zIndex: 1000, elevation: 10 }}>
-              <InsultsHeader appConfig={ appConfig }/>
+              <InsultsHeader
+                appConfig={appConfig}
+                insultOfTheHour={insultOfTheHour}
+                isRefreshing={isRefreshing}
+                onInsultPress={handleInsultOfTheHourPress}
+              />
             </View>
             { favorites.length === 0 && !isLoadingFavorites ?
               <NoFavorites/>

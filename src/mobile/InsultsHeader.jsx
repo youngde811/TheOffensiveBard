@@ -19,24 +19,66 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import styles from '../styles/styles.js';
-import { useAppContext } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress }) {
-  const { season, year } = useAppContext();
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, insultOfTheHour, isRefreshing, onInsultPress }) {
   const { colors } = useTheme();
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Animate when refreshing
+  useEffect(() => {
+    if (isRefreshing) {
+      Animated.sequence([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isRefreshing]);
+
+  // Truncate long insults with ellipsis
+  const truncateInsult = (insult, maxLength = 50) => {
+    if (!insult) return '';
+    const text = insult.insult || insult;
+    return text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : text;
+  };
 
   return (
     <View style={[styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }]}>
-      <Text style={[styles.listHeaderSeason, { color: colors.primary }]}>
-        {season + ", " + year}
-      </Text>
+      {insultOfTheHour ? (
+        <TouchableOpacity
+          onPress={onInsultPress}
+          style={{ flex: 1, marginRight: 8 }}
+          activeOpacity={0.7}
+        >
+          <Animated.Text
+            style={[
+              styles.listHeaderInsult,
+              {
+                color: colors.primary,
+                opacity: fadeAnim,
+              }
+            ]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {truncateInsult(insultOfTheHour)}
+          </Animated.Text>
+        </TouchableOpacity>
+      ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {onRefreshPress && (
           <TouchableOpacity style={styles.searchToggleButton} onPress={onRefreshPress}>

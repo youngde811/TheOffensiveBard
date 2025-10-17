@@ -182,6 +182,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         padding: 4,
     },
+    listHeaderInsult: {
+        fontFamily: 'BlackChancery',
+        fontSize: 16,
+        padding: 4,
+    },
     listHeaderTyrannis: {
         color: 'black',
         fontSize: 12,
