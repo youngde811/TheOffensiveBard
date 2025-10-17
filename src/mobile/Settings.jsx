@@ -63,14 +63,18 @@ export default function Settings({ appConfig, setDismiss }) {
             try {
               const keys = await AsyncStorage.getAllKeys();
               const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
+              
               await AsyncStorage.multiRemove(favoriteKeys);
               await fetchFavorites();
 
               haptics.success();
+              
               Alert.alert('Success', 'All favorites have been cleared.');
             } catch (error) {
               console.error('Error clearing favorites:', error);
+
               haptics.error();
+
               Alert.alert('Error', 'Failed to clear favorites. Please try again.');
             } finally {
               setIsClearing(false);
