@@ -23,10 +23,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
 import { Divider } from "@rneui/themed";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
+import { Ionicons } from '@expo/vector-icons';
 
 import ScalableText from 'react-native-text';
 
@@ -36,6 +37,7 @@ import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
 import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
+import InsultImageTemplate from '../components/InsultImageTemplate';
 
 import { useAppContext } from '../contexts/AppContext';
 import { useClipboard } from '../hooks/useClipboard';
@@ -43,6 +45,7 @@ import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
 import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
+import { useImageShare } from '../hooks/useImageShare';
 
 export default function FavoriteInsults({ appConfig, setDismiss }) {
     const { colors } = useTheme();
@@ -52,8 +55,10 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
 
     const haptics = useHaptics();
     const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
+    const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
     const [selectedInsults, setSelectedInsults] = useState([]);
+    const [insultToShare, setInsultToShare] = useState(null);
 
     const insultSelect = useCallback((item) => {
         haptics.selection();
@@ -79,13 +84,13 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         const isSelected = selectedInsults.some(selected => selected.id === item.id);
 
         return (
-            <View style={ styles.insultItemContainer }>
-              <PressableOpacity style={ null } onPress={ () => insultSelect(item) }>
+            <View style={styles.insultItemContainer}>
+              <PressableOpacity style={null} onPress={() => insultSelect(item)}>
                 <ScalableText style={[
                   isSelected ? styles.insultSelectedText : styles.insultText,
                   { color: isSelected ? colors.textSelected : colors.text }
                 ]}>
-                  { item.insult }
+                  {item.insult}
                 </ScalableText>
               </PressableOpacity>
             </View>
@@ -132,11 +137,25 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const handleInsultOfTheHourPress = useCallback(async () => {
         if (insultOfTheHour) {
             haptics.light();
-            // For now, share as text. Will be replaced with image sharing later
             const insultText = insultOfTheHour.insult || insultOfTheHour;
-            await shareInsult(insultText);
+            setInsultToShare(insultText);
         }
-    }, [insultOfTheHour, shareInsult, haptics]);
+    }, [insultOfTheHour, haptics]);
+
+    const handleShareInsultAsImage = useCallback((item) => {
+        haptics.light();
+        const insultText = item.insult || item;
+        setInsultToShare(insultText);
+    }, [haptics]);
+
+    // Trigger image sharing when insultToShare is set
+    useEffect(() => {
+        if (insultToShare && !isGenerating) {
+            shareAsImage(insultToShare).then(() => {
+                setInsultToShare(null);
+            });
+        }
+    }, [insultToShare, isGenerating, shareAsImage]);
 
     useEffect(() => {
         fetchFavorites();
@@ -223,6 +242,12 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
               </PressableOpacity>
             </View>
           </SafeAreaView>
+          {/* Hidden view for image generation */}
+          <View style={{ position: 'absolute', left: -10000, top: -10000 }} collapsable={false}>
+            <View ref={imageRef} collapsable={false}>
+              <InsultImageTemplate insultText={insultToShare || ''} />
+            </View>
+          </View>
         </View>
     );
 }
