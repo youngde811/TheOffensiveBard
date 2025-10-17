@@ -115,9 +115,9 @@ export default function Settings({ appConfig, setDismiss }) {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
         <StatusBar style="auto" />
-        <View style={{ zIndex: 1000, elevation: 10 }}>
+        <View style={{ zIndex: 1000, elevation: 10, marginTop: 4 }}>
           <InsultsHeader appConfig={appConfig} />
         </View>
 
