@@ -22,6 +22,8 @@
 import 'react-native-gesture-handler';
 
 import React from 'react';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
 
 import { AppProvider } from './src/contexts/AppContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
@@ -29,6 +31,9 @@ import { SettingsProvider } from './src/contexts/SettingsContext';
 
 import { Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+// Keep the splash screen visible while we load fonts
+SplashScreen.preventAutoHideAsync();
 
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { useNavigation, NavigationContainer } from '@react-navigation/native';
@@ -152,6 +157,20 @@ function ThemedDrawerNavigator() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    'BlackChancery': require('./assets/fonts/blkchcry.ttf'),
+  });
+
+  React.useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   const masterErrorHandler = (e, isFatal) => {
     if (isFatal) {
       Alert.alert(

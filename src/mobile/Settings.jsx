@@ -21,6 +21,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { View, Text, Alert, ScrollView, Linking, StyleSheet, Switch } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
@@ -36,7 +37,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
     const { colors, themePreference, setThemeMode } = useTheme();
-    const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect } = useSettings();
+    const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
     const { keyPrefix, fetchFavorites } = useAppContext();
     const haptics = useHaptics();
 
@@ -91,6 +92,14 @@ export default function Settings({ appConfig, setDismiss }) {
         haptics.selection();
         setSoundEffect(effect);
     }, [setSoundEffect, haptics]);
+
+    const handleVolumeChange = useCallback((value) => {
+        setSoundVolume(value);
+    }, [setSoundVolume]);
+
+    const handleVolumeChangeComplete = useCallback(() => {
+        haptics.light();
+    }, [haptics]);
 
     const openGitHub = useCallback(() => {
         haptics.light();
@@ -189,6 +198,36 @@ export default function Settings({ appConfig, setDismiss }) {
                                     </View>
                                 </PressableOpacity>
                             ))}
+                        </View>
+
+                        <View style={styles.divider} />
+
+                        <View style={styles.settingGroup}>
+                            <Text style={[styles.settingLabel, { color: hapticsEnabled ? colors.textMuted : colors.text }]}>Sound Volume</Text>
+                            <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                                Adjust the volume of sound effects{hapticsEnabled ? ' (disabled when haptics are on)' : ''}
+                            </Text>
+
+                            <View style={[styles.volumeContainer, { opacity: hapticsEnabled ? 0.5 : 1 }]}>
+                                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>0%</Text>
+                                <Slider
+                                    style={styles.slider}
+                                    minimumValue={0}
+                                    maximumValue={100}
+                                    step={10}
+                                    value={soundVolume}
+                                    onValueChange={handleVolumeChange}
+                                    onSlidingComplete={handleVolumeChangeComplete}
+                                    minimumTrackTintColor={colors.primary}
+                                    maximumTrackTintColor={colors.divider}
+                                    thumbTintColor={colors.primary}
+                                    disabled={hapticsEnabled}
+                                />
+                                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>100%</Text>
+                            </View>
+                            <Text style={[styles.volumeValue, { color: hapticsEnabled ? colors.textMuted : colors.text }]}>
+                                Current: {soundVolume}%
+                            </Text>
                         </View>
                     </View>
 
@@ -440,5 +479,28 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 18,
         fontWeight: '700',
+    },
+    volumeContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 12,
+        marginBottom: 8,
+    },
+    volumeLabel: {
+        fontSize: 13,
+        fontWeight: '500',
+        width: 40,
+        textAlign: 'center',
+    },
+    slider: {
+        flex: 1,
+        height: 40,
+        marginHorizontal: 8,
+    },
+    volumeValue: {
+        fontSize: 15,
+        fontWeight: '600',
+        textAlign: 'center',
+        marginTop: 4,
     },
 });
