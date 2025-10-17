@@ -14,6 +14,8 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ### Features
 
+- **Insult of the Hour** - Featured insult in elegant Old English font that updates hourly
+- **Share as Image** - Tap the featured insult or long-press easter eggs to share beautiful parchment-styled images
 - **Browse & Search** - Scroll through 1,000 randomly-sampled insults with real-time search filtering
 - **Refresh for More** - Tap the refresh icon to load a new random batch from 10,000+ insults
 - **Multi-Select** - Tap multiple insults to select them all at once
@@ -21,8 +23,8 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **Share Anywhere** - Send via SMS or share to any app on your device
 - **Save Favorites** - Long-press any insult to save it for later
 - **Bulk Operations** - Select and share/forget multiple favorites at once
-- **Seasonal Easter Eggs** - Discover random insults with elegant overlay surprises
-- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, choose sound effects
+- **Seasonal Easter Eggs** - Tap for elegant Old English overlay, long-press to share as image
+- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, choose sound effects, control volume
 - **Sound Effects** - Audible feedback when adding favorites (when haptics are off) with choice of chime or pop
 - **Dark Mode** - Automatic light/dark theme matching your device settings
 - **Optimized Performance** - FlashList rendering for smooth scrolling, only 0.81MB data file
@@ -33,9 +35,11 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **FlashList** for optimized list rendering with 1,000+ items
 - **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
 - **Custom Hooks Architecture** for clean state management
-  - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`
+  - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`, `useInsultOfTheHour`, `useImageShare`
 - **expo-av** for audio playback with configurable sound effects
-- **AsyncStorage** for persistent favorites and settings
+- **expo-sharing** + **react-native-view-shot** for image generation and sharing
+- **AsyncStorage** for persistent favorites, settings, and hourly insult cache
+- **Custom Fonts** - BlackChancery Old English font for special text displays
 - **Context Providers** - Theme, Settings, and App state management
 - **Theme System** with automatic dark/light mode detection
 - **Animated API** for smooth UI transitions
