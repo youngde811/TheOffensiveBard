@@ -127,11 +127,9 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     oldEnglishText: {
-        fontFamily: 'Georgia',
-        fontSize: 20,
+        fontFamily: 'BlackChancery',
+        fontSize: 24,
         textAlign: 'center',
-        lineHeight: 28,
-        fontWeight: 'bold',
-        fontStyle: 'italic',
+        lineHeight: 32,
     },
 });

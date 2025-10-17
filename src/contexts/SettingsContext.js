@@ -40,22 +40,28 @@ const SETTINGS_KEYS = {
   HAPTICS_ENABLED: '@insolentbard:settings:haptics',
   EASTER_EGG_FREQUENCY: '@insolentbard:settings:easterEggFrequency',
   SOUND_EFFECT: '@insolentbard:settings:soundEffect',
+  SOUND_VOLUME: '@insolentbard:settings:soundVolume',
 };
+
+// Default sound volume (30%)
+const DEFAULT_SOUND_VOLUME = 30;
 
 export function SettingsProvider({ children }) {
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [easterEggFrequency, setEasterEggFrequency] = useState('NORMAL');
   const [soundEffect, setSoundEffect] = useState(SOUND_EFFECTS.CHIME);
+  const [soundVolume, setSoundVolume] = useState(DEFAULT_SOUND_VOLUME);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from AsyncStorage on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [haptics, frequency, sound] = await Promise.all([
+        const [haptics, frequency, sound, volume] = await Promise.all([
           AsyncStorage.getItem(SETTINGS_KEYS.HAPTICS_ENABLED),
           AsyncStorage.getItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_EFFECT),
+          AsyncStorage.getItem(SETTINGS_KEYS.SOUND_VOLUME),
         ]);
 
         if (haptics !== null) {
@@ -66,6 +72,9 @@ export function SettingsProvider({ children }) {
         }
         if (sound !== null) {
           setSoundEffect(sound);
+        }
+        if (volume !== null) {
+          setSoundVolume(parseInt(volume, 10));
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -114,6 +123,16 @@ export function SettingsProvider({ children }) {
     }
   }, []);
 
+  // Set sound volume (0-100)
+  const setSoundVolumePref = useCallback(async (volume) => {
+    try {
+      setSoundVolume(volume);
+      await AsyncStorage.setItem(SETTINGS_KEYS.SOUND_VOLUME, volume.toString());
+    } catch (error) {
+      console.error('Error saving sound volume setting:', error);
+    }
+  }, []);
+
   const value = {
     hapticsEnabled,
     toggleHaptics,
@@ -122,6 +141,8 @@ export function SettingsProvider({ children }) {
     getEasterEggCount,
     soundEffect,
     setSoundEffect: setSoundEffectPref,
+    soundVolume,
+    setSoundVolume: setSoundVolumePref,
     isLoading,
   };
 

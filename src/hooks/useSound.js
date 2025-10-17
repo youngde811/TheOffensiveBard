@@ -27,11 +27,8 @@ const SOUND_FILES = {
   [SOUND_EFFECTS.POP]: require('../../assets/sounds/light-bubble-pop-383738.mp3'),
 };
 
-// Fixed volume level (0.0 to 1.0) - set to a pleasant, low level
-const SOUND_VOLUME = 0.3;
-
 export function useSound() {
-  const { hapticsEnabled, soundEffect } = useSettings();
+  const { hapticsEnabled, soundEffect, soundVolume } = useSettings();
   const soundObjects = useRef({});
 
   // Load sounds on mount
@@ -44,12 +41,9 @@ export function useSound() {
           staysActiveInBackground: false,
         });
 
-        // Load all sound files with fixed volume
+        // Load all sound files
         for (const [key, source] of Object.entries(SOUND_FILES)) {
-          const { sound } = await Audio.Sound.createAsync(
-            source,
-            { volume: SOUND_VOLUME }
-          );
+          const { sound } = await Audio.Sound.createAsync(source);
           soundObjects.current[key] = sound;
         }
       } catch (error) {
@@ -81,7 +75,11 @@ export function useSound() {
     try {
       const sound = soundObjects.current[soundEffect];
       if (sound) {
-        // Rewind to start in case it was played recently
+        // Convert percentage (0-100) to volume (0.0-1.0)
+        const volume = soundVolume / 100;
+
+        // Set volume and rewind to start in case it was played recently
+        await sound.setVolumeAsync(volume);
         await sound.setPositionAsync(0);
         await sound.playAsync();
       }
