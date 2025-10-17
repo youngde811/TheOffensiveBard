@@ -52,8 +52,11 @@ export default function EmbeddedWebView({ webPage, setDismiss }) {
                 try {
                     const htmlFile = require('../../assets/about.html');
                     const asset = Asset.fromModule(htmlFile);
+                  
                     await asset.downloadAsync();
+
                     const response = await fetch(asset.localUri || asset.uri);
+
                     let html = await response.text();
 
                     // Inject theme-aware CSS

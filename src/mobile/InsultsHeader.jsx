@@ -19,7 +19,7 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,34 +29,34 @@ import { useAppContext } from '../contexts/AppContext';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress }) {
-    const { season, year } = useAppContext();
-    const { colors } = useTheme();
+  const { season, year } = useAppContext();
+  const { colors } = useTheme();
 
-    return (
-        <View style={ [styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }] }>
-          <Text style={ [styles.listHeaderSeason, { color: colors.primary }] }>
-            { season + ", " + year }
-          </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            {onRefreshPress && (
-              <TouchableOpacity style={ styles.searchToggleButton } onPress={ onRefreshPress }>
-                <Ionicons
-                  name="refresh"
-                  size={22}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            )}
-            {onSearchPress && (
-              <TouchableOpacity style={ styles.searchToggleButton } onPress={ onSearchPress }>
-                <Ionicons
-                  name={isSearchActive ? "close" : "search"}
-                  size={22}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-    );
+  return (
+    <View style={[styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }]}>
+      <Text style={[styles.listHeaderSeason, { color: colors.primary }]}>
+        {season + ", " + year}
+      </Text>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {onRefreshPress && (
+          <TouchableOpacity style={styles.searchToggleButton} onPress={onRefreshPress}>
+            <Ionicons
+              name="refresh"
+              size={22}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        )}
+        {onSearchPress && (
+          <TouchableOpacity style={styles.searchToggleButton} onPress={onSearchPress}>
+            <Ionicons
+              name={isSearchActive ? "close" : "search"}
+              size={22}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
 }

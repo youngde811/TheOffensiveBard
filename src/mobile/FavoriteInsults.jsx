@@ -23,9 +23,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { Divider } from "@rneui/themed";
-import { Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
 
@@ -49,6 +48,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
     const { writeToClipboard } = useClipboard();
     const { shareInsult } = useShare();
+  
     const haptics = useHaptics();
 
     const [selectedInsults, setSelectedInsults] = useState([]);
@@ -64,7 +64,9 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         } else {
             // Add to selection
             const newSelection = [...selectedInsults, item];
+          
             setSelectedInsults(newSelection);
+
             // Copy all selected insults to clipboard
             const insultTexts = newSelection.map(i => i.insult).join('\n');
             writeToClipboard(insultTexts);
@@ -97,6 +99,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const sendInsult = useCallback(() => {
         if (selectedInsults.length > 0) {
             haptics.medium();
+          
             const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
             Linking.openURL(smstag + combinedInsults);
         }
@@ -105,10 +108,12 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const forgetFavorite = useCallback(async () => {
         if (selectedInsults.length > 0) {
             haptics.light();
+
             // Remove all selected favorites
             for (const item of selectedInsults) {
                 await removeFavorite(item);
             }
+
             setSelectedInsults([]);
         }
     }, [selectedInsults, removeFavorite, haptics]);
@@ -116,6 +121,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     const handleShare = useCallback(async () => {
         if (selectedInsults.length > 0) {
             haptics.medium();
+          
             const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
             await shareInsult(combinedInsults);
         }

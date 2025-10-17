@@ -39,72 +39,75 @@ const SAMPLE_SIZE = 1000;
 
 // Fisher-Yates shuffle algorithm
 function shuffleArray(array) {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  const shuffled = [...array];
+  
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  return shuffled;
 }
 
 // Get random sample of insults
 function getRandomSample(source, sampleSize) {
-    const shuffled = shuffleArray(source);
-    return shuffled.slice(0, sampleSize);
+  const shuffled = shuffleArray(source);
+  return shuffled.slice(0, sampleSize);
 }
 
 SplashScreen.preventAutoHideAsync();
 
 export default function TheOffensiveBardInsults({ appConfig }) {
-    const { colors, isDark } = useTheme();
-    const [insultData, setInsultData] = useState([]);
-    const [appIsReady, setAppIsReady] = useState(false);
+  const { colors, isDark } = useTheme();
+  const [insultData, setInsultData] = useState([]);
+  const [appIsReady, setAppIsReady] = useState(false);
 
-    const [fontsLoaded] = useFonts({
-        'Inter-Black': require('../../assets/fonts/Inter-Black.otf')
-    });
+  const [fontsLoaded] = useFonts({
+    'Inter-Black': require('../../assets/fonts/Inter-Black.otf')
+  });
 
-    // Load random sample on mount
-    useEffect(() => {
-        async function prepare() {
-            const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
-            setInsultData(sample);
-        }
-
-        prepare();
-    }, []);
-
-    // Refresh with new random sample
-    const refreshInsults = useCallback(() => {
-        const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
-        setInsultData(sample);
-    }, []);
-
-    const onLayoutRootView = useCallback(async () => {
-        if (fontsLoaded) {
-            await SplashScreen.hideAsync();
-            setAppIsReady(true);
-        }
-    }, [fontsLoaded]);
-
-    if (!fontsLoaded) {
-        return null;
+  // Load random sample on mount
+  useEffect(() => {
+    async function prepare() {
+      const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
+      setInsultData(sample);
     }
 
-    return (
-        <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
-          <SafeAreaView style={ styles.appTopView } onLayout={ onLayoutRootView }>
-            <StatusBar style={isDark ? "light" : "dark"}/>
-            { !appIsReady && <ActivityIndicator animating={ true } size='large' color={colors.primary}/> }
-            { insultData.length > 0 ?
-              <InsultEmAll
-                insults={ insultData }
-                appConfig={ appConfig }
-                onRefresh={ refreshInsults }
-              />
-              :
-              null }
-          </SafeAreaView>
-        </View>
-    );
+    prepare();
+  }, []);
+
+  // Refresh with new random sample
+  const refreshInsults = useCallback(() => {
+    const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
+    setInsultData(sample);
+  }, []);
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+      
+      setAppIsReady(true);
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  return (
+    <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={styles.appTopView} onLayout={onLayoutRootView}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        {!appIsReady && <ActivityIndicator animating={true} size='large' color={colors.primary} />}
+        {insultData.length > 0 ?
+          <InsultEmAll
+            insults={insultData}
+            appConfig={appConfig}
+            onRefresh={refreshInsults}
+          />
+          :
+          null}
+      </SafeAreaView>
+    </View>
+  );
 }

@@ -25,7 +25,6 @@ import React, { useRef } from 'react';
 
 import { View } from 'react-native';
 import { IconButton } from '@react-native-material/core';
-import { Spacer } from '@react-native-material/core';
 
 import Icon from "@expo/vector-icons/MaterialCommunityIcons";
 
