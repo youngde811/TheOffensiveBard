@@ -2,7 +2,7 @@
   "expo": {
     "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "1.6.0",
+      "buildNumber": "1.7.0",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
@@ -45,6 +45,9 @@
         "projectId": "55022ee4-58a4-4fba-9071-56ceb03a6829"
       }
     },
-    "owner": "cbr500r2911"
+    "owner": "cbr500r2911",
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

@@ -23,6 +23,7 @@ import 'react-native-gesture-handler';
 
 import React from 'react';
 import { useFonts } from 'expo-font';
+import { IMFellEnglish_400Regular } from '@expo-google-fonts/im-fell-english';
 import * as SplashScreen from 'expo-splash-screen';
 
 import { AppProvider } from './src/contexts/AppContext';
@@ -159,6 +160,7 @@ function ThemedDrawerNavigator() {
 export default function App() {
   const [fontsLoaded] = useFonts({
     'BlackChancery': require('./assets/fonts/blkchcry.ttf'),
+    'IMFellEnglish': IMFellEnglish_400Regular,
   });
 
   React.useEffect(() => {

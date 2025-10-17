@@ -24,7 +24,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
-import { Divider } from "@rneui/themed";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from '@expo/vector-icons';
@@ -35,6 +34,7 @@ import * as Linking from 'expo-linking';
 
 import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
+import SwipeableInsultItem from './SwipeableInsultItem';
 import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
 import InsultImageTemplate from '../components/InsultImageTemplate';
@@ -80,28 +80,31 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         }
     }, [selectedInsults, writeToClipboard, haptics]);
 
-    const renderInsult = useCallback(({item}) => {
+    const renderInsult = useCallback(({item, index}) => {
         const isSelected = selectedInsults.some(selected => selected.id === item.id);
 
         return (
-            <View style={styles.insultItemContainer}>
-              <PressableOpacity style={null} onPress={() => insultSelect(item)}>
-                <ScalableText style={[
-                  isSelected ? styles.insultSelectedText : styles.insultText,
-                  { color: isSelected ? colors.textSelected : colors.text }
-                ]}>
-                  {item.insult}
-                </ScalableText>
-              </PressableOpacity>
-            </View>
+            <SwipeableInsultItem
+                item={item}
+                index={index}
+                isSelected={isSelected}
+                hasEgg={false}
+                seasonalIcon=""
+                onPress={() => insultSelect(item)}
+                onLongPress={() => {}}
+                onFavorite={async () => {
+                    haptics.light();
+                    await removeFavorite(item);
+                }}
+                onShare={() => handleShareInsultAsImage(item)}
+                onEggPress={() => {}}
+                onEggLongPress={() => {}}
+                colors={colors}
+                favoriteIcon="trash-outline"
+                favoriteColor="#e74c3c"
+            />
         );
-    }, [selectedInsults, insultSelect, colors]);
-
-    const favoritesSeparator = useCallback(() => {
-        return (
-            <Divider width={1} color={colors.divider}/>
-        );
-    }, [colors]);
+    }, [selectedInsults, insultSelect, removeFavorite, handleShareInsultAsImage, haptics, colors]);
 
     const sendInsult = useCallback(() => {
         if (selectedInsults.length > 0) {
@@ -177,11 +180,10 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
 
         return (
             <FlashList
-              ItemSeparatorComponent={ favoritesSeparator }
               data={ favorites }
               keyExtractor={ (item) => item.id }
               extraData={ selectedInsults }
-              estimatedItemSize={ 100 }
+              estimatedItemSize={ 80 }
               renderItem={ renderInsult }/>
         );
     };

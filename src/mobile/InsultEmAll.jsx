@@ -23,7 +23,6 @@
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
 import { Text, View, TouchableOpacity } from 'react-native';
-import { Divider } from "@rneui/themed";
 import { FlashList } from "@shopify/flash-list";
 import { Ionicons } from '@expo/vector-icons';
 
@@ -32,9 +31,8 @@ import * as Linking from 'expo-linking';
 import styles from '../styles/styles.js';
 import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
-import TouchableIcon from './TouchableIcon';
+import SwipeableInsultItem from './SwipeableInsultItem';
 import OldEnglishOverlay from './OldEnglishOverlay';
-import ScalableText from 'react-native-text';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
 import InsultImageTemplate from '../components/InsultImageTemplate';
@@ -164,33 +162,22 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     const isSelected = selectedInsults.some(selected => selected === item.insult);
 
     return (
-      <View style={styles.insultItemContainer}>
-        <PressableOpacity
-          style={null}
-          onPress={() => insultSelect(item)}
-          onLongPress={() => storeFavorite(item)}
-          delayLongPress={500}>
-          <ScalableText style={[
-            isSelected ? styles.insultSelectedText : styles.insultText,
-            { color: isSelected ? colors.textSelected : colors.text }
-          ]}>
-            {item.insult}
-          </ScalableText>
-        </PressableOpacity>
-        <TouchableIcon
-          visible={hasEgg}
-          iconName={seasonalIcon}
-          onPress={(position) => showEasterEgg(item, position)}
-          onLongPress={() => shareEasterEgg(item)} />
-      </View>
+      <SwipeableInsultItem
+        item={item}
+        index={index}
+        isSelected={isSelected}
+        hasEgg={hasEgg}
+        seasonalIcon={seasonalIcon}
+        onPress={() => insultSelect(item)}
+        onLongPress={() => storeFavorite(item)}
+        onFavorite={() => storeFavorite(item)}
+        onShare={() => handleShareInsultAsImage(item)}
+        onEggPress={(position) => showEasterEgg(item, position)}
+        onEggLongPress={() => shareEasterEgg(item)}
+        colors={colors}
+      />
     );
-  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, shareEasterEgg, colors, easterEggIndices]);
-
-  const insultSeparator = useCallback(() => {
-    return (
-      <Divider width={1} color={colors.divider} />
-    );
-  }, [colors]);
+  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, shareEasterEgg, handleShareInsultAsImage, colors, easterEggIndices]);
 
   const sendInsult = useCallback(() => {
     if (selectedInsults.length > 0) {
@@ -295,12 +282,11 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
           <View style={styles.flatList}>
             <FlashList
               ref={listRef}
-              ItemSeparatorComponent={insultSeparator}
               onScroll={setVerticalOffset}
               data={memoizedInsults}
               keyExtractor={extractKeys}
               showsVerticalScrollIndicator={true}
-              estimatedItemSize={40}
+              estimatedItemSize={80}
               extraData={selectedInsults}
               contentContainerStyle={{ paddingTop: 10 }}
               renderItem={renderInsult} />

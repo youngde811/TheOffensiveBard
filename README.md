@@ -10,12 +10,15 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ## iOS App
 
-**The Insolent Bard** (v1.5.0) delivers authentic Shakespearean insults with a modern, intuitive interface.
+**The Insolent Bard** (v1.7.0) delivers authentic Shakespearean insults with a modern, intuitive interface.
 
 ### Features
 
 - **Insult of the Hour** - Featured insult in elegant Old English font that updates hourly
 - **Share as Image** - Tap the featured insult or long-press easter eggs to share beautiful parchment-styled images
+- **Swipe Gestures** - Swipe left on any insult to reveal quick actions (favorite/unfavorite and share as image)
+- **Parchment Card Design** - Beautiful card-style list items with depth, shadows, and aged parchment background
+- **IM Fell English Font** - Classic typeface that balances medieval character with excellent readability
 - **Browse & Search** - Scroll through 1,000 randomly-sampled insults with real-time search filtering
 - **Refresh for More** - Tap the refresh icon to load a new random batch from 10,000+ insults
 - **Multi-Select** - Tap multiple insults to select them all at once
@@ -33,16 +36,18 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 - **React Native 19.1** + **Expo 54** for cross-platform mobile development
 - **FlashList** for optimized list rendering with 1,000+ items
+- **react-native-gesture-handler** for smooth swipe gestures and animations
 - **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
 - **Custom Hooks Architecture** for clean state management
   - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`, `useInsultOfTheHour`, `useImageShare`
 - **expo-av** for audio playback with configurable sound effects
 - **expo-sharing** + **react-native-view-shot** for image generation and sharing
 - **AsyncStorage** for persistent favorites, settings, and hourly insult cache
-- **Custom Fonts** - BlackChancery Old English font for special text displays
+- **Custom Fonts** - IM Fell English for list items, BlackChancery Old English for special text displays
+- **Google Fonts Integration** via @expo-google-fonts for professional typography
 - **Context Providers** - Theme, Settings, and App state management
 - **Theme System** with automatic dark/light mode detection
-- **Animated API** for smooth UI transitions
+- **Animated API** for smooth UI transitions and swipeable components
 
 ### Download
 
