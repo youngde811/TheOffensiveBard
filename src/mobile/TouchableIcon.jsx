@@ -52,7 +52,7 @@ export default function TouchableIcon({ visible, iconName, onPress, onLongPress,
               <IconButton
                 icon={ props => <Icon name={ iconName } { ...props }/> }
                 color="orchid"
-                opacity={ 0.4 }
+                opacity={ 0.1 }
                 onPress={ handlePress }
                 onLongPress={ handleLongPress }
                 delayLongPress={ 500 }
