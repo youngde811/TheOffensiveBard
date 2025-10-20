@@ -1,7 +1,7 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
-// This file contains the code for our TheOffensiveBard main insult page.
-// Refactored to use modern React patterns with custom hooks and context.
+// REFACTORED VERSION - This file shows the InsultEmAll component using the new shared hook and component
+// Compare this to the original InsultEmAll.jsx to see the improvements
 
 // MIT License
 
@@ -22,46 +22,49 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 
-import * as Linking from 'expo-linking';
-
 import styles from '../styles/styles.js';
-import PressableOpacity from './PressableOpacity';
 import FloatingPressable from './FloatingPressable';
 import SwipeableInsultItem from './SwipeableInsultItem';
 import OldEnglishOverlay from './OldEnglishOverlay';
 import SearchBar from './SearchBar';
 import InsultsHeader from './InsultsHeader';
 import InsultImageTemplate from '../components/InsultImageTemplate';
+import InsultListFooter from '../components/InsultListFooter';
 
 import { useAppContext } from '../contexts/AppContext';
-import { useClipboard } from '../hooks/useClipboard';
-import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
 import { useSound } from '../hooks/useSound';
 import { useTheme } from '../contexts/ThemeContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 import { useImageShare } from '../hooks/useImageShare';
+import { useInsultSelection } from '../hooks/useInsultSelection';
 
 import * as Utilities from '../utils/utilities';
 
 export default function InsultEmAll({ insults, appConfig, onRefresh }) {
-  const { season, smstag, addFavorite } = useAppContext();
-  const { writeToClipboard } = useClipboard();
-  const { shareInsult } = useShare();
-  
-  const haptics = useHaptics();
+  const { season, addFavorite } = useAppContext();
 
+  const haptics = useHaptics();
   const { playFavoriteSound } = useSound();
   const { colors } = useTheme();
   const { getEasterEggCount } = useSettings();
-  const { currentInsult: insultOfTheHour, isRefreshing, refreshInsult } = useInsultOfTheHour(insults);
+  const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(insults);
   const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
-  const [selectedInsults, setSelectedInsults] = useState([]);
+  // Use the new shared selection hook
+  const {
+    selectedInsults,
+    toggleSelection,
+    isSelected,
+    sendViaSMS,
+    shareSelected,
+    hasSelection,
+  } = useInsultSelection('main');
+
   const [insultToShare, setInsultToShare] = useState(null);
   const [listVerticalOffset, setListVerticalOffset] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -82,7 +85,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
       if (eggCount === 0) {
         setEasterEggIndices(new Set());
-        
+
         return;
       }
 
@@ -102,7 +105,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
     if (!searchQuery.trim()) {
       return insults;
     }
-    
+
     const query = searchQuery.toLowerCase();
 
     return insults.filter(item =>
@@ -114,24 +117,6 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
   const listThreshold = 300;
   const listRef = useRef(null);
-
-  const insultSelect = useCallback((item) => {
-    haptics.selection();
-
-    const isSelected = selectedInsults.some(selected => selected === item.insult);
-
-    if (isSelected) {
-      // Remove from selection
-      setSelectedInsults(selectedInsults.filter(selected => selected !== item.insult));
-    } else {
-      // Add to selection
-      const newSelection = [...selectedInsults, item.insult];
-      setSelectedInsults(newSelection);
-      
-      // Copy all selected insults to clipboard
-      writeToClipboard(newSelection.join('\n'));
-    }
-  }, [selectedInsults, writeToClipboard, haptics]);
 
   const showEasterEgg = useCallback((item, position) => {
     haptics.light();
@@ -148,7 +133,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
   const storeFavorite = useCallback(async (item) => {
     const success = await addFavorite(item);
-    
+
     if (success) {
       haptics.success();
 
@@ -158,16 +143,16 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
   const renderInsult = useCallback(({ item, index }) => {
     const hasEgg = easterEggIndices.has(index);
-    const isSelected = selectedInsults.some(selected => selected === item.insult);
+    const selected = isSelected(item);
 
     return (
       <SwipeableInsultItem
         item={item}
         index={index}
-        isSelected={isSelected}
+        isSelected={selected}
         hasEgg={hasEgg}
         seasonalIcon={seasonalIcon}
-        onPress={() => insultSelect(item)}
+        onPress={() => toggleSelection(item)}
         onLongPress={() => storeFavorite(item)}
         onFavorite={() => storeFavorite(item)}
         onShare={() => handleShareInsultAsImage(item)}
@@ -176,25 +161,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
         colors={colors}
       />
     );
-  }, [selectedInsults, seasonalIcon, insultSelect, storeFavorite, showEasterEgg, shareEasterEgg, handleShareInsultAsImage, colors, easterEggIndices]);
-
-  const sendInsult = useCallback(() => {
-    if (selectedInsults.length > 0) {
-      haptics.medium();
-      
-      const combinedInsults = selectedInsults.join('\n');
-      Linking.openURL(smstag + combinedInsults);
-    }
-  }, [selectedInsults, smstag, haptics]);
-
-  const handleShare = useCallback(async () => {
-    if (selectedInsults.length > 0) {
-      haptics.medium();
-      
-      const combinedInsults = selectedInsults.join('\n');
-      await shareInsult(combinedInsults);
-    }
-  }, [selectedInsults, shareInsult, haptics]);
+  }, [isSelected, seasonalIcon, toggleSelection, storeFavorite, showEasterEgg, shareEasterEgg, handleShareInsultAsImage, colors, easterEggIndices]);
 
   const scrollToTop = useCallback(() => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -210,7 +177,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
   const toggleSearch = useCallback(() => {
     haptics.light();
-    
+
     setIsSearchVisible(!isSearchVisible);
 
     if (isSearchVisible && searchQuery) {
@@ -220,7 +187,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
 
   const clearSearch = useCallback(() => {
     haptics.light();
-    
+
     setSearchQuery('');
   }, [haptics]);
 
@@ -255,6 +222,20 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
       });
     }
   }, [insultToShare, isGenerating, shareAsImage]);
+
+  // Define footer buttons configuration
+  const footerButtons = [
+    {
+      label: 'SMS',
+      onPress: sendViaSMS,
+      requiresSelection: true,
+    },
+    {
+      label: 'Share',
+      onPress: shareSelected,
+      requiresSelection: true,
+    },
+  ];
 
   return (
     <View style={styles.insultTopView}>
@@ -295,23 +276,12 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
           </View>
         </View>
       </View>
-      <View style={styles.insultFooter}>
-        <PressableOpacity
-          style={selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons}
-          title={'SMS'}
-          onPress={sendInsult}
-          disabled={selectedInsults.length === 0}>
-          <Text style={styles.insultButtonText}>SMS</Text>
-        </PressableOpacity>
-        <View style={styles.spacer} />
-        <PressableOpacity
-          style={selectedInsults.length > 0 ? styles.insultButtons : styles.disabledInsultButtons}
-          title={'Share'}
-          onPress={handleShare}
-          disabled={selectedInsults.length === 0}>
-          <Text style={styles.insultButtonText}>Share</Text>
-        </PressableOpacity>
-      </View>
+      {/* Use the new shared footer component */}
+      <InsultListFooter
+        buttons={footerButtons}
+        hasSelection={hasSelection}
+        mode="main"
+      />
       <OldEnglishOverlay
         insultText={overlayInsult}
         visible={overlayVisible}

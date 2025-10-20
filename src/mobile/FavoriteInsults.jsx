@@ -1,7 +1,7 @@
 // -*- mode: rjsx; eval: (auto-fill-mode 1); -*-
 
-// This component is used to render the "favorite insults" page. Refactored to use
-// modern React patterns with custom hooks and context.
+// REFACTORED VERSION - This file shows the FavoriteInsults component using the new shared hook and component
+// Compare this to the original FavoriteInsults.jsx to see the improvements
 
 // MIT License
 
@@ -27,67 +27,53 @@ import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
 
-import * as Linking from 'expo-linking';
-
 import styles from '../styles/styles.js';
-import PressableOpacity from './PressableOpacity';
 import SwipeableInsultItem from './SwipeableInsultItem';
 import NoFavorites from './NoFavorites';
 import InsultsHeader from './InsultsHeader';
 import InsultImageTemplate from '../components/InsultImageTemplate';
+import InsultListFooter from '../components/InsultListFooter';
 
 import { useAppContext } from '../contexts/AppContext';
-import { useClipboard } from '../hooks/useClipboard';
-import { useShare } from '../hooks/useShare';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
 import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 import { useImageShare } from '../hooks/useImageShare';
+import { useInsultSelection } from '../hooks/useInsultSelection';
 
 export default function FavoriteInsults({ appConfig, setDismiss }) {
   const { colors } = useTheme();
-  const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
-  const { writeToClipboard } = useClipboard();
-  const { shareInsult } = useShare();
+  const { favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
 
   const haptics = useHaptics();
-  
+
   const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
   const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
-  const [selectedInsults, setSelectedInsults] = useState([]);
+  // Use the new shared selection hook
+  const {
+    selectedInsults,
+    setSelectedInsults,
+    toggleSelection,
+    isSelected,
+    sendViaSMS,
+    shareSelected,
+    hasSelection,
+  } = useInsultSelection('favorites');
+
   const [insultToShare, setInsultToShare] = useState(null);
 
-  const insultSelect = useCallback((item) => {
-    haptics.selection();
-
-    const isSelected = selectedInsults.some(selected => selected.id === item.id);
-
-    if (isSelected) {
-      // Remove from selection
-      setSelectedInsults(selectedInsults.filter(selected => selected.id !== item.id));
-    } else {
-      // Add to selection
-      const newSelection = [...selectedInsults, item];
-      setSelectedInsults(newSelection);
-
-      // Copy all selected insults to clipboard
-      const insultTexts = newSelection.map(i => i.insult).join('\n');
-      writeToClipboard(insultTexts);
-    }
-  }, [selectedInsults, writeToClipboard, haptics]);
-
   const renderInsult = useCallback(({ item, index }) => {
-    const isSelected = selectedInsults.some(selected => selected.id === item.id);
+    const selected = isSelected(item);
 
     return (
       <SwipeableInsultItem
         item={item}
         index={index}
-        isSelected={isSelected}
+        isSelected={selected}
         hasEgg={false}
         seasonalIcon=""
-        onPress={() => insultSelect(item)}
+        onPress={() => toggleSelection(item)}
         onLongPress={() => {}}
         onFavorite={async () => {
           haptics.light();
@@ -101,16 +87,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         favoriteColor="#e74c3c"
       />
     );
-  }, [selectedInsults, insultSelect, removeFavorite, handleShareInsultAsImage, haptics, colors]);
-
-  const sendInsult = useCallback(() => {
-    if (selectedInsults.length > 0) {
-      haptics.medium();
-
-      const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
-      Linking.openURL(smstag + combinedInsults);
-    }
-  }, [selectedInsults, smstag, haptics]);
+  }, [isSelected, toggleSelection, removeFavorite, handleShareInsultAsImage, haptics, colors]);
 
   const forgetFavorite = useCallback(async () => {
     if (selectedInsults.length > 0) {
@@ -123,21 +100,12 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
 
       setSelectedInsults([]);
     }
-  }, [selectedInsults, removeFavorite, haptics]);
-
-  const handleShare = useCallback(async () => {
-    if (selectedInsults.length > 0) {
-      haptics.medium();
-
-      const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
-      await shareInsult(combinedInsults);
-    }
-  }, [selectedInsults, shareInsult, haptics]);
+  }, [selectedInsults, removeFavorite, setSelectedInsults, haptics]);
 
   const handleInsultOfTheHourPress = useCallback(async () => {
     if (insultOfTheHour) {
       haptics.light();
-      
+
       const insultText = insultOfTheHour.insult || insultOfTheHour;
       setInsultToShare(insultText);
     }
@@ -145,7 +113,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
 
   const handleShareInsultAsImage = useCallback((item) => {
     haptics.light();
-    
+
     const insultText = item.insult || item;
     setInsultToShare(insultText);
   }, [haptics]);
@@ -187,6 +155,30 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     );
   };
 
+  // Define footer buttons configuration
+  const footerButtons = [
+    {
+      label: 'SMS',
+      onPress: sendViaSMS,
+      requiresSelection: true,
+    },
+    {
+      label: 'Share',
+      onPress: shareSelected,
+      requiresSelection: true,
+    },
+    {
+      label: 'Forget',
+      onPress: forgetFavorite,
+      requiresSelection: true,
+    },
+    {
+      label: 'Dismiss',
+      onPress: setDismiss,
+      requiresSelection: false, // Always enabled
+    },
+  ];
+
   return (
     <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
       <SafeAreaView style={styles.favoritesTopView}>
@@ -210,38 +202,12 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
             </View>
           </View>
         }
-        <View style={styles.favoritesFooter}>
-          <PressableOpacity
-            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
-            title={'SMS'}
-            onPress={sendInsult}
-            disabled={selectedInsults.length === 0}>
-            <Text style={styles.favoritesButtonText}>SMS</Text>
-          </PressableOpacity>
-          <View style={styles.spacer} />
-          <PressableOpacity
-            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
-            title={'Share'}
-            onPress={handleShare}
-            disabled={selectedInsults.length === 0}>
-            <Text style={styles.favoritesButtonText}>Share</Text>
-          </PressableOpacity>
-          <View style={styles.spacer} />
-          <PressableOpacity
-            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
-            title={'Forget'}
-            onPress={forgetFavorite}
-            disabled={selectedInsults.length === 0}>
-            <Text style={styles.favoritesButtonText}>Forget</Text>
-          </PressableOpacity>
-          <View style={styles.spacer} />
-          <PressableOpacity
-            style={styles.favoritesButtons}
-            title={'Dismiss'}
-            onPress={setDismiss}>
-            <Text style={styles.favoritesButtonText}>Dismiss</Text>
-          </PressableOpacity>
-        </View>
+        {/* Use the new shared footer component */}
+        <InsultListFooter
+          buttons={footerButtons}
+          hasSelection={hasSelection}
+          mode="favorites"
+        />
       </SafeAreaView>
       {/* Hidden view for image generation */}
       <View style={{ position: 'absolute', left: -10000, top: -10000 }} collapsable={false}>
