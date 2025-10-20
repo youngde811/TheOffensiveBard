@@ -127,19 +127,6 @@ Example line:
 gleeking	flap-mouthed	foot-licker
 ```
 
-## Future: Dynamic Insult API
-
-Coming in a future release: A Rust-powered web API service that will provide dynamic insult generation on-demand.
-
-**Planned Features:**
-- RESTful API for fetching fresh insults
-- Real-time generation (no pre-computed JSON)
-- Configurable insult count per request
-- Filter by style, severity, or theme
-- Rate limiting and caching for optimal performance
-
-This will enable the iOS app to fetch new insults dynamically rather than relying solely on the embedded dataset, opening the door for expanded vocabulary, themed collections, and user-contributed phrases.
-
 ## Architecture
 
 ### Rust Generator
