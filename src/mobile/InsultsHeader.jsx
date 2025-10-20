@@ -68,7 +68,7 @@ export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive
             style={[
               styles.listHeaderInsult,
               {
-                color: colors.primary,
+                color: colors.insultOfTheHour,
                 opacity: fadeAnim,
               }
             ]}

@@ -16,6 +16,9 @@ export const lightColors = {
     primary: 'teal',
     primaryVariant: 'cadetblue',
 
+    // Featured content
+    insultOfTheHour: '#8B4049', // Burgundy/wine
+
     // UI elements
     border: 'cornsilk',
     divider: 'cornsilk',
@@ -44,6 +47,9 @@ export const darkColors = {
     // Primary colors
     primary: '#4db8a8', // Lighter teal for better contrast
     primaryVariant: '#5f9ea0', // Same cadetblue works well
+
+    // Featured content
+    insultOfTheHour: '#A0555E', // Lighter burgundy for dark mode
 
     // UI elements
     border: '#4a4a4a',

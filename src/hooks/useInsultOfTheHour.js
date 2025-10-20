@@ -19,16 +19,28 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSettings } from '../contexts/SettingsContext';
 
 const STORAGE_KEY = '@insolentbard:insultOfTheHour';
 
-// Get the current hour as a unique identifier (year-month-day-hour)
-const getCurrentHourKey = () => {
+// Get a unique identifier based on interval (year-month-day-hour-minute)
+// For intervals: 5min, 15min, 30min, 60min
+const getCurrentIntervalKey = (intervalMinutes) => {
   const now = new Date();
-  return `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}-${now.getHours()}`;
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const date = now.getDate();
+  const hour = now.getHours();
+  const minute = now.getMinutes();
+
+  // Calculate which interval block we're in
+  const intervalBlock = Math.floor(minute / intervalMinutes);
+
+  return `${year}-${month}-${date}-${hour}-${intervalBlock}`;
 };
 
 export function useInsultOfTheHour(insults) {
+  const { getInsultRefreshIntervalMinutes } = useSettings();
   const [currentInsult, setCurrentInsult] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -44,27 +56,28 @@ export function useInsultOfTheHour(insults) {
   // Load or generate the insult of the hour
   const loadInsultOfTheHour = useCallback(async () => {
     try {
+      const intervalMinutes = getInsultRefreshIntervalMinutes();
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      const currentHourKey = getCurrentHourKey();
+      const currentIntervalKey = getCurrentIntervalKey(intervalMinutes);
 
       if (stored) {
-        const { insult, hourKey } = JSON.parse(stored);
+        const { insult, intervalKey } = JSON.parse(stored);
 
-        // If it's still the same hour, use the stored insult
-        if (hourKey === currentHourKey && insult) {
+        // If it's still the same interval, use the stored insult
+        if (intervalKey === currentIntervalKey && insult) {
           setCurrentInsult(insult);
           return;
         }
       }
 
-      // Generate new insult for this hour
+      // Generate new insult for this interval
       const newInsult = selectRandomInsult();
       if (newInsult) {
         await AsyncStorage.setItem(
           STORAGE_KEY,
           JSON.stringify({
             insult: newInsult,
-            hourKey: currentHourKey,
+            intervalKey: currentIntervalKey,
           })
         );
         setCurrentInsult(newInsult);
@@ -74,21 +87,22 @@ export function useInsultOfTheHour(insults) {
       // Fallback to random insult
       setCurrentInsult(selectRandomInsult());
     }
-  }, [selectRandomInsult]);
+  }, [selectRandomInsult, getInsultRefreshIntervalMinutes]);
 
   // Refresh the insult (with animation trigger)
   const refreshInsult = useCallback(async () => {
     setIsRefreshing(true);
 
     const newInsult = selectRandomInsult();
-    const currentHourKey = getCurrentHourKey();
+    const intervalMinutes = getInsultRefreshIntervalMinutes();
+    const currentIntervalKey = getCurrentIntervalKey(intervalMinutes);
 
     try {
       await AsyncStorage.setItem(
         STORAGE_KEY,
         JSON.stringify({
           insult: newInsult,
-          hourKey: currentHourKey,
+          intervalKey: currentIntervalKey,
         })
       );
 
@@ -102,7 +116,7 @@ export function useInsultOfTheHour(insults) {
       setCurrentInsult(newInsult);
       setIsRefreshing(false);
     }
-  }, [selectRandomInsult]);
+  }, [selectRandomInsult, getInsultRefreshIntervalMinutes]);
 
   // Load on mount and when insults change
   useEffect(() => {
