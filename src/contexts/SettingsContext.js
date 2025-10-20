@@ -36,11 +36,20 @@ export const SOUND_EFFECTS = {
   POP: 'pop',
 };
 
+// Insult refresh intervals (in minutes)
+export const INSULT_REFRESH_INTERVALS = {
+  FIVE: { label: '5 minutes', minutes: 5 },
+  FIFTEEN: { label: '15 minutes', minutes: 15 },
+  THIRTY: { label: '30 minutes', minutes: 30 },
+  SIXTY: { label: '60 minutes', minutes: 60 },
+};
+
 const SETTINGS_KEYS = {
   HAPTICS_ENABLED: '@insolentbard:settings:haptics',
   EASTER_EGG_FREQUENCY: '@insolentbard:settings:easterEggFrequency',
   SOUND_EFFECT: '@insolentbard:settings:soundEffect',
   SOUND_VOLUME: '@insolentbard:settings:soundVolume',
+  INSULT_REFRESH_INTERVAL: '@insolentbard:settings:insultRefreshInterval',
 };
 
 // Default sound volume (30%)
@@ -51,17 +60,19 @@ export function SettingsProvider({ children }) {
   const [easterEggFrequency, setEasterEggFrequency] = useState('NORMAL');
   const [soundEffect, setSoundEffect] = useState(SOUND_EFFECTS.CHIME);
   const [soundVolume, setSoundVolume] = useState(DEFAULT_SOUND_VOLUME);
+  const [insultRefreshInterval, setInsultRefreshInterval] = useState('SIXTY');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from AsyncStorage on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [haptics, frequency, sound, volume] = await Promise.all([
+        const [haptics, frequency, sound, volume, interval] = await Promise.all([
           AsyncStorage.getItem(SETTINGS_KEYS.HAPTICS_ENABLED),
           AsyncStorage.getItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_EFFECT),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_VOLUME),
+          AsyncStorage.getItem(SETTINGS_KEYS.INSULT_REFRESH_INTERVAL),
         ]);
 
         if (haptics !== null) {
@@ -75,6 +86,9 @@ export function SettingsProvider({ children }) {
         }
         if (volume !== null) {
           setSoundVolume(parseInt(volume, 10));
+        }
+        if (interval !== null) {
+          setInsultRefreshInterval(interval);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -131,12 +145,28 @@ export function SettingsProvider({ children }) {
   const setSoundVolumePref = useCallback(async (volume) => {
     try {
       setSoundVolume(volume);
-      
+
       await AsyncStorage.setItem(SETTINGS_KEYS.SOUND_VOLUME, volume.toString());
     } catch (error) {
       console.error('Error saving sound volume setting:', error);
     }
   }, []);
+
+  // Set insult refresh interval
+  const setInsultRefreshIntervalPref = useCallback(async (interval) => {
+    try {
+      setInsultRefreshInterval(interval);
+
+      await AsyncStorage.setItem(SETTINGS_KEYS.INSULT_REFRESH_INTERVAL, interval);
+    } catch (error) {
+      console.error('Error saving insult refresh interval setting:', error);
+    }
+  }, []);
+
+  // Get interval in minutes
+  const getInsultRefreshIntervalMinutes = useCallback(() => {
+    return INSULT_REFRESH_INTERVALS[insultRefreshInterval].minutes;
+  }, [insultRefreshInterval]);
 
   const value = {
     hapticsEnabled,
@@ -148,6 +178,9 @@ export function SettingsProvider({ children }) {
     setSoundEffect: setSoundEffectPref,
     soundVolume,
     setSoundVolume: setSoundVolumePref,
+    insultRefreshInterval,
+    setInsultRefreshInterval: setInsultRefreshIntervalPref,
+    getInsultRefreshIntervalMinutes,
     isLoading,
   };
 

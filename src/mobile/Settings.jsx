@@ -28,7 +28,7 @@ import { StatusBar } from 'expo-status-bar';
 import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 
-import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
+import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS, INSULT_REFRESH_INTERVALS } from '../contexts/SettingsContext';
 import { useAppContext } from '../contexts/AppContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
@@ -37,7 +37,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
-  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
+  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, insultRefreshInterval, setInsultRefreshInterval } = useSettings();
   const { keyPrefix, fetchFavorites } = useAppContext();
 
   const haptics = useHaptics();
@@ -107,6 +107,11 @@ export default function Settings({ appConfig, setDismiss }) {
   const handleVolumeChangeComplete = useCallback(() => {
     haptics.light();
   }, [haptics]);
+
+  const handleInsultRefreshIntervalChange = useCallback((interval) => {
+    haptics.selection();
+    setInsultRefreshInterval(interval);
+  }, [setInsultRefreshInterval, haptics]);
 
   const openGitHub = useCallback(() => {
     haptics.light();
@@ -268,6 +273,36 @@ export default function Settings({ appConfig, setDismiss }) {
                       {percentage === 0 ? 'None' : `${(percentage * 100).toFixed(0)}%`}
                     </Text>
                   </View>
+                </View>
+              </PressableOpacity>
+            ))}
+          </View>
+
+          {/* Insult Refresh Interval */}
+          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Insult of the Hour</Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              How often should the featured insult refresh?
+            </Text>
+
+            {Object.entries(INSULT_REFRESH_INTERVALS).map(([key, { label }]) => (
+              <PressableOpacity
+                key={key}
+                style={styles.frequencyOption}
+                onPress={() => handleInsultRefreshIntervalChange(key)}
+              >
+                <View style={styles.radioRow}>
+                  <View style={[
+                    styles.radio,
+                    { borderColor: colors.primary }
+                  ]}>
+                    {insultRefreshInterval === key && (
+                      <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
+                    )}
+                  </View>
+                  <Text style={[styles.frequencyLabel, { color: colors.text }]}>
+                    {label}
+                  </Text>
                 </View>
               </PressableOpacity>
             ))}
