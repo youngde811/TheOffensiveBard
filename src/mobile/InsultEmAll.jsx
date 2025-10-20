@@ -52,7 +52,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
   const { playFavoriteSound } = useSound();
   const { colors } = useTheme();
   const { getEasterEggCount } = useSettings();
-  const { currentInsult: insultOfTheHour, isRefreshing, refreshInsult } = useInsultOfTheHour(insults);
+  const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(insults);
   const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
   // Use the new shared selection hook

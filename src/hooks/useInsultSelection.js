@@ -1,5 +1,5 @@
-// Custom hook for managing insult selection state and actions
-// Shared between InsultEmAll and FavoriteInsults
+// Custom hook for managing insult selection state and actions.
+// Shared between InsultEmAll and FavoriteInsults.
 
 // MIT License
 
@@ -73,6 +73,7 @@ export function useInsultSelection(mode = 'main') {
   // Check if an item is selected
   const isSelected = useCallback((item) => {
     const key = getKey(item);
+    
     return selectedInsults.some(selected => getKey(selected) === key);
   }, [selectedInsults, getKey]);
 
