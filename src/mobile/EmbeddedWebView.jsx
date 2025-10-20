@@ -35,32 +35,32 @@ import { useTheme } from '../contexts/ThemeContext';
 import styles from '../styles/styles.js';
 
 function LoadingIndicator({ colors }) {
-    return (
-        <ActivityIndicator color={colors.primary} size='large'/>
-    );
+  return (
+    <ActivityIndicator color={colors.primary} size='large' />
+  );
 }
 
 export default function EmbeddedWebView({ webPage, setDismiss }) {
-    const { colors, isDark } = useTheme();
-    const [htmlContent, setHtmlContent] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
+  const { colors, isDark } = useTheme();
+  const [htmlContent, setHtmlContent] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        async function loadContent() {
-            // Check if it's a local file path
-            if (webPage.startsWith('./assets/')) {
-                try {
-                    const htmlFile = require('../../assets/about.html');
-                    const asset = Asset.fromModule(htmlFile);
-                  
-                    await asset.downloadAsync();
+  useEffect(() => {
+    async function loadContent() {
+      // Check if it's a local file path
+      if (webPage.startsWith('./assets/')) {
+        try {
+          const htmlFile = require('../../assets/about.html');
+          const asset = Asset.fromModule(htmlFile);
 
-                    const response = await fetch(asset.localUri || asset.uri);
+          await asset.downloadAsync();
 
-                    let html = await response.text();
+          const response = await fetch(asset.localUri || asset.uri);
 
-                    // Inject theme-aware CSS
-                    const themeStyles = `
+          let html = await response.text();
+
+          // Inject theme-aware CSS
+          const themeStyles = `
                         <style>
                             body {
                                 background-color: ${colors.background} !important;
@@ -93,58 +93,58 @@ export default function EmbeddedWebView({ webPage, setDismiss }) {
                         </style>
                     `;
 
-                    // Inject styles before closing </head> tag or at the beginning if no head tag
-                    if (html.includes('</head>')) {
-                        html = html.replace('</head>', `${themeStyles}</head>`);
-                    } else if (html.includes('<head>')) {
-                        html = html.replace('<head>', `<head>${themeStyles}`);
-                    } else {
-                        html = themeStyles + html;
-                    }
+          // Inject styles before closing </head> tag or at the beginning if no head tag
+          if (html.includes('</head>')) {
+            html = html.replace('</head>', `${themeStyles}</head>`);
+          } else if (html.includes('<head>')) {
+            html = html.replace('<head>', `<head>${themeStyles}`);
+          } else {
+            html = themeStyles + html;
+          }
 
-                    setHtmlContent(html);
-                } catch (error) {
-                    console.error('Error loading local HTML:', error);
-                }
-            }
-            setIsLoading(false);
+          setHtmlContent(html);
+        } catch (error) {
+          console.error('Error loading local HTML:', error);
         }
-        loadContent();
-    }, [webPage, colors, isDark]);
-
-    if (isLoading) {
-        return (
-            <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
-                <LoadingIndicator colors={colors} />
-            </SafeAreaView>
-        );
+      }
+      setIsLoading(false);
     }
+    loadContent();
+  }, [webPage, colors, isDark]);
 
-    // Determine the source for WebView
-    const webViewSource = htmlContent
-        ? { html: htmlContent }
-        : { uri: webPage };
-
-    const originWhitelist = htmlContent
-        ? ['*']
-        : ['https://*'];
-
+  if (isLoading) {
     return (
-        <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
-          <StatusBar style={isDark ? "light" : "dark"}/>
-          <WebView
-              style={ [styles.webView, { backgroundColor: colors.background }] }
-              originWhitelist={ originWhitelist }
-              source={ webViewSource }
-              startInLoadingState={ true }
-              renderLoading={ () => <LoadingIndicator colors={colors} /> }
-              allowsBackForwardNavigationGestures={ true }
-              decelerationRate={ 'normal' }/>
-          <View style={ [styles.webFooter, { backgroundColor: colors.surface }] }>
-            <PressableOpacity style={ styles.webButtons } title={ 'Dismiss' } onPress={ setDismiss }>
-              <Text style={ styles.webText }>Dismiss</Text>
-            </PressableOpacity>
-          </View>
-        </SafeAreaView>
+      <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
+        <LoadingIndicator colors={colors} />
+      </SafeAreaView>
     );
+  }
+
+  // Determine the source for WebView
+  const webViewSource = htmlContent
+    ? { html: htmlContent }
+    : { uri: webPage };
+
+  const originWhitelist = htmlContent
+    ? ['*']
+    : ['https://*'];
+
+  return (
+    <SafeAreaView style={[styles.webViewTop, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDark ? "light" : "dark"} />
+      <WebView
+        style={[styles.webView, { backgroundColor: colors.background }]}
+        originWhitelist={originWhitelist}
+        source={webViewSource}
+        startInLoadingState={true}
+        renderLoading={() => <LoadingIndicator colors={colors} />}
+        allowsBackForwardNavigationGestures={true}
+        decelerationRate={'normal'} />
+      <View style={[styles.webFooter, { backgroundColor: colors.surface }]}>
+        <PressableOpacity style={styles.webButtons} title={'Dismiss'} onPress={setDismiss}>
+          <Text style={styles.webText}>Dismiss</Text>
+        </PressableOpacity>
+      </View>
+    </SafeAreaView>
+  );
 };

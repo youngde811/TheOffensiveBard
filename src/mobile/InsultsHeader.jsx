@@ -51,8 +51,12 @@ export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive
 
   // Truncate long insults with ellipsis
   const truncateInsult = (insult, maxLength = 50) => {
-    if (!insult) return '';
+    if (!insult) {
+      return '';
+    }
+    
     const text = insult.insult || insult;
+    
     return text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : text;
   };
 

@@ -41,7 +41,7 @@ import { useNavigation, NavigationContainer } from '@react-navigation/native';
 
 import { Entypo } from '@expo/vector-icons';
 
-import { setJSExceptionHandler, setNativeExceptionHandler } from 'react-native-exception-handler';
+import { setJSExceptionHandler } from 'react-native-exception-handler';
 import RNRestart from 'react-native-restart';
 
 import InsultPage from './src/mobile/InsultPage';

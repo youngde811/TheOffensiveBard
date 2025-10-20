@@ -52,6 +52,7 @@ function shuffleArray(array) {
 // Get random sample of insults
 function getRandomSample(source, sampleSize) {
   const shuffled = shuffleArray(source);
+  
   return shuffled.slice(0, sampleSize);
 }
 

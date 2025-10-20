@@ -21,7 +21,6 @@ import React, { useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
 
 import PressableOpacity from './PressableOpacity';
 import TouchableIcon from './TouchableIcon';
@@ -46,7 +45,7 @@ export default function SwipeableInsultItem({
 }) {
   const swipeableRef = useRef(null);
 
-  const renderRightActions = (progress, dragX) => {
+  const renderRightActions = (_progress, _dragX) => {
     return (
       <View style={swipeStyles.rightActionsContainer}>
         <Animated.View style={swipeStyles.actionButton}>

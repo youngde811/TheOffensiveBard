@@ -25,7 +25,7 @@ const SettingsContext = createContext();
 // Easter egg frequency percentages
 export const EASTER_EGG_FREQUENCY = {
   OFF: { label: 'Off', percentage: 0 },
-  FEW: { label: 'Few', percentage: 0.02 },      // 2%
+  FEW: { label: 'Few', percentage: 0.02 },       // 2%
   NORMAL: { label: 'Normal', percentage: 0.08 }, // 8%
   MANY: { label: 'Many', percentage: 0.15 },     // 15%
 };

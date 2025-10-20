@@ -52,7 +52,7 @@ export default function OldEnglishOverlay({ insultText, visible, onDismiss, posi
 
       return () => clearTimeout(timer);
     }
-  }, [visible]);
+  }, [visible]); // eslint-disable-line consistent-return
 
   const dismissOverlay = () => {
     Animated.parallel([

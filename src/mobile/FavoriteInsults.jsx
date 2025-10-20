@@ -23,12 +23,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, View, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
-import { Ionicons } from '@expo/vector-icons';
-
-import ScalableText from 'react-native-text';
 
 import * as Linking from 'expo-linking';
 
@@ -48,208 +45,210 @@ import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 import { useImageShare } from '../hooks/useImageShare';
 
 export default function FavoriteInsults({ appConfig, setDismiss }) {
-    const { colors } = useTheme();
-    const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
-    const { writeToClipboard } = useClipboard();
-    const { shareInsult } = useShare();
+  const { colors } = useTheme();
+  const { smstag, favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
+  const { writeToClipboard } = useClipboard();
+  const { shareInsult } = useShare();
 
-    const haptics = useHaptics();
-    const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
-    const { imageRef, isGenerating, shareAsImage } = useImageShare();
+  const haptics = useHaptics();
+  
+  const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
+  const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
-    const [selectedInsults, setSelectedInsults] = useState([]);
-    const [insultToShare, setInsultToShare] = useState(null);
+  const [selectedInsults, setSelectedInsults] = useState([]);
+  const [insultToShare, setInsultToShare] = useState(null);
 
-    const insultSelect = useCallback((item) => {
-        haptics.selection();
+  const insultSelect = useCallback((item) => {
+    haptics.selection();
 
-        const isSelected = selectedInsults.some(selected => selected.id === item.id);
+    const isSelected = selectedInsults.some(selected => selected.id === item.id);
 
-        if (isSelected) {
-            // Remove from selection
-            setSelectedInsults(selectedInsults.filter(selected => selected.id !== item.id));
-        } else {
-            // Add to selection
-            const newSelection = [...selectedInsults, item];
-          
-            setSelectedInsults(newSelection);
+    if (isSelected) {
+      // Remove from selection
+      setSelectedInsults(selectedInsults.filter(selected => selected.id !== item.id));
+    } else {
+      // Add to selection
+      const newSelection = [...selectedInsults, item];
+      setSelectedInsults(newSelection);
 
-            // Copy all selected insults to clipboard
-            const insultTexts = newSelection.map(i => i.insult).join('\n');
-            writeToClipboard(insultTexts);
-        }
-    }, [selectedInsults, writeToClipboard, haptics]);
+      // Copy all selected insults to clipboard
+      const insultTexts = newSelection.map(i => i.insult).join('\n');
+      writeToClipboard(insultTexts);
+    }
+  }, [selectedInsults, writeToClipboard, haptics]);
 
-    const renderInsult = useCallback(({item, index}) => {
-        const isSelected = selectedInsults.some(selected => selected.id === item.id);
-
-        return (
-            <SwipeableInsultItem
-                item={item}
-                index={index}
-                isSelected={isSelected}
-                hasEgg={false}
-                seasonalIcon=""
-                onPress={() => insultSelect(item)}
-                onLongPress={() => {}}
-                onFavorite={async () => {
-                    haptics.light();
-                    await removeFavorite(item);
-                }}
-                onShare={() => handleShareInsultAsImage(item)}
-                onEggPress={() => {}}
-                onEggLongPress={() => {}}
-                colors={colors}
-                favoriteIcon="trash-outline"
-                favoriteColor="#e74c3c"
-            />
-        );
-    }, [selectedInsults, insultSelect, removeFavorite, handleShareInsultAsImage, haptics, colors]);
-
-    const sendInsult = useCallback(() => {
-        if (selectedInsults.length > 0) {
-            haptics.medium();
-          
-            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
-            Linking.openURL(smstag + combinedInsults);
-        }
-    }, [selectedInsults, smstag, haptics]);
-
-    const forgetFavorite = useCallback(async () => {
-        if (selectedInsults.length > 0) {
-            haptics.light();
-
-            // Remove all selected favorites
-            for (const item of selectedInsults) {
-                await removeFavorite(item);
-            }
-
-            setSelectedInsults([]);
-        }
-    }, [selectedInsults, removeFavorite, haptics]);
-
-    const handleShare = useCallback(async () => {
-        if (selectedInsults.length > 0) {
-            haptics.medium();
-
-            const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
-            await shareInsult(combinedInsults);
-        }
-    }, [selectedInsults, shareInsult, haptics]);
-
-    const handleInsultOfTheHourPress = useCallback(async () => {
-        if (insultOfTheHour) {
-            haptics.light();
-            const insultText = insultOfTheHour.insult || insultOfTheHour;
-            setInsultToShare(insultText);
-        }
-    }, [insultOfTheHour, haptics]);
-
-    const handleShareInsultAsImage = useCallback((item) => {
-        haptics.light();
-        const insultText = item.insult || item;
-        setInsultToShare(insultText);
-    }, [haptics]);
-
-    // Trigger image sharing when insultToShare is set
-    useEffect(() => {
-        if (insultToShare && !isGenerating) {
-            shareAsImage(insultToShare).then(() => {
-                setInsultToShare(null);
-            });
-        }
-    }, [insultToShare, isGenerating, shareAsImage]);
-
-    useEffect(() => {
-        fetchFavorites();
-    }, [fetchFavorites]);
-
-    const renderFavorites = () => {
-        if (isLoadingFavorites) {
-            return (
-                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <Text style={{ marginTop: 10, color: colors.textMuted }}>Loading favorites...</Text>
-                </View>
-            );
-        }
-
-        if (favorites.length === 0) {
-            return null;
-        }
-
-        return (
-            <FlashList
-              data={ favorites }
-              keyExtractor={ (item) => item.id }
-              extraData={ selectedInsults }
-              estimatedItemSize={ 80 }
-              renderItem={ renderInsult }/>
-        );
-    };
+  const renderInsult = useCallback(({ item, index }) => {
+    const isSelected = selectedInsults.some(selected => selected.id === item.id);
 
     return (
-        <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
-          <SafeAreaView style={ styles.favoritesTopView }>
-            <StatusBar style="auto"/>
-            <View style={{ zIndex: 1000, elevation: 10 }}>
-              <InsultsHeader
-                appConfig={appConfig}
-                insultOfTheHour={insultOfTheHour}
-                isRefreshing={isRefreshing}
-                onInsultPress={handleInsultOfTheHourPress}
-              />
-            </View>
-            { favorites.length === 0 && !isLoadingFavorites ?
-              <NoFavorites/>
-              :
-              <View style={ styles.favoritesSurface }>
-                <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }}>
-                  <View style={ styles.favoritesListView }>
-                    { renderFavorites() }
-                  </View>
-                </View>
+      <SwipeableInsultItem
+        item={item}
+        index={index}
+        isSelected={isSelected}
+        hasEgg={false}
+        seasonalIcon=""
+        onPress={() => insultSelect(item)}
+        onLongPress={() => {}}
+        onFavorite={async () => {
+          haptics.light();
+          await removeFavorite(item);
+        }}
+        onShare={() => handleShareInsultAsImage(item)}
+        onEggPress={() => {}}
+        onEggLongPress={() => {}}
+        colors={colors}
+        favoriteIcon="trash-outline"
+        favoriteColor="#e74c3c"
+      />
+    );
+  }, [selectedInsults, insultSelect, removeFavorite, handleShareInsultAsImage, haptics, colors]);
+
+  const sendInsult = useCallback(() => {
+    if (selectedInsults.length > 0) {
+      haptics.medium();
+
+      const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+      Linking.openURL(smstag + combinedInsults);
+    }
+  }, [selectedInsults, smstag, haptics]);
+
+  const forgetFavorite = useCallback(async () => {
+    if (selectedInsults.length > 0) {
+      haptics.light();
+
+      // Remove all selected favorites
+      for (const item of selectedInsults) {
+        await removeFavorite(item);
+      }
+
+      setSelectedInsults([]);
+    }
+  }, [selectedInsults, removeFavorite, haptics]);
+
+  const handleShare = useCallback(async () => {
+    if (selectedInsults.length > 0) {
+      haptics.medium();
+
+      const combinedInsults = selectedInsults.map(item => item.insult).join('\n');
+      await shareInsult(combinedInsults);
+    }
+  }, [selectedInsults, shareInsult, haptics]);
+
+  const handleInsultOfTheHourPress = useCallback(async () => {
+    if (insultOfTheHour) {
+      haptics.light();
+      
+      const insultText = insultOfTheHour.insult || insultOfTheHour;
+      setInsultToShare(insultText);
+    }
+  }, [insultOfTheHour, haptics]);
+
+  const handleShareInsultAsImage = useCallback((item) => {
+    haptics.light();
+    
+    const insultText = item.insult || item;
+    setInsultToShare(insultText);
+  }, [haptics]);
+
+  // Trigger image sharing when insultToShare is set
+  useEffect(() => {
+    if (insultToShare && !isGenerating) {
+      shareAsImage(insultToShare).then(() => {
+        setInsultToShare(null);
+      });
+    }
+  }, [insultToShare, isGenerating, shareAsImage]);
+
+  useEffect(() => {
+    fetchFavorites();
+  }, [fetchFavorites]);
+
+  const renderFavorites = () => {
+    if (isLoadingFavorites) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={{ marginTop: 10, color: colors.textMuted }}>Loading favorites...</Text>
+        </View>
+      );
+    }
+
+    if (favorites.length === 0) {
+      return null;
+    }
+
+    return (
+      <FlashList
+        data={favorites}
+        keyExtractor={(item) => item.id}
+        extraData={selectedInsults}
+        estimatedItemSize={80}
+        renderItem={renderInsult} />
+    );
+  };
+
+  return (
+    <View style={[styles.backgroundImage, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={styles.favoritesTopView}>
+        <StatusBar style="auto" />
+        <View style={{ zIndex: 1000, elevation: 10 }}>
+          <InsultsHeader
+            appConfig={appConfig}
+            insultOfTheHour={insultOfTheHour}
+            isRefreshing={isRefreshing}
+            onInsultPress={handleInsultOfTheHourPress}
+          />
+        </View>
+        {favorites.length === 0 && !isLoadingFavorites ?
+          <NoFavorites />
+          :
+          <View style={styles.favoritesSurface}>
+            <View style={{ flex: 1, backgroundColor: colors.surface, borderRadius: 16, padding: 0, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 3.84, elevation: 4 }}>
+              <View style={styles.favoritesListView}>
+                {renderFavorites()}
               </View>
-            }
-            <View style={ styles.favoritesFooter }>
-              <PressableOpacity
-                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                title={ 'SMS' }
-                onPress={ sendInsult }
-                disabled={ selectedInsults.length === 0 }>
-                <Text style={ styles.favoritesButtonText }>SMS</Text>
-              </PressableOpacity>
-              <View style={ styles.spacer }/>
-              <PressableOpacity
-                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                title={ 'Share' }
-                onPress={ handleShare }
-                disabled={ selectedInsults.length === 0 }>
-                <Text style={ styles.favoritesButtonText }>Share</Text>
-              </PressableOpacity>
-              <View style={ styles.spacer }/>
-              <PressableOpacity
-                style={ selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons }
-                title={ 'Forget' }
-                onPress={ forgetFavorite }
-                disabled={ selectedInsults.length === 0 }>
-                <Text style={ styles.favoritesButtonText }>Forget</Text>
-              </PressableOpacity>
-              <View style={ styles.spacer }/>
-              <PressableOpacity
-                style={ styles.favoritesButtons }
-                title={ 'Dismiss' }
-                onPress={ setDismiss }>
-                <Text style={ styles.favoritesButtonText }>Dismiss</Text>
-              </PressableOpacity>
-            </View>
-          </SafeAreaView>
-          {/* Hidden view for image generation */}
-          <View style={{ position: 'absolute', left: -10000, top: -10000 }} collapsable={false}>
-            <View ref={imageRef} collapsable={false}>
-              <InsultImageTemplate insultText={insultToShare || ''} />
             </View>
           </View>
+        }
+        <View style={styles.favoritesFooter}>
+          <PressableOpacity
+            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
+            title={'SMS'}
+            onPress={sendInsult}
+            disabled={selectedInsults.length === 0}>
+            <Text style={styles.favoritesButtonText}>SMS</Text>
+          </PressableOpacity>
+          <View style={styles.spacer} />
+          <PressableOpacity
+            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
+            title={'Share'}
+            onPress={handleShare}
+            disabled={selectedInsults.length === 0}>
+            <Text style={styles.favoritesButtonText}>Share</Text>
+          </PressableOpacity>
+          <View style={styles.spacer} />
+          <PressableOpacity
+            style={selectedInsults.length > 0 ? styles.favoritesButtons : styles.disabledFavoritesButtons}
+            title={'Forget'}
+            onPress={forgetFavorite}
+            disabled={selectedInsults.length === 0}>
+            <Text style={styles.favoritesButtonText}>Forget</Text>
+          </PressableOpacity>
+          <View style={styles.spacer} />
+          <PressableOpacity
+            style={styles.favoritesButtons}
+            title={'Dismiss'}
+            onPress={setDismiss}>
+            <Text style={styles.favoritesButtonText}>Dismiss</Text>
+          </PressableOpacity>
         </View>
-    );
+      </SafeAreaView>
+      {/* Hidden view for image generation */}
+      <View style={{ position: 'absolute', left: -10000, top: -10000 }} collapsable={false}>
+        <View ref={imageRef} collapsable={false}>
+          <InsultImageTemplate insultText={insultToShare || ''} />
+        </View>
+      </View>
+    </View>
+  );
 }

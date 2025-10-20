@@ -69,7 +69,7 @@ export default function SearchBar({ isVisible, searchQuery, onSearchChange, onCl
           autoCorrect={false}
           returnKeyType="search"
         />
-        {searchQuery.length > 0 && (
+        { searchQuery.length > 0 && (
           <>
             <Text style={[styles.searchResultCount, { color: colors.primary }]}>
               {resultCount}

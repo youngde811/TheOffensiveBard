@@ -28,18 +28,18 @@ import { getHeaderTitle } from '@react-navigation/elements';
 import styles from '../styles/styles.js';
 
 export default function NavigationHeader({ appConfig, navigation, route, options }) {
-    const title = getHeaderTitle(options, "Unknown");
+  const title = getHeaderTitle(options, "Unknown");
 
-    return (
-        <SafeAreaProvider>
-          <View style={ styles.headerTextView }>
-            <Text style={ styles.headerTitle }>
-              { title }
-            </Text>
-            <Text style={ styles.headerSubtitle }>
-              { appConfig.names.appSubtitle }
-            </Text>
-          </View>
-        </SafeAreaProvider>
-    );
+  return (
+    <SafeAreaProvider>
+      <View style={styles.headerTextView}>
+        <Text style={styles.headerTitle}>
+          {title}
+        </Text>
+        <Text style={styles.headerSubtitle}>
+          {appConfig.names.appSubtitle}
+        </Text>
+      </View>
+    </SafeAreaProvider>
+  );
 }

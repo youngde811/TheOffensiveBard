@@ -49,6 +49,7 @@ export function useImageShare() {
       if (!isSharingAvailable) {
         Alert.alert('Error', 'Sharing is not available on this device');
         setIsGenerating(false);
+        
         return;
       }
 
@@ -61,6 +62,7 @@ export function useImageShare() {
       setIsGenerating(false);
     } catch (error) {
       console.error('Error sharing image:', error);
+      
       Alert.alert('Error', 'Failed to share image. Please try again.');
       setIsGenerating(false);
     }

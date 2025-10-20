@@ -22,9 +22,8 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
-import { Ionicons } from '@expo/vector-icons';
 
 import * as Linking from 'expo-linking';
 

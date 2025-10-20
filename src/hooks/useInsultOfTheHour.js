@@ -47,6 +47,7 @@ export function useInsultOfTheHour(insults) {
   // Select a random insult from the list
   const selectRandomInsult = useCallback(() => {
     if (!insults || insults.length === 0) {
+      
       return null;
     }
     

@@ -29,22 +29,22 @@ import PressableOpacity from './PressableOpacity';
 import styles from '../styles/styles.js';
 
 function LoadingIndicator() {
-    return (
-        <ActivityIndicator color='#009b88' size='large'/>
-    );
+  return (
+    <ActivityIndicator color='#009b88' size='large' />
+  );
 };
 
 export default function ModalEmbeddedWebView({ webPage, setDismiss }) {
-    return (
-        <Modal animationType="fade" presentationStyle="formSheet">
-          <WebView style={ styles.webView } originWhitelist={ ['https://*'] } source={{ url: webPage }}
-                   startInLoadingState={ true } startInLoading={ LoadingIndicator }
-                   allowsBackForwardNavigationGestures={ true } decelerationRate={ 'normal' }/>
-          <View style={ styles.webFooter }>
-            <PressableOpacity style={ styles.webButtons } title={ 'Dismiss' } onPress={ setDismiss }>
-              <Text style={ styles.webText }>Dismiss</Text>
-            </PressableOpacity>
-          </View>
-        </Modal>
-    );
+  return (
+    <Modal animationType="fade" presentationStyle="formSheet">
+      <WebView style={styles.webView} originWhitelist={['https://*']} source={{ url: webPage }}
+        startInLoadingState={true} startInLoading={LoadingIndicator}
+        allowsBackForwardNavigationGestures={true} decelerationRate={'normal'} />
+      <View style={styles.webFooter}>
+        <PressableOpacity style={styles.webButtons} title={'Dismiss'} onPress={setDismiss}>
+          <Text style={styles.webText}>Dismiss</Text>
+        </PressableOpacity>
+      </View>
+    </Modal>
+  );
 };
