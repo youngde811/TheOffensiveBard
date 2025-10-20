@@ -37,6 +37,7 @@ export function useInsultOfTheHour(insults) {
     if (!insults || insults.length === 0) {
       return null;
     }
+    
     const randomIndex = Math.floor(Math.random() * insults.length);
     return insults[randomIndex];
   }, [insults]);
@@ -53,12 +54,14 @@ export function useInsultOfTheHour(insults) {
         // If it's still the same hour, use the stored insult
         if (hourKey === currentHourKey && insult) {
           setCurrentInsult(insult);
+          
           return;
         }
       }
 
       // Generate new insult for this hour
       const newInsult = selectRandomInsult();
+      
       if (newInsult) {
         await AsyncStorage.setItem(
           STORAGE_KEY,
@@ -67,10 +70,12 @@ export function useInsultOfTheHour(insults) {
             hourKey: currentHourKey,
           })
         );
+        
         setCurrentInsult(newInsult);
       }
     } catch (error) {
       console.error('Error loading insult of the hour:', error);
+      
       // Fallback to random insult
       setCurrentInsult(selectRandomInsult());
     }
@@ -99,6 +104,7 @@ export function useInsultOfTheHour(insults) {
       }, 300);
     } catch (error) {
       console.error('Error refreshing insult:', error);
+      
       setCurrentInsult(newInsult);
       setIsRefreshing(false);
     }
