@@ -182,17 +182,27 @@ npx expo start
 ```
 TheOffensiveBard/
 ├── generator/          # Rust CLI insult generator
-│   ├── src/           # Rust source code
-│   ├── data/          # Phrases data file
-│   └── Cargo.toml     # Rust dependencies
-├── src/               # iOS app source
-│   ├── mobile/        # React Native components
-│   ├── contexts/      # React context providers
-│   ├── hooks/         # Custom React hooks
-│   ├── styles/        # Style definitions
-│   └── utils/         # Utility functions
-├── assets/            # App assets (fonts, images, data)
+│   ├── src/           # Rust source code (parser, generator, error modules)
+│   ├── data/          # Phrases data file (tab-delimited)
+│   ├── Cargo.toml     # Rust dependencies
+│   └── target/        # Compiled binaries (debug/release)
+├── src/               # React Native app source
+│   ├── mobile/        # UI components (InsultsHeader, Settings, TouchableIcon, etc.)
+│   ├── contexts/      # React context providers (Theme, Settings, App state)
+│   ├── hooks/         # Custom hooks (useClipboard, useHaptics, useInsultOfTheHour, etc.)
+│   ├── styles/        # Style definitions and color palettes
+│   ├── utils/         # Utility functions (shuffling, formatting, etc.)
+│   └── components/    # Reusable components
+├── assets/            # App assets
+│   ├── data/          # Insults JSON file (0.81MB)
+│   ├── fonts/         # Custom fonts (IM Fell English, BlackChancery)
+│   ├── sounds/        # Sound effects (chime, pop)
+│   └── about.html     # In-app About page
+├── AppStore/          # App Store screenshots and assets
+├── docs/              # Additional documentation
 ├── App.js             # App entry point
+├── app.json           # Expo configuration
+├── package.json       # Node dependencies
 └── README.md          # This file
 ```
 
