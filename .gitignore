@@ -140,3 +140,11 @@ vite.config.ts.timestamp-*
 
 # Rust build files
 generator/target
+
+# Expo
+.expo/prebuild/
+.expo/web/
+
+# macOS
+.DS_Store
+**/.DS_Store
