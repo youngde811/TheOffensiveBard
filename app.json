@@ -47,7 +47,8 @@
     },
     "owner": "cbr500r2911",
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "./plugins/withInsultWidget"
     ]
   }
 }
