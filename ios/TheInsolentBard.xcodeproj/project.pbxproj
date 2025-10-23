@@ -83,8 +83,6 @@
 				Info.plist,
 				InsultWidget.swift,
 				InsultWidgetBundle.swift,
-				InsultWidgetControl.swift,
-				InsultWidgetLiveActivity.swift,
 			);
 			target = 6CA574BA2EA973C200B4CBF9 /* InsultWidgetExtension copy */;
 		};
@@ -597,7 +595,7 @@
 				INFOPLIST_FILE = InsultWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = InsultWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -643,7 +641,7 @@
 				INFOPLIST_FILE = InsultWidget/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = InsultWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

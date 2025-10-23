@@ -206,10 +206,16 @@ struct LargeWidgetView: View {
 struct InsultWidget: Widget {
     let kind: String = "InsultWidget"
 
+    @available(iOSApplicationExtension 15.1, *)
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
-            InsultWidgetEntryView(entry: entry)
-                .containerBackground(Color(red: 0.976, green: 0.973, blue: 0.965), for: .widget)
+            if #available(iOSApplicationExtension 17.0, *) {
+                InsultWidgetEntryView(entry: entry)
+                    .containerBackground(Color(red: 0.976, green: 0.973, blue: 0.965), for: .widget)
+            } else {
+                InsultWidgetEntryView(entry: entry)
+                    .background(Color(red: 0.976, green: 0.973, blue: 0.965))
+            }
         }
         .configurationDisplayName("Insult of the Hour")
         .description("Display a Shakespearean insult on your home screen.")
@@ -237,6 +243,7 @@ struct InsultWidgetEntryView: View {
 
 // MARK: - Preview
 
+@available(iOSApplicationExtension 17.0, *)
 #Preview(as: .systemMedium) {
     InsultWidget()
 } timeline: {
