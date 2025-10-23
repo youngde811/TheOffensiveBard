@@ -2,83 +2,259 @@
 //  InsultWidget.swift
 //  InsultWidget
 //
-//  Created by David Young on 10/23/25.
+//  Created by David Young on 10/22/25.
 //
 
 import WidgetKit
 import SwiftUI
 
-struct Provider: TimelineProvider {
-    func placeholder(in context: Context) -> SimpleEntry {
-        SimpleEntry(date: Date(), emoji: "😀")
+// MARK: - Data Model
+struct InsultEntry: TimelineEntry {
+    let date: Date
+    let insult: String
+    let timestamp: String
+}
+
+// MARK: - Timeline Provider
+struct InsultProvider: TimelineProvider {
+    func placeholder(in context: Context) -> InsultEntry {
+        InsultEntry(
+            date: Date(),
+            insult: "Thou art a churlish, motley-minded knave!",
+            timestamp: "Just now"
+        )
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), emoji: "😀")
+    func getSnapshot(in context: Context, completion: @escaping (InsultEntry) -> ()) {
+        let entry = loadCurrentInsult()
         completion(entry)
     }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
+    func getTimeline(in context: Context, completion: @escaping (Timeline<InsultEntry>) -> ()) {
+        let entry = loadCurrentInsult()
 
-        // Generate a timeline consisting of five entries an hour apart, starting from the current date.
-        let currentDate = Date()
-        for hourOffset in 0 ..< 5 {
-            let entryDate = Calendar.current.date(byAdding: .hour, value: hourOffset, to: currentDate)!
-            let entry = SimpleEntry(date: entryDate, emoji: "😀")
-            entries.append(entry)
-        }
+        // Refresh every 15 minutes (or based on user's interval setting)
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
 
-        let timeline = Timeline(entries: entries, policy: .atEnd)
         completion(timeline)
     }
 
-//    func relevances() async -> WidgetRelevances<Void> {
-//        // Generate a list containing the contexts this widget is relevant in.
-//    }
-}
+    private func loadCurrentInsult() -> InsultEntry {
+        let sharedDefaults = UserDefaults(suiteName: "group.com.bosshog811.TheInsolentBard")
 
-struct SimpleEntry: TimelineEntry {
-    let date: Date
-    let emoji: String
-}
+        if let dataString = sharedDefaults?.string(forKey: "currentInsult"),
+           let data = dataString.data(using: .utf8),
+           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let insult = json["insult"] as? String,
+           let timestampString = json["timestamp"] as? String {
 
-struct InsultWidgetEntryView : View {
-    var entry: Provider.Entry
+            let timestamp = formatTimestamp(timestampString)
 
-    var body: some View {
-        VStack {
-            Text("Time:")
-            Text(entry.date, style: .time)
+            return InsultEntry(
+                date: Date(),
+                insult: insult,
+                timestamp: timestamp
+            )
+        }
 
-            Text("Emoji:")
-            Text(entry.emoji)
+        // Fallback
+        return InsultEntry(
+            date: Date(),
+            insult: "Thou art a villainous tickle-brained canker-blossom!",
+            timestamp: "Open app to refresh"
+        )
+    }
+
+    private func formatTimestamp(_ isoString: String) -> String {
+        let formatter = ISO8601DateFormatter()
+        guard let date = formatter.date(from: isoString) else {
+            return "Recently"
+        }
+
+        let interval = Date().timeIntervalSince(date)
+        let minutes = Int(interval / 60)
+
+        if minutes < 1 {
+            return "Just now"
+        } else if minutes == 1 {
+            return "1 minute ago"
+        } else if minutes < 60 {
+            return "\(minutes) minutes ago"
+        } else {
+            let hours = minutes / 60
+            return hours == 1 ? "1 hour ago" : "\(hours) hours ago"
         }
     }
 }
+
+// MARK: - Widget Views
+
+struct SmallWidgetView: View {
+    var entry: InsultEntry
+
+    var body: some View {
+        ZStack {
+            // Parchment background
+            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+
+            VStack(spacing: 4) {
+                Text("🎭")
+                    .font(.title2)
+
+                Text(entry.insult)
+                    .font(.system(size: 11))
+                    .fontWeight(.medium)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                    .padding(.horizontal, 8)
+            }
+            .padding(8)
+        }
+    }
+}
+
+struct MediumWidgetView: View {
+    var entry: InsultEntry
+    @Environment(\.colorScheme) var colorScheme
+
+    var body: some View {
+        ZStack {
+            // Parchment background
+            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+
+            VStack(alignment: .leading, spacing: 8) {
+                // Title
+                Text("THE INSOLENT BARD")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+                    .tracking(1.5)
+
+                Spacer()
+
+                // Insult text
+                Text(entry.insult)
+                    .font(.custom("IMFellEnglish-Regular", size: 16))
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(4)
+                    .lineSpacing(4)
+
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                    .font(.system(size: 9))
+                    .foregroundColor(Color.gray)
+                    .opacity(0.7)
+            }
+            .padding(16)
+        }
+        .widgetURL(URL(string: "insolentbard://share-insult")!)
+    }
+}
+
+struct LargeWidgetView: View {
+    var entry: InsultEntry
+
+    var body: some View {
+        ZStack {
+            // Parchment background
+            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+
+            VStack(alignment: .center, spacing: 12) {
+                // Title with decorative elements
+                HStack {
+                    Text("⚔️")
+                    Text("THE INSOLENT BARD")
+                        .font(.system(size: 14, weight: .bold))
+                        .tracking(2)
+                    Text("🎭")
+                }
+                .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+
+                Spacer()
+
+                // Insult text (larger)
+                Text(entry.insult)
+                    .font(.custom("IMFellEnglish-Regular", size: 22))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                    .multilineTextAlignment(.center)
+                    .lineLimit(5)
+                    .lineSpacing(6)
+                    .padding(.horizontal, 20)
+
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                    .font(.system(size: 11))
+                    .foregroundColor(Color.gray)
+                    .opacity(0.7)
+            }
+            .padding(20)
+        }
+        .widgetURL(URL(string: "insolentbard://share-insult")!)
+    }
+}
+
+// MARK: - Widget Configuration
 
 struct InsultWidget: Widget {
     let kind: String = "InsultWidget"
 
+    @available(iOSApplicationExtension 15.1, *)
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
-            if #available(iOS 17.0, *) {
+        StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
+            if #available(iOSApplicationExtension 17.0, *) {
                 InsultWidgetEntryView(entry: entry)
-                    .containerBackground(.fill.tertiary, for: .widget)
+                    .containerBackground(Color(red: 0.976, green: 0.973, blue: 0.965), for: .widget)
             } else {
                 InsultWidgetEntryView(entry: entry)
-                    .padding()
-                    .background()
+                    .background(Color(red: 0.976, green: 0.973, blue: 0.965))
             }
         }
-        .configurationDisplayName("My Widget")
-        .description("This is an example widget.")
+        .configurationDisplayName("Insult of the Hour")
+        .description("Display a Shakespearean insult on your home screen.")
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
-#Preview(as: .systemSmall) {
+struct InsultWidgetEntryView: View {
+    @Environment(\.widgetFamily) var family
+    var entry: InsultEntry
+
+    var body: some View {
+        switch family {
+        case .systemSmall:
+            SmallWidgetView(entry: entry)
+        case .systemMedium:
+            MediumWidgetView(entry: entry)
+        case .systemLarge:
+            LargeWidgetView(entry: entry)
+        default:
+            MediumWidgetView(entry: entry)
+        }
+    }
+}
+
+// MARK: - Preview
+
+@available(iOSApplicationExtension 17.0, *)
+#Preview(as: .systemMedium) {
     InsultWidget()
 } timeline: {
-    SimpleEntry(date: .now, emoji: "😀")
-    SimpleEntry(date: .now, emoji: "🤩")
+    InsultEntry(
+        date: Date(),
+        insult: "Thou gleeking flap-mouthed foot-licker!",
+        timestamp: "5 minutes ago"
+    )
+    InsultEntry(
+        date: Date(),
+        insult: "Thou art a puking tickle-brained canker-blossom!",
+        timestamp: "Just now"
+    )
 }

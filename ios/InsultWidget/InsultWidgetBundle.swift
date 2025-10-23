@@ -12,6 +12,5 @@ import SwiftUI
 struct InsultWidgetBundle: WidgetBundle {
     var body: some Widget {
         InsultWidget()
-        InsultWidgetControl()
     }
 }
