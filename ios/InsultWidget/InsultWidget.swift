@@ -267,7 +267,7 @@ struct InsultWidgetEntryView: View {
     )
     InsultEntry(
       date: Date(),
-      insult: "Thou art a puking tickle-brained canker-blossom!",
+      insult: "Thou puking tickle-brained canker-blossom!",
       timestamp: "Just now"
     )
 }
