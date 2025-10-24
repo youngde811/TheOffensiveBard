@@ -2,6 +2,7 @@
 
 import { Platform } from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
+import WidgetKit from 'react-native-widgetkit';
 
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const WIDGET_DATA_KEY = 'currentInsult';
@@ -28,6 +29,14 @@ export async function shareInsultWithWidget(insultText) {
     );
 
     console.log('Shared insult with widget:', insultText);
+
+    // Force widget to reload
+    try {
+      await WidgetKit.reloadAllTimelines();
+      console.log('Widget reloaded');
+    } catch (reloadError) {
+      console.log('Widget reload not available:', reloadError.message);
+    }
   } catch (error) {
     console.error('Error sharing data with widget:', error);
   }
