@@ -88,8 +88,9 @@ export function useInsultOfTheHour(insults) {
 
         setCurrentInsult(newInsult);
 
-        // Share with widget
-        await shareInsultWithWidget(newInsult);
+        // Share with widget (extract text from object)
+        const insultText = newInsult.insult || newInsult;
+        await shareInsultWithWidget(insultText);
       }
     } catch (error) {
       console.error('Error loading insult of the hour:', error);
@@ -116,8 +117,9 @@ export function useInsultOfTheHour(insults) {
         })
       );
 
-      // Share with widget
-      await shareInsultWithWidget(newInsult);
+      // Share with widget (extract text from object)
+      const insultText = newInsult.insult || newInsult;
+      await shareInsultWithWidget(insultText);
 
       // Small delay to show animation
       setTimeout(() => {
