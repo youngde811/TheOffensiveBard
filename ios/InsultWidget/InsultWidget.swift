@@ -107,18 +107,18 @@ struct SmallWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Parchment background
-            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+            // Aged parchment background
+            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
 
             VStack(spacing: 4) {
                 Text("🎭")
                     .font(.title2)
 
                 Text(entry.insult)
-                    .font(.system(size: 11))
+                    .font(.system(size: 9))
                     .fontWeight(.medium)
                     .multilineTextAlignment(.center)
-                    .lineLimit(3)
+                    .lineLimit(4)
                     .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
                     .padding(.horizontal, 8)
             }
@@ -133,8 +133,8 @@ struct MediumWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Parchment background
-            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+            // Aged parchment background
+            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
 
             VStack(alignment: .leading, spacing: 8) {
                 // Title
@@ -147,12 +147,12 @@ struct MediumWidgetView: View {
 
                 // Insult text
                 Text(entry.insult)
-                    .font(.custom("IMFellEnglish-Regular", size: 16))
+                    .font(.custom("IMFellEnglish-Regular", size: 14))
                     .fontWeight(.semibold)
                     .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
                     .multilineTextAlignment(.leading)
-                    .lineLimit(4)
-                    .lineSpacing(4)
+                    .lineLimit(5)
+                    .lineSpacing(3)
 
                 Spacer()
 
@@ -173,8 +173,8 @@ struct LargeWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Parchment background
-            Color(red: 0.976, green: 0.973, blue: 0.965) // #f9f8f6
+            // Aged parchment background
+            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
 
             VStack(alignment: .center, spacing: 12) {
                 // Title with decorative elements
@@ -191,12 +191,12 @@ struct LargeWidgetView: View {
 
                 // Insult text (larger)
                 Text(entry.insult)
-                    .font(.custom("IMFellEnglish-Regular", size: 22))
+                    .font(.custom("IMFellEnglish-Regular", size: 18))
                     .fontWeight(.bold)
                     .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
                     .multilineTextAlignment(.center)
-                    .lineLimit(5)
-                    .lineSpacing(6)
+                    .lineLimit(6)
+                    .lineSpacing(5)
                     .padding(.horizontal, 20)
 
                 Spacer()
@@ -223,10 +223,10 @@ struct InsultWidget: Widget {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
             if #available(iOSApplicationExtension 17.0, *) {
                 InsultWidgetEntryView(entry: entry)
-                    .containerBackground(Color(red: 0.976, green: 0.973, blue: 0.965), for: .widget)
+                    .containerBackground(Color(red: 0.945, green: 0.933, blue: 0.898), for: .widget)
             } else {
                 InsultWidgetEntryView(entry: entry)
-                    .background(Color(red: 0.976, green: 0.973, blue: 0.965))
+                    .background(Color(red: 0.945, green: 0.933, blue: 0.898))
             }
         }
         .configurationDisplayName("Insult of the Hour")

@@ -10,10 +10,11 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ## iOS App
 
-**The Insolent Bard** (v1.8.0) delivers authentic Shakespearean insults with a modern, intuitive interface.
+**The Insolent Bard** (v2.4.3) delivers authentic Shakespearean insults with a modern, intuitive interface.
 
 ### Features
 
+- **Home Screen Widget** - Display your current Insult of the Hour on your home screen in small, medium, or large sizes with aged parchment styling
 - **Insult of the Hour** - Featured insult in warm burgundy color, displayed in elegant Old English font
 - **Configurable Refresh** - Choose how often the featured insult updates: 5, 15, 30, or 60 minutes
 - **Share as Image** - Tap the featured insult or long-press easter eggs to share beautiful parchment-styled images
@@ -36,6 +37,10 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 ### Tech Stack
 
 - **React Native 19.1** + **Expo 54** for cross-platform mobile development
+- **iOS WidgetKit** + **SwiftUI** for native home screen widget with three sizes
+- **App Groups** + **Shared UserDefaults** for data sharing between app and widget
+- **react-native-shared-group-preferences** for cross-platform widget data communication
+- **react-native-widgetkit** for triggering widget timeline reloads
 - **FlashList** for optimized list rendering with 1,000+ items
 - **react-native-gesture-handler** for smooth swipe gestures and animations
 - **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
@@ -55,6 +60,32 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 [![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/app/the-insolent-bard/id6753878386)
 
 Available now on the [App Store](https://apps.apple.com/app/the-insolent-bard/id6753878386).
+
+### Home Screen Widget
+
+The Insolent Bard includes a beautiful home screen widget that displays your current Insult of the Hour directly on your iOS home screen.
+
+**Adding a Widget:**
+1. Long-press your home screen to enter edit mode
+2. Tap the + icon in the top left
+3. Search for "The Insolent Bard"
+4. Choose your preferred size (small, medium, or large)
+5. Tap "Add Widget"
+
+**Widget Features:**
+- Displays the current Insult of the Hour in elegant IM Fell English font
+- Aged parchment background matching the app's aesthetic
+- Three sizes available (small, medium, large)
+- Automatically updates based on your refresh interval setting (5, 15, 30, or 60 minutes)
+- Tap the widget to open the app
+
+**Update Timing:**
+
+Widgets update on "Apple time" - iOS controls when widgets refresh to preserve battery life and optimize system performance. Your widget will update periodically throughout the day, typically within a few hours of changes in the app. The widget checks for updates every 15 minutes, but iOS may delay actual refresh based on device usage patterns, battery level, and other system factors.
+
+**Technical Implementation:**
+
+The widget uses iOS WidgetKit with SwiftUI for the UI, App Groups for data sharing between the main app and widget extension, and shared UserDefaults for passing insult data. The React Native app communicates with the native widget through `react-native-shared-group-preferences` and `react-native-widgetkit`.
 
 ## Rust CLI Generator
 
@@ -186,13 +217,24 @@ TheOffensiveBard/
 │   ├── data/          # Phrases data file (tab-delimited)
 │   ├── Cargo.toml     # Rust dependencies
 │   └── target/        # Compiled binaries (debug/release)
+├── ios/               # iOS native code
+│   ├── InsultWidget/  # iOS home screen widget (SwiftUI)
+│   │   ├── InsultWidget.swift         # Widget implementation
+│   │   ├── InsultWidgetBundle.swift   # Widget bundle
+│   │   ├── Assets.xcassets/           # Widget assets
+│   │   └── Info.plist                 # Widget configuration
+│   ├── InsultWidgetExtension.entitlements  # App Groups entitlement
+│   └── TheInsolentBard/                    # Main iOS app
+│       └── TheInsolentBard.entitlements    # App Groups entitlement
 ├── src/               # React Native app source
 │   ├── mobile/        # UI components (InsultsHeader, Settings, TouchableIcon, etc.)
 │   ├── contexts/      # React context providers (Theme, Settings, App state)
 │   ├── hooks/         # Custom hooks (useClipboard, useHaptics, useInsultOfTheHour, etc.)
 │   ├── styles/        # Style definitions and color palettes
-│   ├── utils/         # Utility functions (shuffling, formatting, etc.)
+│   ├── utils/         # Utility functions (shuffling, formatting, widgetDataShare)
 │   └── components/    # Reusable components
+├── plugins/           # Expo config plugins
+│   └── withInsultWidget.js  # Widget entitlements plugin
 ├── assets/            # App assets
 │   ├── data/          # Insults JSON file (0.81MB)
 │   ├── fonts/         # Custom fonts (IM Fell English, BlackChancery)
