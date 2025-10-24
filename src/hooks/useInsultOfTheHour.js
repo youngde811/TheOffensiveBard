@@ -20,6 +20,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSettings } from '../contexts/SettingsContext';
+import { shareInsultWithWidget } from '../utils/widgetDataShare';
 
 const STORAGE_KEY = '@insolentbard:insultOfTheHour';
 
@@ -75,7 +76,7 @@ export function useInsultOfTheHour(insults) {
 
       // Generate new insult for this interval
       const newInsult = selectRandomInsult();
-      
+
       if (newInsult) {
         await AsyncStorage.setItem(
           STORAGE_KEY,
@@ -84,8 +85,12 @@ export function useInsultOfTheHour(insults) {
             intervalKey: currentIntervalKey,
           })
         );
-        
+
         setCurrentInsult(newInsult);
+
+        // Share with widget (extract text from object)
+        const insultText = newInsult.insult || newInsult;
+        await shareInsultWithWidget(insultText);
       }
     } catch (error) {
       console.error('Error loading insult of the hour:', error);
@@ -112,6 +117,10 @@ export function useInsultOfTheHour(insults) {
         })
       );
 
+      // Share with widget (extract text from object)
+      const insultText = newInsult.insult || newInsult;
+      await shareInsultWithWidget(insultText);
+
       // Small delay to show animation
       setTimeout(() => {
         setCurrentInsult(newInsult);
@@ -119,7 +128,7 @@ export function useInsultOfTheHour(insults) {
       }, 300);
     } catch (error) {
       console.error('Error refreshing insult:', error);
-      
+
       setCurrentInsult(newInsult);
       setIsRefreshing(false);
     }

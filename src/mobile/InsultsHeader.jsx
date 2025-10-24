@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/styles.js';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, insultOfTheHour, isRefreshing, onInsultPress }) {
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, insultOfTheHour, isRefreshing, onInsultPress, onInsultRefresh }) {
   const { colors } = useTheme();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
@@ -63,25 +63,40 @@ export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive
   return (
     <View style={[styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }]}>
       {insultOfTheHour ? (
-        <TouchableOpacity
-          onPress={onInsultPress}
-          style={{ flex: 1, marginRight: 8 }}
-          activeOpacity={0.7}
-        >
-          <Animated.Text
-            style={[
-              styles.listHeaderInsult,
-              {
-                color: colors.insultOfTheHour,
-                opacity: fadeAnim,
-              }
-            ]}
-            numberOfLines={1}
-            ellipsizeMode="tail"
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
+          <TouchableOpacity
+            onPress={onInsultPress}
+            style={{ flex: 1 }}
+            activeOpacity={0.7}
           >
-            {truncateInsult(insultOfTheHour)}
-          </Animated.Text>
-        </TouchableOpacity>
+            <Animated.Text
+              style={[
+                styles.listHeaderInsult,
+                {
+                  color: colors.insultOfTheHour,
+                  opacity: fadeAnim,
+                }
+              ]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {truncateInsult(insultOfTheHour)}
+            </Animated.Text>
+          </TouchableOpacity>
+          {onInsultRefresh && (
+            <TouchableOpacity
+              style={{ marginLeft: 8 }}
+              onPress={onInsultRefresh}
+              activeOpacity={0.6}
+            >
+              <Ionicons
+                name="refresh-circle"
+                size={24}
+                color={colors.insultOfTheHour}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
         {onRefreshPress && (

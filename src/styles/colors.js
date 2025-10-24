@@ -49,7 +49,7 @@ export const darkColors = {
   primaryVariant: '#5f9ea0', // Same cadetblue works well
 
   // Featured content
-  insultOfTheHour: '#A0555E', // Lighter burgundy for dark mode
+  insultOfTheHour: '#E89BA3', // Light rose/pink for better visibility in dark mode
 
   // UI elements
   border: '#4a4a4a',

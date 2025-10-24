@@ -2,7 +2,7 @@
   "expo": {
     "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "1.8.0",
+    "version": "2.4.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "1.8.0",
+      "buildNumber": "2.4.3",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
@@ -29,11 +29,16 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": [
+          "group.com.bosshog811.TheInsolentBard"
+        ]
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon-android.png",
         "backgroundColor": "#000000"
       }
     },
@@ -47,7 +52,8 @@
     },
     "owner": "cbr500r2911",
     "plugins": [
-      "expo-font"
+      "expo-font",
+      "./plugins/withInsultWidget"
     ]
   }
 }

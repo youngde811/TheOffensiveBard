@@ -323,13 +323,27 @@ export default function Settings({ appConfig, setDismiss }) {
             </PressableOpacity>
           </View>
 
+          {/* Home Screen Widget */}
+          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Home Screen Widget</Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              Display your current Insult of the Hour on your home screen in three elegant sizes. The widget updates automatically based on your refresh interval setting above.
+            </Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              To add a widget: long-press your home screen, tap the + icon, search for "The Insolent Bard", and choose your preferred size.
+            </Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              Note: Widgets update on "Apple time" - iOS controls when widgets refresh to preserve battery life. Your widget will update periodically throughout the day, typically within a few hours of changes in the app.
+            </Text>
+          </View>
+
           {/* About/Credits */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>1.8.0</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.4.3</Text>
             </View>
 
             <View style={styles.aboutRow}>
