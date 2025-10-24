@@ -31,9 +31,9 @@ struct InsultEntry: TimelineEntry {
 struct InsultProvider: TimelineProvider {
     func placeholder(in context: Context) -> InsultEntry {
         InsultEntry(
-            date: Date(),
-            insult: "Thou art a churlish, motley-minded knave!",
-            timestamp: "Just now"
+          date: Date(),
+          insult: "Thou churlish, motley-minded knave!",
+          timestamp: "Just now"
         )
     }
 
@@ -60,26 +60,27 @@ struct InsultProvider: TimelineProvider {
            let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
            let insult = json["insult"] as? String,
            let timestampString = json["timestamp"] as? String {
-
             let timestamp = formatTimestamp(timestampString)
 
             return InsultEntry(
-                date: Date(),
-                insult: insult,
-                timestamp: timestamp
+              date: Date(),
+              insult: insult,
+              timestamp: timestamp
             )
         }
 
         // Fallback
         return InsultEntry(
-            date: Date(),
-            insult: "Thou art a villainous tickle-brained canker-blossom!",
-            timestamp: "Open app to refresh"
+          date: Date(),
+          insult: "Thou villainous tickle-brained canker-blossom!",
+          timestamp: "Open app to refresh"
         )
     }
 
     private func formatTimestamp(_ isoString: String) -> String {
         let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
         guard let date = formatter.date(from: isoString) else {
             return "Recently"
         }
@@ -112,17 +113,17 @@ struct SmallWidgetView: View {
 
             VStack(spacing: 4) {
                 Text("🎭")
-                    .font(.title2)
+                  .font(.title2)
 
                 Text(entry.insult)
-                    .font(.system(size: 9))
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(4)
-                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
-                    .padding(.horizontal, 8)
+                  .font(.system(size: 9))
+                  .fontWeight(.medium)
+                  .multilineTextAlignment(.center)
+                  .lineLimit(4)
+                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .padding(.horizontal, 8)
             }
-            .padding(8)
+              .padding(8)
         }
     }
 }
@@ -139,32 +140,32 @@ struct MediumWidgetView: View {
             VStack(alignment: .leading, spacing: 8) {
                 // Title
                 Text("THE INSOLENT BARD")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
-                    .tracking(1.5)
+                  .font(.system(size: 10, weight: .bold))
+                  .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+                  .tracking(1.5)
 
                 Spacer()
 
                 // Insult text
                 Text(entry.insult)
-                    .font(.custom("IMFellEnglish-Regular", size: 14))
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
-                    .multilineTextAlignment(.leading)
-                    .lineLimit(5)
-                    .lineSpacing(3)
+                  .font(.custom("IMFellEnglish-Regular", size: 14))
+                  .fontWeight(.semibold)
+                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .multilineTextAlignment(.leading)
+                  .lineLimit(5)
+                  .lineSpacing(3)
 
                 Spacer()
 
                 // Timestamp
                 Text(entry.timestamp)
-                    .font(.system(size: 9))
-                    .foregroundColor(Color.gray)
-                    .opacity(0.7)
+                  .font(.system(size: 9))
+                  .foregroundColor(Color.gray)
+                  .opacity(0.7)
             }
-            .padding(16)
+              .padding(16)
         }
-        .widgetURL(URL(string: "insolentbard://share-insult")!)
+          .widgetURL(URL(string: "insolentbard://share-insult")!)
     }
 }
 
@@ -181,35 +182,35 @@ struct LargeWidgetView: View {
                 HStack {
                     Text("⚔️")
                     Text("THE INSOLENT BARD")
-                        .font(.system(size: 14, weight: .bold))
-                        .tracking(2)
+                      .font(.system(size: 14, weight: .bold))
+                      .tracking(2)
                     Text("🎭")
                 }
-                .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+                  .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
 
                 Spacer()
 
                 // Insult text (larger)
                 Text(entry.insult)
-                    .font(.custom("IMFellEnglish-Regular", size: 18))
-                    .fontWeight(.bold)
-                    .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
-                    .multilineTextAlignment(.center)
-                    .lineLimit(6)
-                    .lineSpacing(5)
-                    .padding(.horizontal, 20)
+                  .font(.custom("IMFellEnglish-Regular", size: 18))
+                  .fontWeight(.bold)
+                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .multilineTextAlignment(.center)
+                  .lineLimit(6)
+                  .lineSpacing(5)
+                  .padding(.horizontal, 20)
 
                 Spacer()
 
                 // Timestamp
                 Text(entry.timestamp)
-                    .font(.system(size: 11))
-                    .foregroundColor(Color.gray)
-                    .opacity(0.7)
+                  .font(.system(size: 11))
+                  .foregroundColor(Color.gray)
+                  .opacity(0.7)
             }
-            .padding(20)
+              .padding(20)
         }
-        .widgetURL(URL(string: "insolentbard://share-insult")!)
+          .widgetURL(URL(string: "insolentbard://share-insult")!)
     }
 }
 
@@ -223,15 +224,15 @@ struct InsultWidget: Widget {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
             if #available(iOSApplicationExtension 17.0, *) {
                 InsultWidgetEntryView(entry: entry)
-                    .containerBackground(Color(red: 0.945, green: 0.933, blue: 0.898), for: .widget)
+                  .containerBackground(Color(red: 0.945, green: 0.933, blue: 0.898), for: .widget)
             } else {
                 InsultWidgetEntryView(entry: entry)
-                    .background(Color(red: 0.945, green: 0.933, blue: 0.898))
+                  .background(Color(red: 0.945, green: 0.933, blue: 0.898))
             }
         }
-        .configurationDisplayName("Insult of the Hour")
-        .description("Display a Shakespearean insult on your home screen.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+          .configurationDisplayName("Insult of the Hour")
+          .description("Display a Shakespearean insult on your home screen.")
+          .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }
 
@@ -260,13 +261,13 @@ struct InsultWidgetEntryView: View {
     InsultWidget()
 } timeline: {
     InsultEntry(
-        date: Date(),
-        insult: "Thou gleeking flap-mouthed foot-licker!",
-        timestamp: "5 minutes ago"
+      date: Date(),
+      insult: "Thou gleeking flap-mouthed foot-licker!",
+      timestamp: "5 minutes ago"
     )
     InsultEntry(
-        date: Date(),
-        insult: "Thou art a puking tickle-brained canker-blossom!",
-        timestamp: "Just now"
+      date: Date(),
+      insult: "Thou art a puking tickle-brained canker-blossom!",
+      timestamp: "Just now"
     )
 }
