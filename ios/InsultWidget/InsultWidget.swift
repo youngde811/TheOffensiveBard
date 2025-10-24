@@ -78,26 +78,17 @@ struct InsultProvider: TimelineProvider {
     }
 
     private func formatTimestamp(_ isoString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let isoFormatter = ISO8601DateFormatter()
+        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
 
-        guard let date = formatter.date(from: isoString) else {
+        guard let date = isoFormatter.date(from: isoString) else {
             return "Recently"
         }
 
-        let interval = Date().timeIntervalSince(date)
-        let minutes = Int(interval / 60)
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "MMM d 'at' h:mm a"
 
-        if minutes < 1 {
-            return "Just now"
-        } else if minutes == 1 {
-            return "1 minute ago"
-        } else if minutes < 60 {
-            return "\(minutes) minutes ago"
-        } else {
-            let hours = minutes / 60
-            return hours == 1 ? "1 hour ago" : "\(hours) hours ago"
-        }
+        return dateFormatter.string(from: date)
     }
 }
 
