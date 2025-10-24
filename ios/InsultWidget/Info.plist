@@ -8,8 +8,8 @@
       <string>com.apple.widgetkit-extension</string>
     </dict>
     <key>CFBundleVersion</key>
-    <string>2.2.3</string>
+    <string>2.3.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>2.2.0</string>
+    <string>2.3.0</string>
   </dict>
 </plist>

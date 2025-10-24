@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "2.3.0",
+      "buildNumber": "2.3.1",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
@@ -38,7 +38,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/icon-android.png",
         "backgroundColor": "#000000"
       }
     },
