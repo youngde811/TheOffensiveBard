@@ -48,6 +48,7 @@ import InsultPage from './src/mobile/InsultPage';
 import FavoriteInsults from './src/mobile/FavoriteInsults';
 import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
+import DebugScreen from './src/mobile/DebugScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const appConfig = require("./assets/appconfig.json");
@@ -84,6 +85,14 @@ function AboutMainPage() {
   );
 }
 
+function DebugMainPage() {
+  const navigation = useNavigation();
+
+  return (
+    <DebugScreen setDismiss={() => navigation.jumpTo(initialRoute)} />
+  );
+}
+
 const Drawer = createDrawerNavigator();
 
 function ThemedDrawerNavigator() {
@@ -107,6 +116,12 @@ function ThemedDrawerNavigator() {
     title: "Settings",
     iconName: "cog",
     component: SettingsMainPage
+  },
+  {
+    key: "DebugMainPage",
+    title: "Widget Debug",
+    iconName: "bug",
+    component: DebugMainPage
   },
   {
     key: "AboutMainPage",

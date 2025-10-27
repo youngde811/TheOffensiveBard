@@ -19,7 +19,15 @@
 
 import { Platform, Alert } from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
-import WidgetKit from 'react-native-widgetkit';
+import { debugLogger } from './debugLogger';
+
+// Try to import WidgetKit, but don't fail if it's not available
+let WidgetKit;
+try {
+  WidgetKit = require('react-native-widgetkit').default;
+} catch (e) {
+  debugLogger.info('WidgetKit module not available (optional): ' + e.message);
+}
 
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const INSULT_DATABASE_KEY = 'insultDatabase';
@@ -33,12 +41,13 @@ const CURRENT_DATABASE_VERSION = '2.4.8'; // Increment when insults.json changes
  */
 export async function syncInsultDatabaseWithWidget(insults) {
   if (Platform.OS !== 'ios') {
-    console.log('[Widget Sync] Skipping - not iOS');
+    debugLogger.info('Skipping sync - not iOS');
     return;
   }
 
-  // Check if required modules are available
+  // Check if SharedGroupPreferences is available (required)
   if (!SharedGroupPreferences) {
+    debugLogger.error('SharedGroupPreferences module not available');
     Alert.alert(
       'Widget Sync Failed',
       'SharedGroupPreferences module not available',
@@ -47,17 +56,13 @@ export async function syncInsultDatabaseWithWidget(insults) {
     return;
   }
 
+  // WidgetKit is optional - widget will reload on its own schedule
   if (!WidgetKit) {
-    Alert.alert(
-      'Widget Sync Failed',
-      'WidgetKit module not available',
-      [{ text: 'OK' }]
-    );
-    return;
+    debugLogger.info('WidgetKit module not available - widget will reload automatically');
   }
 
   try {
-    console.log('[Widget Sync] Starting sync with ' + insults.length + ' insults');
+    debugLogger.info('Starting sync with ' + insults.length + ' insults');
 
     // Check if database is already synced with current version
     const syncedVersion = await SharedGroupPreferences.getItem(
@@ -65,32 +70,36 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    console.log('[Widget Sync] Current synced version:', syncedVersion);
+    debugLogger.info('Current synced version: ' + syncedVersion);
 
     if (syncedVersion === CURRENT_DATABASE_VERSION) {
-      console.log('[Widget Sync] Database already synced with version ' + CURRENT_DATABASE_VERSION);
-      // Force reload anyway to ensure widget has latest timeline
-      try {
-        WidgetKit.reloadAllTimelines();
-        console.log('[Widget Sync] Forced widget timeline reload');
-      } catch (reloadError) {
-        console.log('[Widget Sync] Widget reload not available:', reloadError.message);
+      debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
+      // Force reload if WidgetKit is available
+      if (WidgetKit) {
+        try {
+          WidgetKit.reloadAllTimelines();
+          debugLogger.success('Forced widget timeline reload');
+        } catch (reloadError) {
+          debugLogger.error('Widget reload error: ' + reloadError.message);
+        }
+      } else {
+        debugLogger.info('WidgetKit not available - widget will reload on its own schedule');
       }
       Alert.alert(
         'Widget Already Synced',
-        `Database version ${CURRENT_DATABASE_VERSION} already synced. Widget timeline reloaded.`,
+        `Database version ${CURRENT_DATABASE_VERSION} already synced. Widget will reload automatically.`,
         [{ text: 'OK' }]
       );
       return;
     }
 
-    console.log('[Widget Sync] Syncing new database version ' + CURRENT_DATABASE_VERSION);
+    debugLogger.info('Syncing new database version ' + CURRENT_DATABASE_VERSION);
 
     // Extract just the insult text to minimize storage
     const insultTexts = insults.map(item => item.insult || item);
 
-    console.log('[Widget Sync] Extracted ' + insultTexts.length + ' insult texts');
-    console.log('[Widget Sync] Sample insult:', insultTexts[0]);
+    debugLogger.info('Extracted ' + insultTexts.length + ' insult texts');
+    debugLogger.info('Sample insult: ' + insultTexts[0]);
 
     const data = {
       insults: insultTexts,
@@ -99,8 +108,8 @@ export async function syncInsultDatabaseWithWidget(insults) {
       count: insultTexts.length,
     };
 
-    console.log('[Widget Sync] Writing to key:', INSULT_DATABASE_KEY);
-    console.log('[Widget Sync] App Group:', APP_GROUP);
+    debugLogger.info('Writing to key: ' + INSULT_DATABASE_KEY);
+    debugLogger.info('App Group: ' + APP_GROUP);
 
     await SharedGroupPreferences.setItem(
       INSULT_DATABASE_KEY,
@@ -108,7 +117,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    console.log('[Widget Sync] Database written successfully');
+    debugLogger.success('Database written successfully');
 
     await SharedGroupPreferences.setItem(
       DATABASE_VERSION_KEY,
@@ -116,7 +125,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    console.log('[Widget Sync] Version key written');
+    debugLogger.success('Version key written');
 
     // Verify the write
     const verification = await SharedGroupPreferences.getItem(
@@ -126,37 +135,41 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     if (verification) {
       const parsed = JSON.parse(verification);
-      console.log('[Widget Sync] VERIFICATION: Successfully read back ' + parsed.count + ' insults');
+      debugLogger.success('VERIFICATION: Successfully read back ' + parsed.count + ' insults');
     } else {
-      console.error('[Widget Sync] VERIFICATION FAILED: Could not read back data');
+      debugLogger.error('VERIFICATION FAILED: Could not read back data');
       Alert.alert(
         'Widget Sync Error',
-        'Verification failed: Could not read back widget data. Check console logs.',
+        'Verification failed: Could not read back widget data. Check debug logs.',
         [{ text: 'OK' }]
       );
       return;
     }
 
-    console.log('[Widget Sync] Synced ' + insultTexts.length + ' insults with widget');
+    debugLogger.success('Synced ' + insultTexts.length + ' insults with widget');
 
-    // Trigger widget to reload with new database
-    try {
-      WidgetKit.reloadAllTimelines();
-      console.log('[Widget Sync] Widget timeline reloaded');
-    } catch (reloadError) {
-      console.log('[Widget Sync] Widget reload not available:', reloadError.message);
+    // Trigger widget to reload with new database (if WidgetKit is available)
+    if (WidgetKit) {
+      try {
+        WidgetKit.reloadAllTimelines();
+        debugLogger.success('Widget timeline reloaded via WidgetKit');
+      } catch (reloadError) {
+        debugLogger.error('Widget reload error: ' + reloadError.message);
+      }
+    } else {
+      debugLogger.info('WidgetKit not available - widget will reload on its own schedule');
     }
 
     // Show success alert
     Alert.alert(
       'Widget Sync Success!',
-      `Successfully synced ${insultTexts.length} insults to widget (v${CURRENT_DATABASE_VERSION}). Widget timeline reloaded.`,
+      `Successfully synced ${insultTexts.length} insults to widget (v${CURRENT_DATABASE_VERSION}). Widget will reload automatically.`,
       [{ text: 'OK' }]
     );
   } catch (error) {
-    console.error('[Widget Sync] ERROR syncing insult database with widget:', error);
-    console.error('[Widget Sync] Error type:', typeof error);
-    console.error('[Widget Sync] Error object:', JSON.stringify(error, null, 2));
+    debugLogger.error('ERROR syncing insult database with widget: ' + error);
+    debugLogger.error('Error type: ' + typeof error);
+    debugLogger.error('Error object: ' + JSON.stringify(error, null, 2));
 
     let errorMessage = 'Unknown error';
     if (error && error.message) {
