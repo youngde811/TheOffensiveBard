@@ -33,9 +33,10 @@ const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const INSULT_DATABASE_KEY = 'insultDatabase';
 const DATABASE_VERSION_KEY = 'insultDatabaseVersion';
 const CURRENT_DATABASE_VERSION = '2.4.8'; // Increment when insults.json changes
+const WIDGET_INSULT_COUNT = 1000; // Number of insults to sync to widget (reduces data size)
 
 /**
- * Sync full insult database to App Group UserDefaults for autonomous widget operation
+ * Sync a random subset of insults to App Group UserDefaults for autonomous widget operation
  * This allows the widget to generate its own timeline without app intervention
  * @param {Array} insults - Array of all insult objects from insults-10k.json
  */
@@ -65,12 +66,13 @@ export async function syncInsultDatabaseWithWidget(insults) {
     debugLogger.info('Starting sync with ' + insults.length + ' insults');
 
     // Check if database is already synced with current version
+    debugLogger.info('Step 1: Reading current version from UserDefaults...');
     const syncedVersion = await SharedGroupPreferences.getItem(
       DATABASE_VERSION_KEY,
       APP_GROUP
     );
 
-    debugLogger.info('Current synced version: ' + syncedVersion);
+    debugLogger.info('Step 1 complete: Current synced version: ' + syncedVersion);
 
     if (syncedVersion === CURRENT_DATABASE_VERSION) {
       debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
@@ -96,20 +98,29 @@ export async function syncInsultDatabaseWithWidget(insults) {
     debugLogger.info('Syncing new database version ' + CURRENT_DATABASE_VERSION);
 
     // Extract just the insult text to minimize storage
-    const insultTexts = insults.map(item => item.insult || item);
+    debugLogger.info('Step 2: Extracting and sampling insult texts...');
+    const allInsultTexts = insults.map(item => item.insult || item);
 
-    debugLogger.info('Extracted ' + insultTexts.length + ' insult texts');
+    // Randomly select a subset for the widget (reduces data size)
+    const shuffled = [...allInsultTexts].sort(() => Math.random() - 0.5);
+    const insultTexts = shuffled.slice(0, WIDGET_INSULT_COUNT);
+
+    debugLogger.info('Step 2 complete: Selected ' + insultTexts.length + ' insults from ' + allInsultTexts.length + ' total');
     debugLogger.info('Sample insult: ' + insultTexts[0]);
 
+    debugLogger.info('Step 3: Preparing data object...');
     const data = {
       insults: insultTexts,
       version: CURRENT_DATABASE_VERSION,
       syncedAt: new Date().toISOString(),
       count: insultTexts.length,
     };
+    debugLogger.info('Step 3 complete: Data object ready');
 
-    debugLogger.info('Writing to key: ' + INSULT_DATABASE_KEY);
-    debugLogger.info('App Group: ' + APP_GROUP);
+    debugLogger.info('Step 4: Writing database to UserDefaults...');
+    debugLogger.info('  Key: ' + INSULT_DATABASE_KEY);
+    debugLogger.info('  App Group: ' + APP_GROUP);
+    debugLogger.info('  Data size: ' + JSON.stringify(data).length + ' characters');
 
     await SharedGroupPreferences.setItem(
       INSULT_DATABASE_KEY,
@@ -117,27 +128,39 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    debugLogger.success('Database written successfully');
+    debugLogger.success('Step 4 complete: Database written successfully');
 
+    debugLogger.info('Step 5: Writing version key...');
     await SharedGroupPreferences.setItem(
       DATABASE_VERSION_KEY,
       CURRENT_DATABASE_VERSION,
       APP_GROUP
     );
 
-    debugLogger.success('Version key written');
+    debugLogger.success('Step 5 complete: Version key written');
 
     // Verify the write
+    debugLogger.info('Step 6: Verifying write by reading back...');
     const verification = await SharedGroupPreferences.getItem(
       INSULT_DATABASE_KEY,
       APP_GROUP
     );
 
     if (verification) {
-      const parsed = JSON.parse(verification);
-      debugLogger.success('VERIFICATION: Successfully read back ' + parsed.count + ' insults');
+      try {
+        const parsed = JSON.parse(verification);
+        debugLogger.success('Step 6 complete: Successfully read back ' + parsed.count + ' insults');
+      } catch (parseError) {
+        debugLogger.error('Step 6 failed: Could not parse verification data: ' + parseError.message);
+        Alert.alert(
+          'Widget Sync Error',
+          'Verification failed: Data corrupted. Check debug logs.',
+          [{ text: 'OK' }]
+        );
+        return;
+      }
     } else {
-      debugLogger.error('VERIFICATION FAILED: Could not read back data');
+      debugLogger.error('Step 6 failed: Could not read back data from UserDefaults');
       Alert.alert(
         'Widget Sync Error',
         'Verification failed: Could not read back widget data. Check debug logs.',
@@ -146,7 +169,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
       return;
     }
 
-    debugLogger.success('Synced ' + insultTexts.length + ' insults with widget');
+    debugLogger.success('All steps complete! Synced ' + insultTexts.length + ' insults with widget');
 
     // Trigger widget to reload with new database (if WidgetKit is available)
     if (WidgetKit) {
@@ -167,22 +190,35 @@ export async function syncInsultDatabaseWithWidget(insults) {
       [{ text: 'OK' }]
     );
   } catch (error) {
-    debugLogger.error('ERROR syncing insult database with widget: ' + error);
+    debugLogger.error('FATAL ERROR during sync: ' + error);
     debugLogger.error('Error type: ' + typeof error);
-    debugLogger.error('Error object: ' + JSON.stringify(error, null, 2));
+    debugLogger.error('Error name: ' + (error?.name || 'N/A'));
+    debugLogger.error('Error message: ' + (error?.message || 'N/A'));
+    debugLogger.error('Error code: ' + (error?.code || 'N/A'));
+    debugLogger.error('Error stack: ' + (error?.stack || 'N/A'));
+
+    try {
+      debugLogger.error('Error as JSON: ' + JSON.stringify(error, null, 2));
+    } catch (jsonError) {
+      debugLogger.error('Could not stringify error: ' + jsonError);
+    }
 
     let errorMessage = 'Unknown error';
     if (error && error.message) {
       errorMessage = error.message;
     } else if (typeof error === 'string') {
       errorMessage = error;
+    } else if (typeof error === 'number') {
+      errorMessage = `Error code: ${error} (native module error)`;
     } else if (error) {
       errorMessage = JSON.stringify(error);
     }
 
+    debugLogger.error('Final error message: ' + errorMessage);
+
     Alert.alert(
       'Widget Sync Failed',
-      `Error: ${errorMessage}\n\nType: ${typeof error}\n\nCheck console logs for details.`,
+      `Error: ${errorMessage}\n\nType: ${typeof error}\n\nCheck Widget Debug screen for detailed logs.`,
       [{ text: 'OK' }]
     );
   }
