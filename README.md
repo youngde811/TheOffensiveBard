@@ -10,14 +10,12 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ## iOS App
 
-**The Insolent Bard** (v2.4) delivers authentic Shakespearean insults with a modern, intuitive interface.
+**The Insolent Bard** (v2.4.6) delivers authentic Shakespearean insults with a modern, intuitive interface.
 
 ### Features
 
-- **Home Screen Widget** - Display your current Insult of the Hour on your home screen in small, medium, or large sizes with aged parchment styling
-- **Insult of the Hour** - Featured insult in warm burgundy color, displayed in elegant Old English font
-- **Configurable Refresh** - Choose how often the featured insult updates: 5, 15, 30, or 60 minutes
-- **Share as Image** - Tap the featured insult or long-press easter eggs to share beautiful parchment-styled images
+- **Autonomous Home Screen Widget** - Add a widget to your home screen that displays a new insult every hour, completely autonomously - no app interaction needed!
+- **Share as Image** - Long-press easter eggs to share beautiful parchment-styled images
 - **Swipe Gestures** - Swipe left on any insult to reveal quick actions (favorite/unfavorite and share as image)
 - **Parchment Card Design** - Beautiful card-style list items with depth, shadows, and aged parchment background
 - **IM Fell English Font** - Classic typeface that balances medieval character with excellent readability
@@ -28,8 +26,9 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **Share Anywhere** - Send via SMS or share to any app on your device
 - **Save Favorites** - Long-press any insult to save it for later
 - **Bulk Operations** - Select and share/forget multiple favorites at once
+- **Clear All Favorites** - Convenient trash icon in favorites header to clear all saved insults at once
 - **Seasonal Easter Eggs** - Subtle hidden icons - tap for elegant Old English overlay, long-press to share as image
-- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, choose sound effects, control volume, set refresh interval
+- **Customizable Settings** - Toggle haptics, adjust easter egg frequency, choose sound effects, control volume
 - **Sound Effects** - Audible feedback when adding favorites (when haptics are off) with choice of chime or pop
 - **Dark Mode** - Automatic light/dark theme matching your device settings
 - **Optimized Performance** - FlashList rendering for smooth scrolling, only 0.81MB data file
@@ -45,10 +44,10 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **react-native-gesture-handler** for smooth swipe gestures and animations
 - **Random Sampling** - Fisher-Yates shuffle for unbiased insult selection
 - **Custom Hooks Architecture** for clean state management
-  - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`, `useInsultOfTheHour`, `useImageShare`
+  - `useClipboard`, `useShare`, `useHaptics`, `useSound`, `useSettings`, `useAppContext`, `useImageShare`, `useInsultSelection`
 - **expo-av** for audio playback with configurable sound effects
 - **expo-sharing** + **react-native-view-shot** for image generation and sharing
-- **AsyncStorage** for persistent favorites, settings, and hourly insult cache
+- **AsyncStorage** for persistent favorites and settings
 - **Custom Fonts** - IM Fell English for list items, BlackChancery Old English for special text displays
 - **Google Fonts Integration** via @expo-google-fonts for professional typography
 - **Context Providers** - Theme, Settings, and App state management
@@ -63,7 +62,7 @@ Available now on the [App Store](https://apps.apple.com/app/the-insolent-bard/id
 
 ### Home Screen Widget
 
-The Insolent Bard includes a beautiful home screen widget that displays your current Insult of the Hour directly on your iOS home screen.
+The Insolent Bard includes a beautiful, **fully autonomous** home screen widget that displays Shakespearean insults directly on your iOS home screen.
 
 **Adding a Widget:**
 1. Long-press your home screen to enter edit mode
@@ -73,19 +72,26 @@ The Insolent Bard includes a beautiful home screen widget that displays your cur
 5. Tap "Add Widget"
 
 **Widget Features:**
-- Displays the current Insult of the Hour in elegant IM Fell English font
+- Displays a new insult every hour in elegant IM Fell English font
 - Aged parchment background matching the app's aesthetic
 - Three sizes available (small, medium, large)
-- Automatically updates based on your refresh interval setting (5, 15, 30, or 60 minutes)
+- **Completely autonomous** - works independently after initial setup
 - Tap the widget to open the app
 
-**Update Timing:**
+**How It Works:**
 
-Widgets update on "Apple time" - iOS controls when widgets refresh to preserve battery life and optimize system performance. Your widget will update periodically throughout the day, typically within a few hours of changes in the app. The widget checks for updates every 15 minutes, but iOS may delay actual refresh based on device usage patterns, battery level, and other system factors.
+The widget operates completely autonomously once you've opened the app at least once:
+
+1. **Initial Sync**: When you launch the app, it syncs the full insult database (10k insults) to App Group UserDefaults
+2. **Autonomous Timeline**: The widget generates a 48-hour timeline (48 insults, one per hour) from the synced database
+3. **Hourly Updates**: iOS displays a new insult every hour automatically - no app interaction needed
+4. **Automatic Refresh**: After 48 hours, the widget automatically generates a fresh batch of 48 new insults
+
+The widget uses iOS's native timeline system with the `.atEnd` policy, meaning it's completely self-sufficient and doesn't depend on the app running in the background.
 
 **Technical Implementation:**
 
-The widget uses iOS WidgetKit with SwiftUI for the UI, App Groups for data sharing between the main app and widget extension, and shared UserDefaults for passing insult data. The React Native app communicates with the native widget through `react-native-shared-group-preferences` and `react-native-widgetkit`.
+The widget uses iOS WidgetKit with SwiftUI for the UI, App Groups for shared storage, and WidgetKit's Timeline Provider with `.atEnd` policy for autonomous operation. The full insult database is synced once from the React Native app to shared UserDefaults using `react-native-shared-group-preferences`. The widget's Swift code then generates randomized 48-hour timelines independently, with automatic regeneration handled entirely by iOS.
 
 ## Rust CLI Generator
 

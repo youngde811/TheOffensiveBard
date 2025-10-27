@@ -27,12 +27,21 @@ import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/styles.js';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress }) {
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, onClearAllPress }) {
   const { colors } = useTheme();
 
   return (
     <View style={[styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }]}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {onClearAllPress && (
+          <TouchableOpacity style={styles.searchToggleButton} onPress={onClearAllPress}>
+            <Ionicons
+              name="trash-outline"
+              size={22}
+              color="#e74c3c"
+            />
+          </TouchableOpacity>
+        )}
         {onRefreshPress && (
           <TouchableOpacity style={styles.searchToggleButton} onPress={onRefreshPress}>
             <Ionicons

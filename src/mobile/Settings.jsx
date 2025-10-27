@@ -19,8 +19,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useState, useCallback } from 'react';
-import { View, Text, Alert, ScrollView, Linking, StyleSheet, Switch } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, ScrollView, Linking, StyleSheet, Switch } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -29,61 +29,14 @@ import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 
 import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
-import { useAppContext } from '../contexts/AppContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
-
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
   const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
-  const { keyPrefix, fetchFavorites } = useAppContext();
 
   const haptics = useHaptics();
-
-  const [isClearing, setIsClearing] = useState(false);
-
-  const handleClearFavorites = useCallback(() => {
-    Alert.alert(
-      'Clear All Favorites',
-      'Are you sure you want to delete all your favorite insults? This cannot be undone.',
-      [
-        {
-          text: 'Cancel',
-          style: 'cancel',
-          onPress: () => haptics.light(),
-        },
-        {
-          text: 'Clear All',
-          style: 'destructive',
-          onPress: async () => {
-            setIsClearing(true);
-
-            try {
-              const keys = await AsyncStorage.getAllKeys();
-              const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
-              
-              await AsyncStorage.multiRemove(favoriteKeys);
-              await fetchFavorites();
-
-              haptics.success();
-              
-              Alert.alert('Success', 'All favorites have been cleared.');
-            } catch (error) {
-              console.error('Error clearing favorites:', error);
-
-              haptics.error();
-
-              Alert.alert('Error', 'Failed to clear favorites. Please try again.');
-            } finally {
-              setIsClearing(false);
-            }
-          },
-        },
-      ]
-    );
-  }, [keyPrefix, fetchFavorites, haptics]);
 
   const handleEasterEggFrequencyChange = useCallback((frequency) => {
     haptics.selection();
@@ -273,32 +226,17 @@ export default function Settings({ appConfig, setDismiss }) {
             ))}
           </View>
 
-          {/* Clear Favorites */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Data</Text>
-
-            <PressableOpacity
-              style={[styles.dangerButton, { opacity: isClearing ? 0.5 : 1 }]}
-              onPress={handleClearFavorites}
-              disabled={isClearing}
-            >
-              <Text style={styles.dangerButtonText}>
-                {isClearing ? 'Clearing...' : 'Clear All Favorites'}
-              </Text>
-            </PressableOpacity>
-          </View>
-
           {/* Home Screen Widget */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Home Screen Widget</Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              Display Shakespearean insults on your home screen in three elegant sizes. The widget automatically rotates through new insults every hour.
+              Add The Insolent Bard to your home screen in three elegant sizes. Once added, the widget operates completely autonomously - no app interaction needed!
             </Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              To add a widget: long-press your home screen, tap the + icon, search for "The Insolent Bard", and choose your preferred size.
+              How it works: The widget displays a new insult every hour from a batch of 48 randomly-selected insults. After 48 hours, it automatically generates a fresh batch. Simply open the app once to sync the insult database, and your widget will work forever.
             </Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              The widget works autonomously - no app interaction needed! Insults refresh automatically every 48 hours with a fresh batch.
+              To add: Long-press your home screen, tap the + icon, search for "The Insolent Bard", and choose your preferred size (small, medium, or large).
             </Text>
           </View>
 
