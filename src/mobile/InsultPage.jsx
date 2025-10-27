@@ -32,6 +32,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import styles from '../styles/styles.js';
 import { useTheme } from '../contexts/ThemeContext';
+import { syncInsultDatabaseWithWidget } from '../utils/widgetDataShare';
 
 const allInsults = require('../../assets/data/insults-10k.json');
 
@@ -67,11 +68,14 @@ export default function TheOffensiveBardInsults({ appConfig }) {
     'Inter-Black': require('../../assets/fonts/Inter-Black.otf')
   });
 
-  // Load random sample on mount
+  // Load random sample on mount and sync database with widget
   useEffect(() => {
     async function prepare() {
       const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
       setInsultData(sample);
+
+      // Sync full database with widget for autonomous operation
+      await syncInsultDatabaseWithWidget(allInsults.insults);
     }
 
     prepare();

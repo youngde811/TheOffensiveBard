@@ -37,7 +37,6 @@ import InsultListFooter from '../components/InsultListFooter';
 import { useAppContext } from '../contexts/AppContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
-import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 import { useImageShare } from '../hooks/useImageShare';
 import { useInsultSelection } from '../hooks/useInsultSelection';
 
@@ -47,7 +46,6 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
 
   const haptics = useHaptics();
 
-  const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
   const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
   // Use the new shared selection hook
@@ -101,15 +99,6 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
       setSelectedInsults([]);
     }
   }, [selectedInsults, removeFavorite, setSelectedInsults, haptics]);
-
-  const handleInsultOfTheHourPress = useCallback(async () => {
-    if (insultOfTheHour) {
-      haptics.light();
-
-      const insultText = insultOfTheHour.insult || insultOfTheHour;
-      setInsultToShare(insultText);
-    }
-  }, [insultOfTheHour, haptics]);
 
   const handleShareInsultAsImage = useCallback((item) => {
     haptics.light();
@@ -186,9 +175,6 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         <View style={{ zIndex: 1000, elevation: 10 }}>
           <InsultsHeader
             appConfig={appConfig}
-            insultOfTheHour={insultOfTheHour}
-            isRefreshing={isRefreshing}
-            onInsultPress={handleInsultOfTheHourPress}
           />
         </View>
         {favorites.length === 0 && !isLoadingFavorites ?

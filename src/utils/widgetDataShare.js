@@ -22,40 +22,64 @@ import SharedGroupPreferences from 'react-native-shared-group-preferences';
 import WidgetKit from 'react-native-widgetkit';
 
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
-const WIDGET_DATA_KEY = 'currentInsult';
+const INSULT_DATABASE_KEY = 'insultDatabase';
+const DATABASE_VERSION_KEY = 'insultDatabaseVersion';
+const CURRENT_DATABASE_VERSION = '1.0'; // Increment when insults.json changes
 
 /**
- * Share current insult with iOS widget
- * @param {string} insultText - The insult text to share
+ * Sync full insult database to App Group UserDefaults for autonomous widget operation
+ * This allows the widget to generate its own timeline without app intervention
+ * @param {Array} insults - Array of all insult objects from insults-10k.json
  */
-export async function shareInsultWithWidget(insultText) {
+export async function syncInsultDatabaseWithWidget(insults) {
   if (Platform.OS !== 'ios') {
     return;
   }
 
   try {
+    // Check if database is already synced with current version
+    const syncedVersion = await SharedGroupPreferences.getItem(
+      DATABASE_VERSION_KEY,
+      APP_GROUP
+    );
+
+    if (syncedVersion === CURRENT_DATABASE_VERSION) {
+      console.log('Insult database already synced with widget (version ' + CURRENT_DATABASE_VERSION + ')');
+      return;
+    }
+
+    // Extract just the insult text to minimize storage
+    const insultTexts = insults.map(item => item.insult || item);
+
     const data = {
-      insult: insultText,
-      timestamp: new Date().toISOString(),
+      insults: insultTexts,
+      version: CURRENT_DATABASE_VERSION,
+      syncedAt: new Date().toISOString(),
+      count: insultTexts.length,
     };
 
     await SharedGroupPreferences.setItem(
-      WIDGET_DATA_KEY,
+      INSULT_DATABASE_KEY,
       JSON.stringify(data),
       APP_GROUP
     );
 
-    console.log('Shared insult with widget:', insultText);
+    await SharedGroupPreferences.setItem(
+      DATABASE_VERSION_KEY,
+      CURRENT_DATABASE_VERSION,
+      APP_GROUP
+    );
 
-    // Force widget to reload
+    console.log('Synced ' + insultTexts.length + ' insults with widget');
+
+    // Trigger widget to reload with new database
     try {
       WidgetKit.reloadAllTimelines();
-      
-      console.log('Widget reloaded');
+      console.log('Widget timeline reloaded');
     } catch (reloadError) {
       console.log('Widget reload not available:', reloadError.message);
     }
   } catch (error) {
-    console.error('Error sharing data with widget:', error);
+    console.error('Error syncing insult database with widget:', error);
   }
 }

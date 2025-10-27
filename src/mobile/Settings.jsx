@@ -28,7 +28,7 @@ import { StatusBar } from 'expo-status-bar';
 import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 
-import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS, INSULT_REFRESH_INTERVALS } from '../contexts/SettingsContext';
+import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
 import { useAppContext } from '../contexts/AppContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
@@ -37,7 +37,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
-  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, insultRefreshInterval, setInsultRefreshInterval } = useSettings();
+  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
   const { keyPrefix, fetchFavorites } = useAppContext();
 
   const haptics = useHaptics();
@@ -107,11 +107,6 @@ export default function Settings({ appConfig, setDismiss }) {
   const handleVolumeChangeComplete = useCallback(() => {
     haptics.light();
   }, [haptics]);
-
-  const handleInsultRefreshIntervalChange = useCallback((interval) => {
-    haptics.selection();
-    setInsultRefreshInterval(interval);
-  }, [setInsultRefreshInterval, haptics]);
 
   const openGitHub = useCallback(() => {
     haptics.light();
@@ -278,36 +273,6 @@ export default function Settings({ appConfig, setDismiss }) {
             ))}
           </View>
 
-          {/* Insult Refresh Interval */}
-          <View style={[styles.section, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Insult of the Hour</Text>
-            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              How often should the featured insult refresh?
-            </Text>
-
-            {Object.entries(INSULT_REFRESH_INTERVALS).map(([key, { label }]) => (
-              <PressableOpacity
-                key={key}
-                style={styles.frequencyOption}
-                onPress={() => handleInsultRefreshIntervalChange(key)}
-              >
-                <View style={styles.radioRow}>
-                  <View style={[
-                    styles.radio,
-                    { borderColor: colors.primary }
-                  ]}>
-                    {insultRefreshInterval === key && (
-                      <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
-                    )}
-                  </View>
-                  <Text style={[styles.frequencyLabel, { color: colors.text }]}>
-                    {label}
-                  </Text>
-                </View>
-              </PressableOpacity>
-            ))}
-          </View>
-
           {/* Clear Favorites */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Data</Text>
@@ -327,13 +292,13 @@ export default function Settings({ appConfig, setDismiss }) {
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Home Screen Widget</Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              Display your current Insult of the Hour on your home screen in three elegant sizes. The widget updates automatically based on your refresh interval setting above.
+              Display Shakespearean insults on your home screen in three elegant sizes. The widget automatically rotates through new insults every hour.
             </Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
               To add a widget: long-press your home screen, tap the + icon, search for "The Insolent Bard", and choose your preferred size.
             </Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              Note: Widgets update on "Apple time" - iOS controls when widgets refresh to preserve battery life. Your widget will update periodically throughout the day, typically within a few hours of changes in the app.
+              The widget works autonomously - no app interaction needed! Insults refresh automatically every 48 hours with a fresh batch.
             </Text>
           </View>
 
