@@ -57,6 +57,8 @@ export async function syncInsultDatabaseWithWidget(insults) {
     return;
   }
 
+  debugLogger.info('SharedGroupPreferences module loaded successfully');
+
   // WidgetKit is optional - widget will reload on its own schedule
   if (!WidgetKit) {
     debugLogger.info('WidgetKit module not available - widget will reload automatically');
@@ -64,15 +66,37 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
   try {
     debugLogger.info('Starting sync with ' + insults.length + ' insults');
+    debugLogger.info('Will reduce to ' + WIDGET_INSULT_COUNT + ' insults in Step 2');
+
+    // Test App Group access first
+    debugLogger.info('Testing App Group access...');
+    debugLogger.info('App Group ID: ' + APP_GROUP);
+
+    try {
+      await SharedGroupPreferences.setItem('test_key', 'test_value', APP_GROUP);
+      debugLogger.success('Test write succeeded');
+      const testRead = await SharedGroupPreferences.getItem('test_key', APP_GROUP);
+      debugLogger.success('Test read succeeded: ' + testRead);
+    } catch (testError) {
+      debugLogger.error('App Group test failed: ' + testError);
+      debugLogger.error('This means the App Group is not accessible');
+      throw testError;
+    }
 
     // Check if database is already synced with current version
     debugLogger.info('Step 1: Reading current version from UserDefaults...');
-    const syncedVersion = await SharedGroupPreferences.getItem(
-      DATABASE_VERSION_KEY,
-      APP_GROUP
-    );
-
-    debugLogger.info('Step 1 complete: Current synced version: ' + syncedVersion);
+    let syncedVersion = null;
+    try {
+      syncedVersion = await SharedGroupPreferences.getItem(
+        DATABASE_VERSION_KEY,
+        APP_GROUP
+      );
+      debugLogger.info('Step 1 complete: Current synced version: ' + syncedVersion);
+    } catch (versionError) {
+      // Key might not exist on first run - that's okay
+      debugLogger.info('Step 1: No existing version found (first sync): ' + versionError);
+      syncedVersion = null;
+    }
 
     if (syncedVersion === CURRENT_DATABASE_VERSION) {
       debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
