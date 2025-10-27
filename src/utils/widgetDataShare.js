@@ -37,6 +37,25 @@ export async function syncInsultDatabaseWithWidget(insults) {
     return;
   }
 
+  // Check if required modules are available
+  if (!SharedGroupPreferences) {
+    Alert.alert(
+      'Widget Sync Failed',
+      'SharedGroupPreferences module not available',
+      [{ text: 'OK' }]
+    );
+    return;
+  }
+
+  if (!WidgetKit) {
+    Alert.alert(
+      'Widget Sync Failed',
+      'WidgetKit module not available',
+      [{ text: 'OK' }]
+    );
+    return;
+  }
+
   try {
     console.log('[Widget Sync] Starting sync with ' + insults.length + ' insults');
 
@@ -136,10 +155,21 @@ export async function syncInsultDatabaseWithWidget(insults) {
     );
   } catch (error) {
     console.error('[Widget Sync] ERROR syncing insult database with widget:', error);
-    console.error('[Widget Sync] Error details:', error.message, error.stack);
+    console.error('[Widget Sync] Error type:', typeof error);
+    console.error('[Widget Sync] Error object:', JSON.stringify(error, null, 2));
+
+    let errorMessage = 'Unknown error';
+    if (error && error.message) {
+      errorMessage = error.message;
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (error) {
+      errorMessage = JSON.stringify(error);
+    }
+
     Alert.alert(
       'Widget Sync Failed',
-      `Error: ${error.message}\n\nCheck console logs for details.`,
+      `Error: ${errorMessage}\n\nType: ${typeof error}\n\nCheck console logs for details.`,
       [{ text: 'OK' }]
     );
   }
