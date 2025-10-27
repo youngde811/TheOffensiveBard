@@ -55,47 +55,24 @@ struct InsultProvider: TimelineProvider {
     private func generateTimelineEntries() -> [InsultEntry] {
         let sharedDefaults = UserDefaults(suiteName: "group.com.bosshog811.TheInsolentBard")
 
-        print("[Widget] Attempting to load insult database from App Group")
-        print("[Widget] App Group: group.com.bosshog811.TheInsolentBard")
-        print("[Widget] Key: insultDatabase")
-
-        // Try to read the raw string first
-        if let testString = sharedDefaults?.string(forKey: "insultDatabase") {
-            print("[Widget] Successfully read raw string, length: \(testString.count)")
-        } else {
-            print("[Widget] ERROR: Could not read raw string from UserDefaults")
-            if let keys = sharedDefaults?.dictionaryRepresentation().keys {
-                print("[Widget] Available keys: \(Array(keys))")
-            } else {
-                print("[Widget] No keys available")
-            }
-        }
-
         // Load the insult database
         guard let dataString = sharedDefaults?.string(forKey: "insultDatabase") else {
-            print("[Widget] ERROR: dataString is nil")
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync"
             )]
         }
-
-        print("[Widget] Got dataString, converting to Data")
 
         guard let data = dataString.data(using: .utf8) else {
-            print("[Widget] ERROR: Could not convert string to Data")
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync"
             )]
         }
-
-        print("[Widget] Got Data, parsing JSON")
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            print("[Widget] ERROR: Could not parse JSON")
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -103,10 +80,7 @@ struct InsultProvider: TimelineProvider {
             )]
         }
 
-        print("[Widget] Parsed JSON successfully, keys: \(json.keys)")
-
         guard let insults = json["insults"] as? [String] else {
-            print("[Widget] ERROR: Could not extract insults array")
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -115,15 +89,12 @@ struct InsultProvider: TimelineProvider {
         }
 
         guard !insults.isEmpty else {
-            print("[Widget] ERROR: Insults array is empty")
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync"
             )]
         }
-
-        print("[Widget] Successfully loaded \(insults.count) insults from database")
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []

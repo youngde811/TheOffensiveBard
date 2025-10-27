@@ -21,14 +21,6 @@ import { Platform, Alert } from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
 import { debugLogger } from './debugLogger';
 
-// Try to import WidgetKit, but don't fail if it's not available
-let WidgetKit;
-try {
-  WidgetKit = require('react-native-widgetkit').default;
-} catch (e) {
-  debugLogger.info('WidgetKit module not available (optional): ' + e.message);
-}
-
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const INSULT_DATABASE_KEY = 'insultDatabase';
 const DATABASE_VERSION_KEY = 'insultDatabaseVersion';
@@ -58,11 +50,6 @@ export async function syncInsultDatabaseWithWidget(insults) {
   }
 
   debugLogger.info('SharedGroupPreferences module loaded successfully');
-
-  // WidgetKit is optional - widget will reload on its own schedule
-  if (!WidgetKit) {
-    debugLogger.info('WidgetKit module not available - widget will reload automatically');
-  }
 
   try {
     debugLogger.info('Starting sync with ' + insults.length + ' insults');
@@ -100,22 +87,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     if (syncedVersion === CURRENT_DATABASE_VERSION) {
       debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
-      // Force reload if WidgetKit is available
-      if (WidgetKit) {
-        try {
-          WidgetKit.reloadAllTimelines();
-          debugLogger.success('Forced widget timeline reload');
-        } catch (reloadError) {
-          debugLogger.error('Widget reload error: ' + reloadError.message);
-        }
-      } else {
-        debugLogger.info('WidgetKit not available - widget will reload on its own schedule');
-      }
-      Alert.alert(
-        'Widget Already Synced',
-        `Database version ${CURRENT_DATABASE_VERSION} already synced. Widget will reload automatically.`,
-        [{ text: 'OK' }]
-      );
+      debugLogger.info('Sync complete - database already up to date');
       return;
     }
 
@@ -194,25 +166,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
     }
 
     debugLogger.success('All steps complete! Synced ' + insultTexts.length + ' insults with widget');
-
-    // Trigger widget to reload with new database (if WidgetKit is available)
-    if (WidgetKit) {
-      try {
-        WidgetKit.reloadAllTimelines();
-        debugLogger.success('Widget timeline reloaded via WidgetKit');
-      } catch (reloadError) {
-        debugLogger.error('Widget reload error: ' + reloadError.message);
-      }
-    } else {
-      debugLogger.info('WidgetKit not available - widget will reload on its own schedule');
-    }
-
-    // Show success alert
-    Alert.alert(
-      'Widget Sync Success!',
-      `Successfully synced ${insultTexts.length} insults to widget (v${CURRENT_DATABASE_VERSION}). Widget will reload automatically.`,
-      [{ text: 'OK' }]
-    );
+    debugLogger.success('Sync complete! Widget will reload automatically');
   } catch (error) {
     debugLogger.error('FATAL ERROR during sync: ' + error);
     debugLogger.error('Error type: ' + typeof error);
