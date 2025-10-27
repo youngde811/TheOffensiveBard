@@ -64,7 +64,11 @@ struct InsultProvider: TimelineProvider {
             print("[Widget] Successfully read raw string, length: \(testString.count)")
         } else {
             print("[Widget] ERROR: Could not read raw string from UserDefaults")
-            print("[Widget] Available keys: \(sharedDefaults?.dictionaryRepresentation().keys ?? [])")
+            if let keys = sharedDefaults?.dictionaryRepresentation().keys {
+                print("[Widget] Available keys: \(Array(keys))")
+            } else {
+                print("[Widget] No keys available")
+            }
         }
 
         // Load the insult database
