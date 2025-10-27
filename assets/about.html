@@ -65,7 +65,7 @@
 </head>
 <body>
     <h1>The Insolent Bard</h1>
-    <div class="version">Version 2.4</div>
+    <div class="version">Version 2.5.1</div>
 
     <div class="section">
         <h2>About This App</h2>
@@ -97,10 +97,9 @@
     <div class="section">
         <h2>Features</h2>
         <ul>
-            <li><strong>Insult of the Hour</strong> - Featured insult in warm burgundy color, displayed in elegant Old English font</li>
-            <li><strong>Configurable Refresh</strong> - Choose how often the featured insult updates: 5, 15, 30, or 60 minutes</li>
-            <li><strong>Share as Image</strong> - Tap the featured insult to share beautiful parchment-styled images perfect for social media</li>
-            <li><strong>Swipe Gestures (NEW!)</strong> - Swipe left on any insult to reveal quick actions: add to favorites (or delete from favorites) and share as image</li>
+            <li><strong>Autonomous Home Screen Widget (NEW!)</strong> - Add a widget to your home screen that displays a new insult every hour, completely autonomously - no app interaction needed after initial setup!</li>
+            <li><strong>Share as Image</strong> - Long-press easter eggs to share beautiful parchment-styled images perfect for social media</li>
+            <li><strong>Swipe Gestures</strong> - Swipe left on any insult to reveal quick actions: add to favorites (or delete from favorites) and share as image</li>
             <li><strong>Parchment Card Design (NEW!)</strong> - Beautiful card-style list items with depth, shadows, and aged parchment background</li>
             <li><strong>IM Fell English Font (NEW!)</strong> - Classic typeface that balances medieval character with excellent readability</li>
             <li><strong>Browse Insults</strong> - Scroll through 1,000 randomly-selected Shakespearean insults</li>
@@ -110,7 +109,8 @@
             <li><strong>Send via SMS</strong> - Share your favorite insults directly with friends</li>
             <li><strong>Share</strong> - Share insults to any app on your device</li>
             <li><strong>Save Favorites</strong> - Long-press any insult to save it for later</li>
-            <li><strong>Settings</strong> - Customize haptics, sound effects, volume, easter egg frequency, insult refresh interval, and manage your favorites</li>
+            <li><strong>Clear All Favorites</strong> - Convenient trash icon in favorites header to clear all saved insults at once</li>
+            <li><strong>Settings</strong> - Customize haptics, sound effects, volume, and easter egg frequency</li>
             <li><strong>Sound Effects</strong> - Choose between chime or pop sounds when adding favorites (plays only when haptics are off) with adjustable volume</li>
             <li><strong>Easter Eggs</strong> - Discover subtle hidden seasonal surprises - tap for elegant overlay, long-press to share as image</li>
             <li><strong>Dark Mode</strong> - Automatic light and dark theme support</li>
@@ -121,8 +121,8 @@
     <div class="section">
         <h2>Usage Tips</h2>
         <ul>
-            <li><strong>Tap the Insult of the Hour</strong> (at the top) to share it as a beautiful parchment image</li>
-            <li><strong>Tap the refresh icon</strong> (next to search) to load a fresh batch of 1,000 insults</li>
+            <li><strong>Add the home screen widget</strong> for a new insult every hour - works completely autonomously once the app has been opened at least once</li>
+            <li><strong>Tap the refresh icon</strong> (in the header) to load a fresh batch of 1,000 insults</li>
             <li><strong>Swipe left</strong> on any insult to reveal quick action buttons - heart to favorite (or trash to delete on the Favorites page), and share icon for instant image sharing</li>
             <li><strong>Tap</strong> an insult to select it and copy to clipboard</li>
             <li><strong>Tap multiple insults</strong> to select them all - they'll be copied together, each on its own line</li>
@@ -135,8 +135,8 @@
                 <li><strong>Tap</strong> the icon to see the insult in elegant Old English style</li>
                 <li><strong>Long-press</strong> the icon to share as a beautiful parchment image</li>
             </ul>
-            <li><strong>Visit Settings</strong> to toggle haptics, choose sound effects, adjust volume, change easter egg frequency, set insult refresh interval, or clear all favorites</li>
-            <li><strong>Configure refresh interval</strong> in Settings to control how often the Insult of the Hour updates - choose between 5, 15, 30, or 60 minutes</li>
+            <li><strong>Clear all favorites</strong> using the trash icon in the favorites page header</li>
+            <li><strong>Visit Settings</strong> to toggle haptics, choose sound effects, adjust volume, and change easter egg frequency</li>
             <li><strong>Turn off haptics</strong> in Settings to enable sound effects - choose between a pleasant chime or soft pop sound with adjustable volume</li>
             <li><strong>Dark mode</strong> automatically matches your device's appearance settings</li>
         </ul>
@@ -148,13 +148,14 @@
             This app combines modern mobile development with classic Shakespearean text analysis. The insult
             database was compiled by analyzing Shakespeare's complete works to extract authentic period vocabulary.
             The app is built using React Native and Expo, with a Rust-powered generator for creating new insult
-            combinations. Version 1.8.0 adds user-configurable refresh intervals for the featured insult (5, 15, 30,
-            or 60 minutes) and a warm burgundy color scheme that complements the parchment design. Previous releases
-            introduced intuitive swipe gestures using react-native-gesture-handler, beautiful parchment-colored card
-            designs with depth and shadows, and the elegant IM Fell English font for enhanced readability while
-            maintaining medieval character. The app features the "Insult of the Hour" with beautiful Old English
-            typography, shareable parchment-styled images, and subtle easter egg interactions, all while maintaining
-            intelligent random sampling using the Fisher-Yates algorithm for optimal performance and endless variety.
+            combinations. Version 2.4.6 introduces a fully autonomous home screen widget that displays a new insult
+            every hour without requiring any app interaction. The widget uses iOS WidgetKit with a 48-hour timeline
+            system, generating randomized batches that automatically refresh. Previous releases introduced intuitive
+            swipe gestures using react-native-gesture-handler, beautiful parchment-colored card designs with depth
+            and shadows, and the elegant IM Fell English font for enhanced readability while maintaining medieval
+            character. The app features shareable parchment-styled images, a convenient "Clear All Favorites" button,
+            and subtle easter egg interactions, all while maintaining intelligent random sampling using the Fisher-Yates
+            algorithm for optimal performance and endless variety.
         </p>
     </div>
 

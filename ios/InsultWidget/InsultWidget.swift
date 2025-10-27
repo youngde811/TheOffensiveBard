@@ -38,56 +38,104 @@ struct InsultProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (InsultEntry) -> ()) {
-        let entry = loadCurrentInsult()
-        completion(entry)
+        // For preview, just show the first entry from our timeline
+        let entries = generateTimelineEntries()
+        completion(entries.first ?? placeholder(in: context))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<InsultEntry>) -> ()) {
-        let entry = loadCurrentInsult()
+        let entries = generateTimelineEntries()
 
-        // Refresh every 15 minutes (or based on user's interval setting)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-        let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+        // Use .atEnd policy to regenerate timeline after 48 hours
+        let timeline = Timeline(entries: entries, policy: .atEnd)
 
         completion(timeline)
     }
 
-    private func loadCurrentInsult() -> InsultEntry {
+    private func generateTimelineEntries() -> [InsultEntry] {
         let sharedDefaults = UserDefaults(suiteName: "group.com.bosshog811.TheInsolentBard")
 
-        if let dataString = sharedDefaults?.string(forKey: "currentInsult"),
-           let data = dataString.data(using: .utf8),
-           let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-           let insult = json["insult"] as? String,
-           let timestampString = json["timestamp"] as? String {
-            let timestamp = formatTimestamp(timestampString)
-
-            return InsultEntry(
+        // Load the insult database
+        guard let dataString = sharedDefaults?.string(forKey: "insultDatabase") else {
+            return [InsultEntry(
               date: Date(),
-              insult: insult,
-              timestamp: timestamp
-            )
+              insult: "Thou villainous tickle-brained canker-blossom!",
+              timestamp: "Open app to sync"
+            )]
         }
 
-        // Fallback
-        return InsultEntry(
+        guard let data = dataString.data(using: .utf8) else {
+            return [InsultEntry(
+              date: Date(),
+              insult: "Thou villainous tickle-brained canker-blossom!",
+              timestamp: "Open app to sync"
+            )]
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return [InsultEntry(
+              date: Date(),
+              insult: "Thou villainous tickle-brained canker-blossom!",
+              timestamp: "Open app to sync"
+            )]
+        }
+
+        guard let insults = json["insults"] as? [String] else {
+            return [InsultEntry(
+              date: Date(),
+              insult: "Thou villainous tickle-brained canker-blossom!",
+              timestamp: "Open app to sync"
+            )]
+        }
+
+        guard !insults.isEmpty else {
+            return [InsultEntry(
+              date: Date(),
+              insult: "Thou villainous tickle-brained canker-blossom!",
+              timestamp: "Open app to sync"
+            )]
+        }
+
+        // Generate 48 timeline entries (one per hour for 48 hours)
+        var entries: [InsultEntry] = []
+        let now = Date()
+        let calendar = Calendar.current
+
+        // Randomly select 48 insults from the database
+        let selectedInsults = selectRandomInsults(from: insults, count: 48)
+
+        for (index, insult) in selectedInsults.enumerated() {
+            // Each entry is 1 hour apart
+            if let entryDate = calendar.date(byAdding: .hour, value: index, to: now) {
+                let timestamp = formatTimestamp(entryDate)
+                entries.append(InsultEntry(
+                  date: entryDate,
+                  insult: insult,
+                  timestamp: timestamp
+                ))
+            }
+        }
+
+        return entries.isEmpty ? [InsultEntry(
           date: Date(),
-          insult: "Thou villainous tickle-brained canker-blossom!",
-          timestamp: "Open app to refresh"
-        )
+          insult: "Thy wit is as thick as Tewksbury mustard!",
+          timestamp: "Error"
+        )] : entries
     }
 
-    private func formatTimestamp(_ isoString: String) -> String {
-        let isoFormatter = ISO8601DateFormatter()
-        isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
-        guard let date = isoFormatter.date(from: isoString) else {
-            return "Recently"
+    private func selectRandomInsults(from insults: [String], count: Int) -> [String] {
+        // Fisher-Yates shuffle for random selection
+        var shuffled = insults
+        for i in stride(from: shuffled.count - 1, through: 1, by: -1) {
+            let j = Int.random(in: 0...i)
+            shuffled.swapAt(i, j)
         }
+        return Array(shuffled.prefix(min(count, shuffled.count)))
+    }
 
+    private func formatTimestamp(_ date: Date) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMM d 'at' h:mm a"
-
         return dateFormatter.string(from: date)
     }
 }
@@ -221,8 +269,8 @@ struct InsultWidget: Widget {
                   .background(Color(red: 0.945, green: 0.933, blue: 0.898))
             }
         }
-          .configurationDisplayName("Insult of the Hour")
-          .description("Display a Shakespearean insult on your home screen.")
+          .configurationDisplayName("The Insolent Bard")
+          .description("Shakespearean insults that refresh every hour.")
           .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
 }

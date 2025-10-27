@@ -19,86 +19,29 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 
-import { Text, TouchableOpacity, View, Animated } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import styles from '../styles/styles.js';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, insultOfTheHour, isRefreshing, onInsultPress, onInsultRefresh }) {
+export default function InsultsHeader({ appConfig, onSearchPress, isSearchActive, onRefreshPress, onClearAllPress }) {
   const { colors } = useTheme();
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  // Animate when refreshing
-  useEffect(() => {
-    if (isRefreshing) {
-      Animated.sequence([
-        Animated.timing(fadeAnim, {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 150,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [isRefreshing]);
-
-  // Truncate long insults with ellipsis
-  const truncateInsult = (insult, maxLength = 50) => {
-    if (!insult) {
-      return '';
-    }
-    
-    const text = insult.insult || insult;
-    
-    return text.length > maxLength ? text.substring(0, maxLength - 3) + '...' : text;
-  };
 
   return (
     <View style={[styles.listHeaderView, { backgroundColor: colors.surfaceSecondary }]}>
-      {insultOfTheHour ? (
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', marginRight: 8 }}>
-          <TouchableOpacity
-            onPress={onInsultPress}
-            style={{ flex: 1 }}
-            activeOpacity={0.7}
-          >
-            <Animated.Text
-              style={[
-                styles.listHeaderInsult,
-                {
-                  color: colors.insultOfTheHour,
-                  opacity: fadeAnim,
-                }
-              ]}
-              numberOfLines={1}
-              ellipsizeMode="tail"
-            >
-              {truncateInsult(insultOfTheHour)}
-            </Animated.Text>
-          </TouchableOpacity>
-          {onInsultRefresh && (
-            <TouchableOpacity
-              style={{ marginLeft: 8 }}
-              onPress={onInsultRefresh}
-              activeOpacity={0.6}
-            >
-              <Ionicons
-                name="refresh-circle"
-                size={24}
-                color={colors.insultOfTheHour}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
-      ) : null}
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        {onClearAllPress && (
+          <TouchableOpacity style={styles.searchToggleButton} onPress={onClearAllPress}>
+            <Ionicons
+              name="trash-outline"
+              size={22}
+              color="#e74c3c"
+            />
+          </TouchableOpacity>
+        )}
         {onRefreshPress && (
           <TouchableOpacity style={styles.searchToggleButton} onPress={onRefreshPress}>
             <Ionicons

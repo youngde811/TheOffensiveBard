@@ -23,9 +23,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FlashList } from "@shopify/flash-list";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import styles from '../styles/styles.js';
 import SwipeableInsultItem from './SwipeableInsultItem';
@@ -37,17 +38,15 @@ import InsultListFooter from '../components/InsultListFooter';
 import { useAppContext } from '../contexts/AppContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTheme } from '../contexts/ThemeContext';
-import { useInsultOfTheHour } from '../hooks/useInsultOfTheHour';
 import { useImageShare } from '../hooks/useImageShare';
 import { useInsultSelection } from '../hooks/useInsultSelection';
 
 export default function FavoriteInsults({ appConfig, setDismiss }) {
   const { colors } = useTheme();
-  const { favorites, isLoadingFavorites, fetchFavorites, removeFavorite } = useAppContext();
+  const { favorites, isLoadingFavorites, fetchFavorites, removeFavorite, keyPrefix } = useAppContext();
 
   const haptics = useHaptics();
 
-  const { currentInsult: insultOfTheHour, isRefreshing } = useInsultOfTheHour(favorites);
   const { imageRef, isGenerating, shareAsImage } = useImageShare();
 
   // Use the new shared selection hook
@@ -102,14 +101,42 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
     }
   }, [selectedInsults, removeFavorite, setSelectedInsults, haptics]);
 
-  const handleInsultOfTheHourPress = useCallback(async () => {
-    if (insultOfTheHour) {
-      haptics.light();
+  const handleClearAllFavorites = useCallback(() => {
+    Alert.alert(
+      'Clear All Favorites',
+      'Are you sure you want to delete all your favorite insults? This cannot be undone.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+          onPress: () => haptics.light(),
+        },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const keys = await AsyncStorage.getAllKeys();
+              const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
 
-      const insultText = insultOfTheHour.insult || insultOfTheHour;
-      setInsultToShare(insultText);
-    }
-  }, [insultOfTheHour, haptics]);
+              await AsyncStorage.multiRemove(favoriteKeys);
+              await fetchFavorites();
+
+              haptics.success();
+
+              Alert.alert('Success', 'All favorites have been cleared.');
+            } catch (error) {
+              console.error('Error clearing favorites:', error);
+
+              haptics.error();
+
+              Alert.alert('Error', 'Failed to clear favorites. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  }, [keyPrefix, fetchFavorites, haptics]);
 
   const handleShareInsultAsImage = useCallback((item) => {
     haptics.light();
@@ -186,9 +213,7 @@ export default function FavoriteInsults({ appConfig, setDismiss }) {
         <View style={{ zIndex: 1000, elevation: 10 }}>
           <InsultsHeader
             appConfig={appConfig}
-            insultOfTheHour={insultOfTheHour}
-            isRefreshing={isRefreshing}
-            onInsultPress={handleInsultOfTheHourPress}
+            onClearAllPress={handleClearAllFavorites}
           />
         </View>
         {favorites.length === 0 && !isLoadingFavorites ?
