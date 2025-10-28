@@ -268,33 +268,35 @@ export default function Settings({ appConfig, setDismiss }) {
                 Choose a background color for your widget
               </Text>
 
-              { WIDGET_BACKGROUND_COLORS.map((preset) => (
-                <PressableOpacity
-                  key={preset.color}
-                  style={styles.colorOption}
-                  onPress={() => handleWidgetBackgroundColorChange(preset.color)}
-                >
-                  <View style={styles.radioRow}>
-                    <View style={[
-                      styles.radio,
-                      { borderColor: colors.primary }
-                    ]}>
-                      {widgetBackgroundColor === preset.color && (
-                        <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
-                      )}
-                    </View>
-                    <View style={[styles.colorSwatch, { backgroundColor: preset.color, borderColor: colors.divider }]} />
-                    <View style={styles.colorInfo}>
-                      <Text style={[styles.colorLabel, { color: colors.text }]}>
+              <View style={styles.colorGrid}>
+                { WIDGET_BACKGROUND_COLORS.map((preset) => (
+                  <PressableOpacity
+                    key={preset.color}
+                    style={styles.colorGridItem}
+                    onPress={() => handleWidgetBackgroundColorChange(preset.color)}
+                  >
+                    <View style={styles.colorGridItemContent}>
+                      <View style={[
+                        styles.colorSwatchLarge,
+                        {
+                          backgroundColor: preset.color,
+                          borderColor: widgetBackgroundColor === preset.color ? colors.primary : colors.divider,
+                          borderWidth: widgetBackgroundColor === preset.color ? 3 : 2
+                        }
+                      ]}>
+                        {widgetBackgroundColor === preset.color && (
+                          <View style={styles.checkmarkContainer}>
+                            <Text style={styles.checkmark}>✓</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.colorLabelSmall, { color: colors.text }]} numberOfLines={1}>
                         {preset.label}
                       </Text>
-                      <Text style={[styles.colorDescription, { color: colors.textMuted }]}>
-                        {preset.description}
-                      </Text>
                     </View>
-                  </View>
-                </PressableOpacity>
-              ))}
+                  </PressableOpacity>
+                ))}
+              </View>
             </View>
 
             <View style={styles.divider} />
@@ -582,26 +584,44 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
   },
-  colorOption: {
-    paddingVertical: 12,
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 12,
+    marginHorizontal: -8,
   },
-  colorSwatch: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 2,
-    marginHorizontal: 12,
+  colorGridItem: {
+    width: '25%',
+    padding: 8,
   },
-  colorInfo: {
-    flex: 1,
+  colorGridItemContent: {
+    alignItems: 'center',
   },
-  colorLabel: {
-    fontSize: 16,
+  colorSwatchLarge: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  checkmarkContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  colorLabelSmall: {
+    fontSize: 11,
     fontWeight: '500',
-    marginBottom: 2,
-  },
-  colorDescription: {
-    fontSize: 13,
+    textAlign: 'center',
   },
   previewContainer: {
     marginTop: 20,
