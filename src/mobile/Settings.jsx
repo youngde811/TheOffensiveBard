@@ -32,9 +32,21 @@ import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/Se
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
 
+// Preset widget background colors
+const WIDGET_BACKGROUND_COLORS = [
+  { label: 'Aged Parchment', color: '#f1eee5', description: 'Classic warm parchment (default)' },
+  { label: 'Cream', color: '#fffdd0', description: 'Light cream color' },
+  { label: 'Soft Blue', color: '#e3f2fd', description: 'Gentle sky blue' },
+  { label: 'Mint', color: '#e8f5e9', description: 'Fresh mint green' },
+  { label: 'Lavender', color: '#f3e5f5', description: 'Soft purple' },
+  { label: 'Peach', color: '#ffe0d0', description: 'Warm peach' },
+  { label: 'Light Gray', color: '#f5f5f5', description: 'Neutral gray' },
+  { label: 'White', color: '#ffffff', description: 'Pure white' },
+];
+
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
-  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
+  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, widgetBackgroundColor, setWidgetBackgroundColor, widgetBackgroundOpacity, setWidgetBackgroundOpacity } = useSettings();
 
   const haptics = useHaptics();
 
@@ -61,6 +73,19 @@ export default function Settings({ appConfig, setDismiss }) {
   }, [setSoundVolume]);
 
   const handleVolumeChangeComplete = useCallback(() => {
+    haptics.light();
+  }, [haptics]);
+
+  const handleWidgetBackgroundColorChange = useCallback((color) => {
+    haptics.selection();
+    setWidgetBackgroundColor(color);
+  }, [setWidgetBackgroundColor, haptics]);
+
+  const handleWidgetOpacityChange = useCallback((value) => {
+    setWidgetBackgroundOpacity(value);
+  }, [setWidgetBackgroundOpacity]);
+
+  const handleWidgetOpacityChangeComplete = useCallback(() => {
     haptics.light();
   }, [haptics]);
 
@@ -228,6 +253,97 @@ export default function Settings({ appConfig, setDismiss }) {
                 </View>
               </PressableOpacity>
             ))}
+          </View>
+
+          {/* Widget Customization */}
+          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Widget Customization</Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              Customize the background color and opacity of your home screen widget
+            </Text>
+
+            <View style={styles.settingGroup}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>Background Color</Text>
+              <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                Choose a background color for your widget
+              </Text>
+
+              { WIDGET_BACKGROUND_COLORS.map((preset) => (
+                <PressableOpacity
+                  key={preset.color}
+                  style={styles.colorOption}
+                  onPress={() => handleWidgetBackgroundColorChange(preset.color)}
+                >
+                  <View style={styles.radioRow}>
+                    <View style={[
+                      styles.radio,
+                      { borderColor: colors.primary }
+                    ]}>
+                      {widgetBackgroundColor === preset.color && (
+                        <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
+                      )}
+                    </View>
+                    <View style={[styles.colorSwatch, { backgroundColor: preset.color, borderColor: colors.divider }]} />
+                    <View style={styles.colorInfo}>
+                      <Text style={[styles.colorLabel, { color: colors.text }]}>
+                        {preset.label}
+                      </Text>
+                      <Text style={[styles.colorDescription, { color: colors.textMuted }]}>
+                        {preset.description}
+                      </Text>
+                    </View>
+                  </View>
+                </PressableOpacity>
+              ))}
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.settingGroup}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>Background Opacity</Text>
+              <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                Adjust the transparency of the widget background
+              </Text>
+
+              <View style={styles.volumeContainer}>
+                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>0%</Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={0}
+                  maximumValue={100}
+                  step={5}
+                  value={widgetBackgroundOpacity}
+                  onValueChange={handleWidgetOpacityChange}
+                  onSlidingComplete={handleWidgetOpacityChangeComplete}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.divider}
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>100%</Text>
+              </View>
+              <Text style={[styles.volumeValue, { color: colors.text }]}>
+                Current: {widgetBackgroundOpacity}%
+              </Text>
+
+              {/* Preview of selected color with opacity */}
+              <View style={styles.previewContainer}>
+                <Text style={[styles.settingLabel, { color: colors.text, marginBottom: 8 }]}>Preview</Text>
+                <View
+                  style={[
+                    styles.previewBox,
+                    {
+                      backgroundColor: widgetBackgroundColor,
+                      opacity: widgetBackgroundOpacity / 100,
+                      borderColor: colors.divider
+                    }
+                  ]}
+                >
+                  <Text style={[styles.previewText, { color: '#8B4049' }]}>
+                    Sample Widget Text
+                  </Text>
+                </View>
+              </View>
+            </View>
           </View>
 
           {/* Home Screen Widget */}
@@ -465,5 +581,42 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 4,
+  },
+  colorOption: {
+    paddingVertical: 12,
+  },
+  colorSwatch: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    borderWidth: 2,
+    marginHorizontal: 12,
+  },
+  colorInfo: {
+    flex: 1,
+  },
+  colorLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  colorDescription: {
+    fontSize: 13,
+  },
+  previewContainer: {
+    marginTop: 20,
+  },
+  previewBox: {
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  previewText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });

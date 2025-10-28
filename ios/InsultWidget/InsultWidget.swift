@@ -24,11 +24,41 @@ struct GlobalConstants {
     static let widgetUrl = "insolentbard://share-insult"
 }
 
+// MARK: - Color Helper
+extension Color {
+    init(hex: String, opacity: Double = 1.0) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 241, 238, 229) // Default parchment color
+        }
+
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue:  Double(b) / 255,
+            opacity: min(max(opacity, 0), 1)
+        )
+    }
+}
+
 // MARK: - Data Model
 struct InsultEntry: TimelineEntry {
     let date: Date
     let insult: String
     let timestamp: String
+    let backgroundColor: Color
+    let backgroundOpacity: Double
 }
 
 // MARK: - Timeline Provider
@@ -37,7 +67,9 @@ struct InsultProvider: TimelineProvider {
         InsultEntry(
           date: Date(),
           insult: "Thou churlish, motley-minded knave!",
-          timestamp: "Just now"
+          timestamp: "Just now",
+          backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
+          backgroundOpacity: 1.0
         )
     }
 
@@ -60,12 +92,18 @@ struct InsultProvider: TimelineProvider {
     private func generateTimelineEntries() -> [InsultEntry] {
         let sharedDefaults = UserDefaults(suiteName: "group.com.bosshog811.TheInsolentBard")
 
+        // Default background settings
+        let defaultBgColor = Color(red: 0.945, green: 0.933, blue: 0.898)
+        let defaultBgOpacity = 1.0
+
         // Load the insult database
         guard let dataString = sharedDefaults?.string(forKey: "insultDatabase") else {
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
-              timestamp: "Open app to sync"
+              timestamp: "Open app to sync",
+              backgroundColor: defaultBgColor,
+              backgroundOpacity: defaultBgOpacity
             )]
         }
 
@@ -73,7 +111,9 @@ struct InsultProvider: TimelineProvider {
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
-              timestamp: "Open app to sync"
+              timestamp: "Open app to sync",
+              backgroundColor: defaultBgColor,
+              backgroundOpacity: defaultBgOpacity
             )]
         }
 
@@ -81,7 +121,9 @@ struct InsultProvider: TimelineProvider {
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
-              timestamp: "Open app to sync"
+              timestamp: "Open app to sync",
+              backgroundColor: defaultBgColor,
+              backgroundOpacity: defaultBgOpacity
             )]
         }
 
@@ -89,7 +131,9 @@ struct InsultProvider: TimelineProvider {
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
-              timestamp: "Open app to sync"
+              timestamp: "Open app to sync",
+              backgroundColor: defaultBgColor,
+              backgroundOpacity: defaultBgOpacity
             )]
         }
 
@@ -97,9 +141,17 @@ struct InsultProvider: TimelineProvider {
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
-              timestamp: "Open app to sync"
+              timestamp: "Open app to sync",
+              backgroundColor: defaultBgColor,
+              backgroundOpacity: defaultBgOpacity
             )]
         }
+
+        // Read background customization settings
+        let bgColorHex = json["widgetBackgroundColor"] as? String ?? "#f1eee5"
+        let bgOpacityPercent = json["widgetBackgroundOpacity"] as? Int ?? 100
+        let bgOpacity = Double(bgOpacityPercent) / 100.0
+        let backgroundColor = Color(hex: bgColorHex, opacity: bgOpacity)
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
@@ -114,11 +166,13 @@ struct InsultProvider: TimelineProvider {
             // Each entry is 1 hour apart
             if let entryDate = calendar.date(byAdding: .hour, value: index, to: now) {
                 let timestamp = formatTimestamp(entryDate)
-                
+
                 entries.append(InsultEntry(
                   date: entryDate,
                   insult: insult,
-                  timestamp: timestamp
+                  timestamp: timestamp,
+                  backgroundColor: backgroundColor,
+                  backgroundOpacity: bgOpacity
                 ))
             }
         }
@@ -126,7 +180,9 @@ struct InsultProvider: TimelineProvider {
         return entries.isEmpty ? [InsultEntry(
           date: Date(),
           insult: "Thy wit is as thick as Tewksbury mustard!",
-          timestamp: "Error"
+          timestamp: "Error",
+          backgroundColor: defaultBgColor,
+          backgroundOpacity: defaultBgOpacity
         )] : entries
     }
 
@@ -158,8 +214,8 @@ struct SmallWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Aged parchment background
-            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
+            // Custom background from settings
+            entry.backgroundColor
 
             VStack(spacing: 4) {
                 Text("🎭")
@@ -184,8 +240,8 @@ struct MediumWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Aged parchment background
-            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
+            // Custom background from settings
+            entry.backgroundColor
 
             VStack(alignment: .leading, spacing: 8) {
                 // Title
@@ -224,8 +280,8 @@ struct LargeWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Aged parchment background
-            Color(red: 0.945, green: 0.933, blue: 0.898) // #f1eee5
+            // Custom background from settings
+            entry.backgroundColor
 
             VStack(alignment: .center, spacing: 12) {
                 // Title with decorative elements
@@ -274,10 +330,10 @@ struct InsultWidget: Widget {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
             if #available(iOSApplicationExtension 17.0, *) {
                 InsultWidgetEntryView(entry: entry)
-                  .containerBackground(Color(red: 0.945, green: 0.933, blue: 0.898), for: .widget)
+                  .containerBackground(entry.backgroundColor, for: .widget)
             } else {
                 InsultWidgetEntryView(entry: entry)
-                  .background(Color(red: 0.945, green: 0.933, blue: 0.898))
+                  .background(entry.backgroundColor)
             }
         }
           .configurationDisplayName("The Insolent Bard")
@@ -313,11 +369,15 @@ struct InsultWidgetEntryView: View {
     InsultEntry(
       date: Date(),
       insult: "Thou gleeking flap-mouthed foot-licker!",
-      timestamp: "5 minutes ago"
+      timestamp: "5 minutes ago",
+      backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
+      backgroundOpacity: 1.0
     )
     InsultEntry(
       date: Date(),
       insult: "Thou puking tickle-brained canker-blossom!",
-      timestamp: "Just now"
+      timestamp: "Just now",
+      backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
+      backgroundOpacity: 1.0
     )
 }
