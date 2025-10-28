@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   },
   listHeaderView: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     borderRadius: 5,
     width: '100%',
