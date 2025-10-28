@@ -41,11 +41,13 @@ export async function syncInsultDatabaseWithWidget(insults) {
   // Check if SharedGroupPreferences is available (required)
   if (!SharedGroupPreferences) {
     debugLogger.error('SharedGroupPreferences module not available');
+    
     Alert.alert(
       'Widget Sync Failed',
       'SharedGroupPreferences module not available',
       [{ text: 'OK' }]
     );
+    
     return;
   }
 
@@ -61,33 +63,41 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     try {
       await SharedGroupPreferences.setItem('test_key', 'test_value', APP_GROUP);
+      
       debugLogger.success('Test write succeeded');
+
       const testRead = await SharedGroupPreferences.getItem('test_key', APP_GROUP);
       debugLogger.success('Test read succeeded: ' + testRead);
     } catch (testError) {
       debugLogger.error('App Group test failed: ' + testError);
       debugLogger.error('This means the App Group is not accessible');
+
       throw testError;
     }
 
     // Check if database is already synced with current version
     debugLogger.info('Step 1: Reading current version from UserDefaults...');
+
     let syncedVersion = null;
+
     try {
       syncedVersion = await SharedGroupPreferences.getItem(
         DATABASE_VERSION_KEY,
         APP_GROUP
       );
+      
       debugLogger.info('Step 1 complete: Current synced version: ' + syncedVersion);
     } catch (versionError) {
       // Key might not exist on first run - that's okay
       debugLogger.info('Step 1: No existing version found (first sync): ' + versionError);
+
       syncedVersion = null;
     }
 
     if (syncedVersion === CURRENT_DATABASE_VERSION) {
       debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
       debugLogger.info('Sync complete - database already up to date');
+
       return;
     }
 
@@ -95,6 +105,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     // Extract just the insult text to minimize storage
     debugLogger.info('Step 2: Extracting and sampling insult texts...');
+
     const allInsultTexts = insults.map(item => item.insult || item);
 
     // Randomly select a subset for the widget (reduces data size)
@@ -105,12 +116,14 @@ export async function syncInsultDatabaseWithWidget(insults) {
     debugLogger.info('Sample insult: ' + insultTexts[0]);
 
     debugLogger.info('Step 3: Preparing data object...');
+
     const data = {
       insults: insultTexts,
       version: CURRENT_DATABASE_VERSION,
       syncedAt: new Date().toISOString(),
       count: insultTexts.length,
     };
+
     debugLogger.info('Step 3 complete: Data object ready');
 
     debugLogger.info('Step 4: Writing database to UserDefaults...');
@@ -127,6 +140,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
     debugLogger.success('Step 4 complete: Database written successfully');
 
     debugLogger.info('Step 5: Writing version key...');
+
     await SharedGroupPreferences.setItem(
       DATABASE_VERSION_KEY,
       CURRENT_DATABASE_VERSION,
@@ -137,6 +151,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     // Verify the write
     debugLogger.info('Step 6: Verifying write by reading back...');
+
     const verification = await SharedGroupPreferences.getItem(
       INSULT_DATABASE_KEY,
       APP_GROUP
@@ -145,23 +160,28 @@ export async function syncInsultDatabaseWithWidget(insults) {
     if (verification) {
       try {
         const parsed = JSON.parse(verification);
+
         debugLogger.success('Step 6 complete: Successfully read back ' + parsed.count + ' insults');
       } catch (parseError) {
         debugLogger.error('Step 6 failed: Could not parse verification data: ' + parseError.message);
+
         Alert.alert(
           'Widget Sync Error',
           'Verification failed: Data corrupted. Check debug logs.',
           [{ text: 'OK' }]
         );
+
         return;
       }
     } else {
       debugLogger.error('Step 6 failed: Could not read back data from UserDefaults');
+
       Alert.alert(
         'Widget Sync Error',
         'Verification failed: Could not read back widget data. Check debug logs.',
         [{ text: 'OK' }]
       );
+
       return;
     }
 
@@ -182,6 +202,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
     }
 
     let errorMessage = 'Unknown error';
+
     if (error && error.message) {
       errorMessage = error.message;
     } else if (typeof error === 'string') {

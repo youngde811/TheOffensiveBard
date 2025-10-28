@@ -40,16 +40,19 @@ export default function Settings({ appConfig, setDismiss }) {
 
   const handleEasterEggFrequencyChange = useCallback((frequency) => {
     haptics.selection();
+    
     setEasterEggFrequency(frequency);
   }, [setEasterEggFrequency, haptics]);
 
   const handleThemeChange = useCallback((mode) => {
     haptics.selection();
+
     setThemeMode(mode);
   }, [setThemeMode, haptics]);
 
   const handleSoundEffectChange = useCallback((effect) => {
     haptics.selection();
+
     setSoundEffect(effect);
   }, [setSoundEffect, haptics]);
 
@@ -63,6 +66,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
   const openGitHub = useCallback(() => {
     haptics.light();
+
     Linking.openURL(appConfig.projectURL);
   }, [appConfig.projectURL, haptics]);
 
@@ -82,7 +86,7 @@ export default function Settings({ appConfig, setDismiss }) {
               Choose your preferred theme
             </Text>
 
-            {Object.entries(THEME_MODES).map(([key, value]) => (
+            { Object.entries(THEME_MODES).map(([key, value]) => (
               <PressableOpacity
                 key={key}
                 style={styles.frequencyOption}
@@ -137,7 +141,7 @@ export default function Settings({ appConfig, setDismiss }) {
                 Sound to play when adding favorites (only when haptics are off)
               </Text>
 
-              {Object.entries(SOUND_EFFECTS).map(([key, value]) => (
+              { Object.entries(SOUND_EFFECTS).map(([key, value]) => (
                 <PressableOpacity
                   key={key}
                   style={styles.frequencyOption}
@@ -198,7 +202,7 @@ export default function Settings({ appConfig, setDismiss }) {
               How many insults should have seasonal easter egg icons?
             </Text>
 
-            {Object.entries(EASTER_EGG_FREQUENCY).map(([key, { label, percentage }]) => (
+            { Object.entries(EASTER_EGG_FREQUENCY).map(([key, { label, percentage }]) => (
               <PressableOpacity
                 key={key}
                 style={styles.frequencyOption}
@@ -246,7 +250,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.2</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.3</Text>
             </View>
 
             <View style={styles.aboutRow}>

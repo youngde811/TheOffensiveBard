@@ -20,6 +20,10 @@
 import WidgetKit
 import SwiftUI
 
+struct GlobalConstants {
+    static let widgetUrl = "insolentbard://share-insult"
+}
+
 // MARK: - Data Model
 struct InsultEntry: TimelineEntry {
     let date: Date
@@ -40,6 +44,7 @@ struct InsultProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (InsultEntry) -> ()) {
         // For preview, just show the first entry from our timeline
         let entries = generateTimelineEntries()
+
         completion(entries.first ?? placeholder(in: context))
     }
 
@@ -98,6 +103,7 @@ struct InsultProvider: TimelineProvider {
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
+        
         let now = Date()
         let calendar = Calendar.current
 
@@ -108,6 +114,7 @@ struct InsultProvider: TimelineProvider {
             // Each entry is 1 hour apart
             if let entryDate = calendar.date(byAdding: .hour, value: index, to: now) {
                 let timestamp = formatTimestamp(entryDate)
+                
                 entries.append(InsultEntry(
                   date: entryDate,
                   insult: insult,
@@ -126,16 +133,20 @@ struct InsultProvider: TimelineProvider {
     private func selectRandomInsults(from insults: [String], count: Int) -> [String] {
         // Fisher-Yates shuffle for random selection
         var shuffled = insults
+        
         for i in stride(from: shuffled.count - 1, through: 1, by: -1) {
             let j = Int.random(in: 0...i)
             shuffled.swapAt(i, j)
         }
+
         return Array(shuffled.prefix(min(count, shuffled.count)))
     }
 
     private func formatTimestamp(_ date: Date) -> String {
         let dateFormatter = DateFormatter()
+        
         dateFormatter.dateFormat = "MMM d 'at' h:mm a"
+
         return dateFormatter.string(from: date)
     }
 }
@@ -204,7 +215,7 @@ struct MediumWidgetView: View {
             }
               .padding(16)
         }
-          .widgetURL(URL(string: "insolentbard://share-insult")!)
+          .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
 
@@ -249,7 +260,7 @@ struct LargeWidgetView: View {
             }
               .padding(20)
         }
-          .widgetURL(URL(string: "insolentbard://share-insult")!)
+          .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
 

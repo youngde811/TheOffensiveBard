@@ -202,6 +202,7 @@ export default function App() {
     } else {
       // Show user feedback for non-fatal errors
       console.log('TheOffensiveBard: exception: ' + e);
+      
       Alert.alert(
         'Error',
         `An error occurred: ${e.message}\n\nThe app will continue to function, but some features may not work as expected.`,
