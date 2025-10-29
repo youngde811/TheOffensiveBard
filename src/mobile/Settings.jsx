@@ -19,8 +19,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useCallback } from 'react';
-import { View, Text, ScrollView, Linking, StyleSheet, Switch, Platform, NativeModules } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, Linking, StyleSheet, Switch, Platform, NativeModules, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -54,6 +54,8 @@ export default function Settings({ appConfig, setDismiss }) {
   const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, widgetBackgroundColor, setWidgetBackgroundColor, widgetBackgroundOpacity, setWidgetBackgroundOpacity } = useSettings();
 
   const haptics = useHaptics();
+  const [isApplyingWidgetSettings, setIsApplyingWidgetSettings] = useState(false);
+  const [hasWidgetSettingsChanged, setHasWidgetSettingsChanged] = useState(false);
 
   const handleEasterEggFrequencyChange = useCallback((frequency) => {
     haptics.selection();
@@ -81,46 +83,50 @@ export default function Settings({ appConfig, setDismiss }) {
     haptics.light();
   }, [haptics]);
 
-  const handleWidgetBackgroundColorChange = useCallback(async (color) => {
+  const handleWidgetBackgroundColorChange = useCallback((color) => {
     haptics.selection();
     setWidgetBackgroundColor(color);
-
-    // Sync widget data with new color
-    if (Platform.OS === 'ios') {
-      try {
-        await syncInsultDatabaseWithWidget(allInsults.insults);
-
-        // Reload widget timelines
-        if (NativeModules.WidgetCenterModule) {
-          NativeModules.WidgetCenterModule.reloadAllTimelines();
-        }
-      } catch (error) {
-        console.error('Error syncing widget after color change:', error);
-      }
-    }
+    setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundColor, haptics]);
 
   const handleWidgetOpacityChange = useCallback((value) => {
     setWidgetBackgroundOpacity(value);
+    setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundOpacity]);
 
-  const handleWidgetOpacityChangeComplete = useCallback(async () => {
+  const handleWidgetOpacityChangeComplete = useCallback(() => {
+    haptics.light();
+  }, [haptics]);
+
+  const handleApplyWidgetSettings = useCallback(async () => {
+    if (!hasWidgetSettingsChanged) return;
+
+    setIsApplyingWidgetSettings(true);
     haptics.light();
 
-    // Sync widget data with new opacity
-    if (Platform.OS === 'ios') {
-      try {
+    try {
+      // Wait a bit to ensure AsyncStorage has finished writing
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Sync widget data with new settings
+      if (Platform.OS === 'ios') {
         await syncInsultDatabaseWithWidget(allInsults.insults);
 
         // Reload widget timelines
         if (NativeModules.WidgetCenterModule) {
           NativeModules.WidgetCenterModule.reloadAllTimelines();
         }
-      } catch (error) {
-        console.error('Error syncing widget after opacity change:', error);
       }
+
+      setHasWidgetSettingsChanged(false);
+      haptics.success();
+    } catch (error) {
+      console.error('Error applying widget settings:', error);
+      haptics.error();
+    } finally {
+      setIsApplyingWidgetSettings(false);
     }
-  }, [haptics]);
+  }, [hasWidgetSettingsChanged, haptics]);
 
   const openGitHub = useCallback(() => {
     haptics.light();
@@ -380,6 +386,30 @@ export default function Settings({ appConfig, setDismiss }) {
                   </Text>
                 </View>
               </View>
+
+              {/* Apply Button */}
+              <PressableOpacity
+                style={[
+                  styles.applyButton,
+                  {
+                    backgroundColor: hasWidgetSettingsChanged ? colors.primary : colors.divider,
+                    opacity: hasWidgetSettingsChanged && !isApplyingWidgetSettings ? 1 : 0.5
+                  }
+                ]}
+                onPress={handleApplyWidgetSettings}
+                disabled={!hasWidgetSettingsChanged || isApplyingWidgetSettings}
+              >
+                {isApplyingWidgetSettings ? (
+                  <View style={styles.applyButtonContent}>
+                    <ActivityIndicator size="small" color="white" />
+                    <Text style={[styles.applyButtonText, { marginLeft: 8 }]}>Applying...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.applyButtonText}>
+                    {hasWidgetSettingsChanged ? 'Apply to Widget' : 'No Changes'}
+                  </Text>
+                )}
+              </PressableOpacity>
             </View>
           </View>
 
@@ -673,5 +703,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  applyButton: {
+    marginTop: 20,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
