@@ -41,27 +41,37 @@ const SETTINGS_KEYS = {
   EASTER_EGG_FREQUENCY: '@insolentbard:settings:easterEggFrequency',
   SOUND_EFFECT: '@insolentbard:settings:soundEffect',
   SOUND_VOLUME: '@insolentbard:settings:soundVolume',
+  WIDGET_BACKGROUND_COLOR: '@insolentbard:settings:widgetBackgroundColor',
+  WIDGET_BACKGROUND_OPACITY: '@insolentbard:settings:widgetBackgroundOpacity',
 };
 
 // Default sound volume (30%)
 const DEFAULT_SOUND_VOLUME = 30;
+
+// Default widget background (aged parchment)
+const DEFAULT_WIDGET_BACKGROUND_COLOR = '#f1eee5';
+const DEFAULT_WIDGET_BACKGROUND_OPACITY = 100;
 
 export function SettingsProvider({ children }) {
   const [hapticsEnabled, setHapticsEnabled] = useState(true);
   const [easterEggFrequency, setEasterEggFrequency] = useState('NORMAL');
   const [soundEffect, setSoundEffect] = useState(SOUND_EFFECTS.CHIME);
   const [soundVolume, setSoundVolume] = useState(DEFAULT_SOUND_VOLUME);
+  const [widgetBackgroundColor, setWidgetBackgroundColor] = useState(DEFAULT_WIDGET_BACKGROUND_COLOR);
+  const [widgetBackgroundOpacity, setWidgetBackgroundOpacity] = useState(DEFAULT_WIDGET_BACKGROUND_OPACITY);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from AsyncStorage on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [haptics, frequency, sound, volume] = await Promise.all([
+        const [haptics, frequency, sound, volume, bgColor, bgOpacity] = await Promise.all([
           AsyncStorage.getItem(SETTINGS_KEYS.HAPTICS_ENABLED),
           AsyncStorage.getItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_EFFECT),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_VOLUME),
+          AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_COLOR),
+          AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_OPACITY),
         ]);
 
         if (haptics !== null) {
@@ -75,6 +85,12 @@ export function SettingsProvider({ children }) {
         }
         if (volume !== null) {
           setSoundVolume(parseInt(volume, 10));
+        }
+        if (bgColor !== null) {
+          setWidgetBackgroundColor(bgColor);
+        }
+        if (bgOpacity !== null) {
+          setWidgetBackgroundOpacity(parseInt(bgOpacity, 10));
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -138,6 +154,28 @@ export function SettingsProvider({ children }) {
     }
   }, []);
 
+  // Set widget background color
+  const setWidgetBackgroundColorPref = useCallback(async (color) => {
+    try {
+      setWidgetBackgroundColor(color);
+
+      await AsyncStorage.setItem(SETTINGS_KEYS.WIDGET_BACKGROUND_COLOR, color);
+    } catch (error) {
+      console.error('Error saving widget background color:', error);
+    }
+  }, []);
+
+  // Set widget background opacity (0-100)
+  const setWidgetBackgroundOpacityPref = useCallback(async (opacity) => {
+    try {
+      setWidgetBackgroundOpacity(opacity);
+
+      await AsyncStorage.setItem(SETTINGS_KEYS.WIDGET_BACKGROUND_OPACITY, opacity.toString());
+    } catch (error) {
+      console.error('Error saving widget background opacity:', error);
+    }
+  }, []);
+
   const value = {
     hapticsEnabled,
     toggleHaptics,
@@ -148,6 +186,10 @@ export function SettingsProvider({ children }) {
     setSoundEffect: setSoundEffectPref,
     soundVolume,
     setSoundVolume: setSoundVolumePref,
+    widgetBackgroundColor,
+    setWidgetBackgroundColor: setWidgetBackgroundColorPref,
+    widgetBackgroundOpacity,
+    setWidgetBackgroundOpacity: setWidgetBackgroundOpacityPref,
     isLoading,
   };
 

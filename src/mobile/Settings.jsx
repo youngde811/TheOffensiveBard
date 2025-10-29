@@ -31,10 +31,24 @@ import InsultsHeader from './InsultsHeader';
 import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
+import { getContrastingTextColor } from '../utils/colorUtils';
+
+// Preset widget background colors
+const WIDGET_BACKGROUND_COLORS = [
+  { label: 'Aged Parchment', color: '#f1eee5', description: 'Classic warm parchment (default)' },
+  { label: 'Cream', color: '#fffdd0', description: 'Light cream color' },
+  { label: 'Soft Blue', color: '#e3f2fd', description: 'Gentle sky blue' },
+  { label: 'Mint', color: '#e8f5e9', description: 'Fresh mint green' },
+  { label: 'Lavender', color: '#f3e5f5', description: 'Soft purple' },
+  { label: 'Peach', color: '#ffe0d0', description: 'Warm peach' },
+  { label: 'Light Gray', color: '#f5f5f5', description: 'Neutral gray' },
+  { label: 'White', color: '#ffffff', description: 'Pure white' },
+  { label: 'Dark Charcoal', color: '#2c2c2c', description: 'Deep charcoal for dark mode' },
+];
 
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
-  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume } = useSettings();
+  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, widgetBackgroundColor, setWidgetBackgroundColor, widgetBackgroundOpacity, setWidgetBackgroundOpacity } = useSettings();
 
   const haptics = useHaptics();
 
@@ -61,6 +75,19 @@ export default function Settings({ appConfig, setDismiss }) {
   }, [setSoundVolume]);
 
   const handleVolumeChangeComplete = useCallback(() => {
+    haptics.light();
+  }, [haptics]);
+
+  const handleWidgetBackgroundColorChange = useCallback((color) => {
+    haptics.selection();
+    setWidgetBackgroundColor(color);
+  }, [setWidgetBackgroundColor, haptics]);
+
+  const handleWidgetOpacityChange = useCallback((value) => {
+    setWidgetBackgroundOpacity(value);
+  }, [setWidgetBackgroundOpacity]);
+
+  const handleWidgetOpacityChangeComplete = useCallback(() => {
     haptics.light();
   }, [haptics]);
 
@@ -230,6 +257,101 @@ export default function Settings({ appConfig, setDismiss }) {
             ))}
           </View>
 
+          {/* Widget Customization */}
+          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Widget Customization</Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              Customize the background color and opacity of your home screen widget
+            </Text>
+
+            <View style={styles.settingGroup}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>Background Color</Text>
+              <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                Choose a background color for your widget
+              </Text>
+
+              <View style={styles.colorGrid}>
+                { WIDGET_BACKGROUND_COLORS.map((preset) => (
+                  <PressableOpacity
+                    key={preset.color}
+                    style={styles.colorGridItem}
+                    onPress={() => handleWidgetBackgroundColorChange(preset.color)}
+                  >
+                    <View style={styles.colorGridItemContent}>
+                      <View style={[
+                        styles.colorSwatchLarge,
+                        {
+                          backgroundColor: preset.color,
+                          borderColor: widgetBackgroundColor === preset.color ? colors.primary : colors.divider,
+                          borderWidth: widgetBackgroundColor === preset.color ? 3 : 2
+                        }
+                      ]}>
+                        {widgetBackgroundColor === preset.color && (
+                          <View style={styles.checkmarkContainer}>
+                            <Text style={styles.checkmark}>✓</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={[styles.colorLabelSmall, { color: colors.text }]} numberOfLines={1}>
+                        {preset.label}
+                      </Text>
+                    </View>
+                  </PressableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.settingGroup}>
+              <Text style={[styles.settingLabel, { color: colors.text }]}>Background Opacity</Text>
+              <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
+                Adjust the transparency of the widget background
+              </Text>
+
+              <View style={styles.volumeContainer}>
+                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>0%</Text>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={0}
+                  maximumValue={100}
+                  step={5}
+                  value={widgetBackgroundOpacity}
+                  onValueChange={handleWidgetOpacityChange}
+                  onSlidingComplete={handleWidgetOpacityChangeComplete}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.divider}
+                  thumbTintColor={colors.primary}
+                />
+                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>100%</Text>
+              </View>
+              <Text style={[styles.volumeValue, { color: colors.text }]}>
+                Current: {widgetBackgroundOpacity}%
+              </Text>
+
+              {/* Preview of selected color with opacity */}
+              <View style={styles.previewContainer}>
+                <Text style={[styles.settingLabel, { color: colors.text, marginBottom: 8 }]}>Preview</Text>
+                <View
+                  style={[
+                    styles.previewBox,
+                    {
+                      backgroundColor: widgetBackgroundColor,
+                      opacity: widgetBackgroundOpacity / 100,
+                      borderColor: colors.divider
+                    }
+                  ]}
+                >
+                  <Text style={[styles.previewText, {
+                    color: getContrastingTextColor(widgetBackgroundColor)
+                  }]}>
+                    Sample Widget Text
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+
           {/* Home Screen Widget */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Home Screen Widget</Text>
@@ -250,7 +372,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.3</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.4</Text>
             </View>
 
             <View style={styles.aboutRow}>
@@ -465,5 +587,60 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginTop: 4,
+  },
+  colorGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 12,
+    marginHorizontal: -8,
+  },
+  colorGridItem: {
+    width: '25%',
+    padding: 8,
+  },
+  colorGridItemContent: {
+    alignItems: 'center',
+  },
+  colorSwatchLarge: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  checkmarkContainer: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checkmark: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+  },
+  colorLabelSmall: {
+    fontSize: 11,
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  previewContainer: {
+    marginTop: 20,
+  },
+  previewBox: {
+    height: 100,
+    borderRadius: 12,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  previewText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
