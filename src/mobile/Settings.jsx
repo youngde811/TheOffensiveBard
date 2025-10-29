@@ -20,7 +20,7 @@
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 import React, { useCallback } from 'react';
-import { View, Text, ScrollView, Linking, StyleSheet, Switch } from 'react-native';
+import { View, Text, ScrollView, Linking, StyleSheet, Switch, Platform, NativeModules } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -32,6 +32,9 @@ import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/Se
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { getContrastingTextColor } from '../utils/colorUtils';
+import { syncInsultDatabaseWithWidget } from '../utils/widgetDataShare';
+
+const allInsults = require('../../assets/data/insults-10k.json');
 
 // Preset widget background colors
 const WIDGET_BACKGROUND_COLORS = [
@@ -78,17 +81,45 @@ export default function Settings({ appConfig, setDismiss }) {
     haptics.light();
   }, [haptics]);
 
-  const handleWidgetBackgroundColorChange = useCallback((color) => {
+  const handleWidgetBackgroundColorChange = useCallback(async (color) => {
     haptics.selection();
     setWidgetBackgroundColor(color);
+
+    // Sync widget data with new color
+    if (Platform.OS === 'ios') {
+      try {
+        await syncInsultDatabaseWithWidget(allInsults.insults);
+
+        // Reload widget timelines
+        if (NativeModules.WidgetCenterModule) {
+          NativeModules.WidgetCenterModule.reloadAllTimelines();
+        }
+      } catch (error) {
+        console.error('Error syncing widget after color change:', error);
+      }
+    }
   }, [setWidgetBackgroundColor, haptics]);
 
   const handleWidgetOpacityChange = useCallback((value) => {
     setWidgetBackgroundOpacity(value);
   }, [setWidgetBackgroundOpacity]);
 
-  const handleWidgetOpacityChangeComplete = useCallback(() => {
+  const handleWidgetOpacityChangeComplete = useCallback(async () => {
     haptics.light();
+
+    // Sync widget data with new opacity
+    if (Platform.OS === 'ios') {
+      try {
+        await syncInsultDatabaseWithWidget(allInsults.insults);
+
+        // Reload widget timelines
+        if (NativeModules.WidgetCenterModule) {
+          NativeModules.WidgetCenterModule.reloadAllTimelines();
+        }
+      } catch (error) {
+        console.error('Error syncing widget after opacity change:', error);
+      }
+    }
   }, [haptics]);
 
   const openGitHub = useCallback(() => {
@@ -372,7 +403,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.4</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.5</Text>
             </View>
 
             <View style={styles.aboutRow}>
