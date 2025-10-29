@@ -31,6 +31,7 @@ import InsultsHeader from './InsultsHeader';
 import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
+import { getContrastingTextColor } from '../utils/colorUtils';
 
 // Preset widget background colors
 const WIDGET_BACKGROUND_COLORS = [
@@ -42,6 +43,7 @@ const WIDGET_BACKGROUND_COLORS = [
   { label: 'Peach', color: '#ffe0d0', description: 'Warm peach' },
   { label: 'Light Gray', color: '#f5f5f5', description: 'Neutral gray' },
   { label: 'White', color: '#ffffff', description: 'Pure white' },
+  { label: 'Dark Charcoal', color: '#2c2c2c', description: 'Deep charcoal for dark mode' },
 ];
 
 export default function Settings({ appConfig, setDismiss }) {
@@ -340,7 +342,9 @@ export default function Settings({ appConfig, setDismiss }) {
                     }
                   ]}
                 >
-                  <Text style={[styles.previewText, { color: '#8B4049' }]}>
+                  <Text style={[styles.previewText, {
+                    color: getContrastingTextColor(widgetBackgroundColor)
+                  }]}>
                     Sample Widget Text
                   </Text>
                 </View>
@@ -368,7 +372,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.3</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.4</Text>
             </View>
 
             <View style={styles.aboutRow}>

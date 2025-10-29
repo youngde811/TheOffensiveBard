@@ -50,6 +50,33 @@ extension Color {
             opacity: min(max(opacity, 0), 1)
         )
     }
+
+    // Calculate if a color is "dark" using relative luminance
+    func isDark(hex: String) -> Bool {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+
+        let r, g, b: Double
+        switch hex.count {
+        case 3:
+            r = Double((int >> 8) * 17) / 255.0
+            g = Double((int >> 4 & 0xF) * 17) / 255.0
+            b = Double((int & 0xF) * 17) / 255.0
+        case 6:
+            r = Double(int >> 16) / 255.0
+            g = Double(int >> 8 & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        default:
+            return false // Default to light
+        }
+
+        // Calculate relative luminance using WCAG formula
+        let luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+        // If luminance is less than 0.5, it's a dark color
+        return luminance < 0.5
+    }
 }
 
 // MARK: - Data Model
@@ -59,6 +86,26 @@ struct InsultEntry: TimelineEntry {
     let timestamp: String
     let backgroundColor: Color
     let backgroundOpacity: Double
+    let backgroundColorHex: String
+
+    // Computed property for text colors based on background brightness
+    var insultTextColor: Color {
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
+            Color(red: 0.9, green: 0.85, blue: 0.8) : // Light text for dark backgrounds
+            Color(red: 0.545, green: 0.251, blue: 0.286) // Dark burgundy for light backgrounds
+    }
+
+    var titleColor: Color {
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
+            Color(red: 0.6, green: 0.8, blue: 0.82) : // Lighter cadet blue for dark backgrounds
+            Color(red: 0.373, green: 0.620, blue: 0.627) // Cadet blue for light backgrounds
+    }
+
+    var timestampColor: Color {
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
+            Color(white: 0.7) : // Light gray for dark backgrounds
+            Color.gray // Gray for light backgrounds
+    }
 }
 
 // MARK: - Timeline Provider
@@ -69,7 +116,8 @@ struct InsultProvider: TimelineProvider {
           insult: "Thou churlish, motley-minded knave!",
           timestamp: "Just now",
           backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
-          backgroundOpacity: 1.0
+          backgroundOpacity: 1.0,
+          backgroundColorHex: "#f1eee5"
         )
     }
 
@@ -103,7 +151,8 @@ struct InsultProvider: TimelineProvider {
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync",
               backgroundColor: defaultBgColor,
-              backgroundOpacity: defaultBgOpacity
+              backgroundOpacity: defaultBgOpacity,
+              backgroundColorHex: "#f1eee5"
             )]
         }
 
@@ -113,7 +162,8 @@ struct InsultProvider: TimelineProvider {
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync",
               backgroundColor: defaultBgColor,
-              backgroundOpacity: defaultBgOpacity
+              backgroundOpacity: defaultBgOpacity,
+              backgroundColorHex: "#f1eee5"
             )]
         }
 
@@ -123,7 +173,8 @@ struct InsultProvider: TimelineProvider {
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync",
               backgroundColor: defaultBgColor,
-              backgroundOpacity: defaultBgOpacity
+              backgroundOpacity: defaultBgOpacity,
+              backgroundColorHex: "#f1eee5"
             )]
         }
 
@@ -133,7 +184,8 @@ struct InsultProvider: TimelineProvider {
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync",
               backgroundColor: defaultBgColor,
-              backgroundOpacity: defaultBgOpacity
+              backgroundOpacity: defaultBgOpacity,
+              backgroundColorHex: "#f1eee5"
             )]
         }
 
@@ -143,7 +195,8 @@ struct InsultProvider: TimelineProvider {
               insult: "Thou villainous tickle-brained canker-blossom!",
               timestamp: "Open app to sync",
               backgroundColor: defaultBgColor,
-              backgroundOpacity: defaultBgOpacity
+              backgroundOpacity: defaultBgOpacity,
+              backgroundColorHex: "#f1eee5"
             )]
         }
 
@@ -172,7 +225,8 @@ struct InsultProvider: TimelineProvider {
                   insult: insult,
                   timestamp: timestamp,
                   backgroundColor: backgroundColor,
-                  backgroundOpacity: bgOpacity
+                  backgroundOpacity: bgOpacity,
+                  backgroundColorHex: bgColorHex
                 ))
             }
         }
@@ -182,7 +236,8 @@ struct InsultProvider: TimelineProvider {
           insult: "Thy wit is as thick as Tewksbury mustard!",
           timestamp: "Error",
           backgroundColor: defaultBgColor,
-          backgroundOpacity: defaultBgOpacity
+          backgroundOpacity: defaultBgOpacity,
+          backgroundColorHex: "#f1eee5"
         )] : entries
     }
 
@@ -226,7 +281,7 @@ struct SmallWidgetView: View {
                   .fontWeight(.medium)
                   .multilineTextAlignment(.center)
                   .lineLimit(4)
-                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .foregroundColor(entry.insultTextColor)
                   .padding(.horizontal, 8)
             }
               .padding(8)
@@ -247,7 +302,7 @@ struct MediumWidgetView: View {
                 // Title
                 Text("THE INSOLENT BARD")
                   .font(.system(size: 10, weight: .bold))
-                  .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+                  .foregroundColor(entry.titleColor)
                   .tracking(1.5)
 
                 Spacer()
@@ -256,7 +311,7 @@ struct MediumWidgetView: View {
                 Text(entry.insult)
                   .font(.custom("IMFellEnglish-Regular", size: 14))
                   .fontWeight(.semibold)
-                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .foregroundColor(entry.insultTextColor)
                   .multilineTextAlignment(.leading)
                   .lineLimit(5)
                   .lineSpacing(3)
@@ -266,7 +321,7 @@ struct MediumWidgetView: View {
                 // Timestamp
                 Text(entry.timestamp)
                   .font(.system(size: 9))
-                  .foregroundColor(Color.gray)
+                  .foregroundColor(entry.timestampColor)
                   .opacity(0.7)
             }
               .padding(16)
@@ -292,7 +347,7 @@ struct LargeWidgetView: View {
                       .tracking(2)
                     Text("🎭")
                 }
-                  .foregroundColor(Color(red: 0.373, green: 0.620, blue: 0.627)) // cadetblue
+                  .foregroundColor(entry.titleColor)
 
                 Spacer()
 
@@ -300,7 +355,7 @@ struct LargeWidgetView: View {
                 Text(entry.insult)
                   .font(.custom("IMFellEnglish-Regular", size: 18))
                   .fontWeight(.bold)
-                  .foregroundColor(Color(red: 0.545, green: 0.251, blue: 0.286)) // #8B4049
+                  .foregroundColor(entry.insultTextColor)
                   .multilineTextAlignment(.center)
                   .lineLimit(6)
                   .lineSpacing(5)
@@ -311,7 +366,7 @@ struct LargeWidgetView: View {
                 // Timestamp
                 Text(entry.timestamp)
                   .font(.system(size: 11))
-                  .foregroundColor(Color.gray)
+                  .foregroundColor(entry.timestampColor)
                   .opacity(0.7)
             }
               .padding(20)
@@ -371,13 +426,15 @@ struct InsultWidgetEntryView: View {
       insult: "Thou gleeking flap-mouthed foot-licker!",
       timestamp: "5 minutes ago",
       backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
-      backgroundOpacity: 1.0
+      backgroundOpacity: 1.0,
+      backgroundColorHex: "#f1eee5"
     )
     InsultEntry(
       date: Date(),
       insult: "Thou puking tickle-brained canker-blossom!",
       timestamp: "Just now",
       backgroundColor: Color(red: 0.945, green: 0.933, blue: 0.898),
-      backgroundOpacity: 1.0
+      backgroundOpacity: 1.0,
+      backgroundColorHex: "#f1eee5"
     )
 }
