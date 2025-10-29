@@ -10,7 +10,7 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 
 ## iOS App
 
-**The Insolent Bard** (v2.5.8) delivers authentic Shakespearean insults with a modern, intuitive interface.
+**The Insolent Bard** (v2.5.9) delivers authentic Shakespearean insults with a modern, intuitive interface.
 
 ### Features
 

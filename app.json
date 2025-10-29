@@ -2,7 +2,7 @@
   "expo": {
     "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "2.5.8",
+    "version": "2.5.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "2.5.7",
+      "buildNumber": "2.5.8",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {

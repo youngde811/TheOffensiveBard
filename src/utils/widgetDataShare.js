@@ -24,8 +24,6 @@ import { debugLogger } from './debugLogger';
 
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const INSULT_DATABASE_KEY = 'insultDatabase';
-const DATABASE_VERSION_KEY = 'insultDatabaseVersion';
-const CURRENT_DATABASE_VERSION = '2.5.8'; // Increment when insults.json or data structure changes
 const WIDGET_INSULT_COUNT = 1000; // Number of insults to sync to widget (reduces data size)
 
 // Settings keys (must match SettingsContext)
@@ -41,6 +39,7 @@ const DEFAULT_WIDGET_BACKGROUND_OPACITY = 100;
 /**
  * Sync a random subset of insults to App Group UserDefaults for autonomous widget operation
  * This allows the widget to generate its own timeline without app intervention
+ * Syncs fresh data every time to ensure settings and insults are always up to date
  * @param {Array} insults - Array of all insult objects from insults-10k.json
  */
 export async function syncInsultDatabaseWithWidget(insults) {
@@ -66,7 +65,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
   try {
     debugLogger.info('Starting sync with ' + insults.length + ' insults');
-    debugLogger.info('Will reduce to ' + WIDGET_INSULT_COUNT + ' insults in Step 2');
+    debugLogger.info('Will reduce to ' + WIDGET_INSULT_COUNT + ' insults in Step 1');
 
     // Test App Group access first
     debugLogger.info('Testing App Group access...');
@@ -86,36 +85,8 @@ export async function syncInsultDatabaseWithWidget(insults) {
       throw testError;
     }
 
-    // Check if database is already synced with current version
-    debugLogger.info('Step 1: Reading current version from UserDefaults...');
-
-    let syncedVersion = null;
-
-    try {
-      syncedVersion = await SharedGroupPreferences.getItem(
-        DATABASE_VERSION_KEY,
-        APP_GROUP
-      );
-      
-      debugLogger.info('Step 1 complete: Current synced version: ' + syncedVersion);
-    } catch (versionError) {
-      // Key might not exist on first run - that's okay
-      debugLogger.info('Step 1: No existing version found (first sync): ' + versionError);
-
-      syncedVersion = null;
-    }
-
-    if (syncedVersion === CURRENT_DATABASE_VERSION) {
-      debugLogger.info('Database already synced with version ' + CURRENT_DATABASE_VERSION);
-      debugLogger.info('Sync complete - database already up to date');
-
-      return;
-    }
-
-    debugLogger.info('Syncing new database version ' + CURRENT_DATABASE_VERSION);
-
     // Extract just the insult text to minimize storage
-    debugLogger.info('Step 2: Extracting and sampling insult texts...');
+    debugLogger.info('Step 1: Extracting and sampling insult texts...');
 
     const allInsultTexts = insults.map(item => item.insult || item);
 
@@ -123,10 +94,10 @@ export async function syncInsultDatabaseWithWidget(insults) {
     const shuffled = [...allInsultTexts].sort(() => Math.random() - 0.5);
     const insultTexts = shuffled.slice(0, WIDGET_INSULT_COUNT);
 
-    debugLogger.info('Step 2 complete: Selected ' + insultTexts.length + ' insults from ' + allInsultTexts.length + ' total');
+    debugLogger.info('Step 1 complete: Selected ' + insultTexts.length + ' insults from ' + allInsultTexts.length + ' total');
     debugLogger.info('Sample insult: ' + insultTexts[0]);
 
-    debugLogger.info('Step 3: Reading widget customization settings...');
+    debugLogger.info('Step 2: Reading widget customization settings...');
 
     // Load widget background preferences
     let widgetBackgroundColor = DEFAULT_WIDGET_BACKGROUND_COLOR;
@@ -143,26 +114,25 @@ export async function syncInsultDatabaseWithWidget(insults) {
         widgetBackgroundOpacity = parseInt(bgOpacity, 10);
       }
 
-      debugLogger.info('Step 3: Widget background color: ' + widgetBackgroundColor);
-      debugLogger.info('Step 3: Widget background opacity: ' + widgetBackgroundOpacity + '%');
+      debugLogger.info('Step 2: Widget background color: ' + widgetBackgroundColor);
+      debugLogger.info('Step 2: Widget background opacity: ' + widgetBackgroundOpacity + '%');
     } catch (settingsError) {
-      debugLogger.error('Step 3: Error reading widget settings, using defaults: ' + settingsError);
+      debugLogger.error('Step 2: Error reading widget settings, using defaults: ' + settingsError);
     }
 
-    debugLogger.info('Step 4: Preparing data object...');
+    debugLogger.info('Step 3: Preparing data object...');
 
     const data = {
       insults: insultTexts,
-      version: CURRENT_DATABASE_VERSION,
       syncedAt: new Date().toISOString(),
       count: insultTexts.length,
       widgetBackgroundColor: widgetBackgroundColor,
       widgetBackgroundOpacity: widgetBackgroundOpacity,
     };
 
-    debugLogger.info('Step 4 complete: Data object ready');
+    debugLogger.info('Step 3 complete: Data object ready');
 
-    debugLogger.info('Step 5: Writing database to UserDefaults...');
+    debugLogger.info('Step 4: Writing database to UserDefaults...');
     debugLogger.info('  Key: ' + INSULT_DATABASE_KEY);
     debugLogger.info('  App Group: ' + APP_GROUP);
     debugLogger.info('  Data size: ' + JSON.stringify(data).length + ' characters');
@@ -173,20 +143,10 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    debugLogger.success('Step 5 complete: Database written successfully');
-
-    debugLogger.info('Step 6: Writing version key...');
-
-    await SharedGroupPreferences.setItem(
-      DATABASE_VERSION_KEY,
-      CURRENT_DATABASE_VERSION,
-      APP_GROUP
-    );
-
-    debugLogger.success('Step 6 complete: Version key written');
+    debugLogger.success('Step 4 complete: Database written successfully');
 
     // Verify the write
-    debugLogger.info('Step 7: Verifying write by reading back...');
+    debugLogger.info('Step 5: Verifying write by reading back...');
 
     const verification = await SharedGroupPreferences.getItem(
       INSULT_DATABASE_KEY,
@@ -197,11 +157,11 @@ export async function syncInsultDatabaseWithWidget(insults) {
       try {
         const parsed = JSON.parse(verification);
 
-        debugLogger.success('Step 7 complete: Successfully read back ' + parsed.count + ' insults');
+        debugLogger.success('Step 5 complete: Successfully read back ' + parsed.count + ' insults');
         debugLogger.success('Verified background color: ' + (parsed.widgetBackgroundColor || 'not set'));
         debugLogger.success('Verified background opacity: ' + (parsed.widgetBackgroundOpacity || 'not set') + '%');
       } catch (parseError) {
-        debugLogger.error('Step 7 failed: Could not parse verification data: ' + parseError.message);
+        debugLogger.error('Step 5 failed: Could not parse verification data: ' + parseError.message);
 
         Alert.alert(
           'Widget Sync Error',
@@ -212,7 +172,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
         return;
       }
     } else {
-      debugLogger.error('Step 7 failed: Could not read back data from UserDefaults');
+      debugLogger.error('Step 5 failed: Could not read back data from UserDefaults');
 
       Alert.alert(
         'Widget Sync Error',
