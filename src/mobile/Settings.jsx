@@ -392,8 +392,10 @@ export default function Settings({ appConfig, setDismiss }) {
                 style={[
                   styles.applyButton,
                   {
-                    backgroundColor: hasWidgetSettingsChanged ? colors.primary : colors.divider,
-                    opacity: hasWidgetSettingsChanged && !isApplyingWidgetSettings ? 1 : 0.5
+                    backgroundColor: hasWidgetSettingsChanged ? colors.primary : colors.surface,
+                    borderWidth: hasWidgetSettingsChanged ? 0 : 1,
+                    borderColor: colors.divider,
+                    opacity: hasWidgetSettingsChanged && !isApplyingWidgetSettings ? 1 : 0.6
                   }
                 ]}
                 onPress={handleApplyWidgetSettings}
@@ -401,11 +403,13 @@ export default function Settings({ appConfig, setDismiss }) {
               >
                 {isApplyingWidgetSettings ? (
                   <View style={styles.applyButtonContent}>
-                    <ActivityIndicator size="small" color="white" />
-                    <Text style={[styles.applyButtonText, { marginLeft: 8 }]}>Applying...</Text>
+                    <ActivityIndicator size="small" color={colors.surface} />
+                    <Text style={[styles.applyButtonText, { marginLeft: 8, color: colors.surface }]}>Applying...</Text>
                   </View>
                 ) : (
-                  <Text style={styles.applyButtonText}>
+                  <Text style={[styles.applyButtonText, {
+                    color: hasWidgetSettingsChanged ? colors.surface : colors.textMuted
+                  }]}>
                     {hasWidgetSettingsChanged ? 'Apply to Widget' : 'No Changes'}
                   </Text>
                 )}
