@@ -101,27 +101,41 @@ export default function Settings({ appConfig, setDismiss }) {
   const handleApplyWidgetSettings = useCallback(async () => {
     if (!hasWidgetSettingsChanged) return;
 
+    console.log('🔵 Apply button pressed - starting widget settings sync');
     setIsApplyingWidgetSettings(true);
     haptics.light();
 
     try {
+      console.log('🔵 Platform:', Platform.OS);
+      console.log('🔵 Waiting 100ms for AsyncStorage...');
+
       // Wait a bit to ensure AsyncStorage has finished writing
       await new Promise(resolve => setTimeout(resolve, 100));
+
+      console.log('🔵 Calling syncInsultDatabaseWithWidget with', allInsults.insults.length, 'insults');
 
       // Sync widget data with new settings
       if (Platform.OS === 'ios') {
         await syncInsultDatabaseWithWidget(allInsults.insults);
+        console.log('🔵 syncInsultDatabaseWithWidget completed');
 
         // Reload widget timelines
         if (NativeModules.WidgetCenterModule) {
+          console.log('🔵 Calling WidgetCenterModule.reloadAllTimelines()');
           NativeModules.WidgetCenterModule.reloadAllTimelines();
+          console.log('🔵 reloadAllTimelines() called');
+        } else {
+          console.log('⚠️ WidgetCenterModule not available');
         }
+      } else {
+        console.log('⚠️ Not iOS, skipping sync');
       }
 
       setHasWidgetSettingsChanged(false);
       haptics.success();
+      console.log('✅ Widget settings applied successfully');
     } catch (error) {
-      console.error('Error applying widget settings:', error);
+      console.error('❌ Error applying widget settings:', error);
       haptics.error();
     } finally {
       setIsApplyingWidgetSettings(false);
@@ -437,7 +451,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.7</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.8</Text>
             </View>
 
             <View style={styles.aboutRow}>
