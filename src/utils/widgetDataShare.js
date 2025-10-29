@@ -25,7 +25,7 @@ import { debugLogger } from './debugLogger';
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const INSULT_DATABASE_KEY = 'insultDatabase';
 const DATABASE_VERSION_KEY = 'insultDatabaseVersion';
-const CURRENT_DATABASE_VERSION = '2.5.3'; // Increment when insults.json changes
+const CURRENT_DATABASE_VERSION = '2.5.7'; // Increment when insults.json or data structure changes
 const WIDGET_INSULT_COUNT = 1000; // Number of insults to sync to widget (reduces data size)
 
 // Settings keys (must match SettingsContext)

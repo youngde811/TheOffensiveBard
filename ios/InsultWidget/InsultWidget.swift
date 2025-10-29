@@ -17,6 +17,9 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// NB: The color manipulation code here is courtesy of Claude-4. It understands graphics way better than
+// I do.
+
 import WidgetKit
 import SwiftUI
 
@@ -29,8 +32,11 @@ extension Color {
     init(hex: String, opacity: Double = 1.0) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
+
         Scanner(string: hex).scanHexInt64(&int)
+
         let r, g, b: UInt64
+
         switch hex.count {
         case 3: // RGB (12-bit)
             (r, g, b) = ((int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
@@ -55,9 +61,11 @@ extension Color {
     func isDark(hex: String) -> Bool {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
+        
         Scanner(string: hex).scanHexInt64(&int)
 
         let r, g, b: Double
+
         switch hex.count {
         case 3:
             r = Double((int >> 8) * 17) / 255.0
