@@ -428,6 +428,11 @@ export default function Settings({ appConfig, setDismiss }) {
                   </Text>
                 )}
               </PressableOpacity>
+
+              {/* Widget Update Note */}
+              <Text style={[styles.widgetNote, { color: colors.textMuted }]}>
+                💡 Tip: After applying changes, remove and re-add your widget to see updates immediately.
+              </Text>
             </View>
           </View>
 
@@ -451,7 +456,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.9</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.10</Text>
             </View>
 
             <View style={styles.aboutRow}>
@@ -738,5 +743,12 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '700',
+  },
+  widgetNote: {
+    marginTop: 12,
+    fontSize: 13,
+    lineHeight: 18,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
 });
