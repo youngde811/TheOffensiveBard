@@ -142,8 +142,7 @@ vite.config.ts.timestamp-*
 generator/target
 
 # Expo
-.expo/prebuild/
-.expo/web/
+.expo/
 
 # macOS
 .DS_Store
