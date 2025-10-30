@@ -226,7 +226,11 @@ struct InsultProvider: TimelineProvider {
         let bgColorHex = json["widgetBackgroundColor"] as? String ?? "#f1eee5"
         let bgOpacityPercent = json["widgetBackgroundOpacity"] as? Int ?? 100
         let bgOpacity = Double(bgOpacityPercent) / 100.0
-        let backgroundColor = Color(hex: bgColorHex, opacity: bgOpacity)
+
+        // Use placeholder color for material mode (actual material is applied in views)
+        let backgroundColor = bgColorHex == "#MATERIAL" ?
+            Color.clear :
+            Color(hex: bgColorHex, opacity: bgOpacity)
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
