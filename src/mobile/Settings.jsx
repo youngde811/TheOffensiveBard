@@ -38,6 +38,7 @@ const allInsults = require('../../assets/data/insults-10k.json');
 
 // Preset widget background colors
 const WIDGET_BACKGROUND_COLORS = [
+  { label: 'Adaptive Material', color: '#MATERIAL', description: 'Blends with your wallpaper', isMaterial: true },
   { label: 'Aged Parchment', color: '#f1eee5', description: 'Classic warm parchment (default)' },
   { label: 'Cream', color: '#fffdd0', description: 'Light cream color' },
   { label: 'Soft Blue', color: '#e3f2fd', description: 'Gentle sky blue' },
@@ -332,11 +333,16 @@ export default function Settings({ appConfig, setDismiss }) {
                       <View style={[
                         styles.colorSwatchLarge,
                         {
-                          backgroundColor: preset.color,
+                          backgroundColor: preset.isMaterial ? 'transparent' : preset.color,
                           borderColor: widgetBackgroundColor === preset.color ? colors.primary : colors.divider,
                           borderWidth: widgetBackgroundColor === preset.color ? 3 : 2
                         }
                       ]}>
+                        {preset.isMaterial && (
+                          <View style={styles.materialPreview}>
+                            <Text style={styles.materialIcon}>✨</Text>
+                          </View>
+                        )}
                         {widgetBackgroundColor === preset.color && (
                           <View style={styles.checkmarkContainer}>
                             <Text style={styles.checkmark}>✓</Text>
@@ -387,14 +393,19 @@ export default function Settings({ appConfig, setDismiss }) {
                   style={[
                     styles.previewBox,
                     {
-                      backgroundColor: widgetBackgroundColor,
-                      opacity: widgetBackgroundOpacity / 100,
+                      backgroundColor: widgetBackgroundColor === '#MATERIAL' ? colors.surface : widgetBackgroundColor,
+                      opacity: widgetBackgroundColor === '#MATERIAL' ? 0.7 : widgetBackgroundOpacity / 100,
                       borderColor: colors.divider
                     }
                   ]}
                 >
+                  {widgetBackgroundColor === '#MATERIAL' && (
+                    <Text style={[styles.previewText, { color: colors.textMuted, fontSize: 12, marginBottom: 4 }]}>
+                      ✨ Adaptive Material
+                    </Text>
+                  )}
                   <Text style={[styles.previewText, {
-                    color: getContrastingTextColor(widgetBackgroundColor)
+                    color: widgetBackgroundColor === '#MATERIAL' ? colors.text : getContrastingTextColor(widgetBackgroundColor)
                   }]}>
                     Sample Widget Text
                   </Text>
@@ -456,7 +467,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.10</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.6.1</Text>
             </View>
 
             <View style={styles.aboutRow}>
@@ -705,6 +716,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#4CAF50',
+  },
+  materialPreview: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: 'rgba(200, 200, 200, 0.2)',
+  },
+  materialIcon: {
+    fontSize: 30,
   },
   colorLabelSmall: {
     fontSize: 11,

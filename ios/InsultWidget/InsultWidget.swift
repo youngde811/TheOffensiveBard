@@ -96,21 +96,35 @@ struct InsultEntry: TimelineEntry {
     let backgroundOpacity: Double
     let backgroundColorHex: String
 
+    // Check if material mode is enabled
+    var isMaterialMode: Bool {
+        backgroundColorHex == "#MATERIAL"
+    }
+
     // Computed property for text colors based on background brightness
     var insultTextColor: Color {
-        Color(hex: "").isDark(hex: backgroundColorHex) ?
+        if isMaterialMode {
+            return Color.primary // System vibrant color that adapts to material
+        }
+        return Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(red: 0.9, green: 0.85, blue: 0.8) : // Light text for dark backgrounds
             Color(red: 0.545, green: 0.251, blue: 0.286) // Dark burgundy for light backgrounds
     }
 
     var titleColor: Color {
-        Color(hex: "").isDark(hex: backgroundColorHex) ?
+        if isMaterialMode {
+            return Color.secondary // System secondary color for material
+        }
+        return Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(red: 0.6, green: 0.8, blue: 0.82) : // Lighter cadet blue for dark backgrounds
             Color(red: 0.373, green: 0.620, blue: 0.627) // Cadet blue for light backgrounds
     }
 
     var timestampColor: Color {
-        Color(hex: "").isDark(hex: backgroundColorHex) ?
+        if isMaterialMode {
+            return Color.secondary.opacity(0.7) // Subtle secondary for material
+        }
+        return Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(white: 0.7) : // Light gray for dark backgrounds
             Color.gray // Gray for light backgrounds
     }
@@ -277,8 +291,13 @@ struct SmallWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Custom background from settings
-            entry.backgroundColor
+            // Background - either material or custom color
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else {
+                entry.backgroundColor
+            }
 
             VStack(spacing: 4) {
                 Text("🎭")
@@ -303,8 +322,13 @@ struct MediumWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Custom background from settings
-            entry.backgroundColor
+            // Background - either material or custom color
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else {
+                entry.backgroundColor
+            }
 
             VStack(alignment: .leading, spacing: 8) {
                 // Title
@@ -343,8 +367,13 @@ struct LargeWidgetView: View {
 
     var body: some View {
         ZStack {
-            // Custom background from settings
-            entry.backgroundColor
+            // Background - either material or custom color
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else {
+                entry.backgroundColor
+            }
 
             VStack(alignment: .center, spacing: 12) {
                 // Title with decorative elements
@@ -392,11 +421,21 @@ struct InsultWidget: Widget {
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
             if #available(iOSApplicationExtension 17.0, *) {
-                InsultWidgetEntryView(entry: entry)
-                  .containerBackground(entry.backgroundColor, for: .widget)
+                if entry.isMaterialMode {
+                    InsultWidgetEntryView(entry: entry)
+                      .containerBackground(.regularMaterial, for: .widget)
+                } else {
+                    InsultWidgetEntryView(entry: entry)
+                      .containerBackground(entry.backgroundColor, for: .widget)
+                }
             } else {
-                InsultWidgetEntryView(entry: entry)
-                  .background(entry.backgroundColor)
+                if entry.isMaterialMode {
+                    InsultWidgetEntryView(entry: entry)
+                      .background(.regularMaterial)
+                } else {
+                    InsultWidgetEntryView(entry: entry)
+                      .background(entry.backgroundColor)
+                }
             }
         }
           .configurationDisplayName("The Insolent Bard")
