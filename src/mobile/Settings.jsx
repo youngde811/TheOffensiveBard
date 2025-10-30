@@ -19,8 +19,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import React, { useCallback } from 'react';
-import { View, Text, ScrollView, Linking, StyleSheet, Switch, Platform, NativeModules } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, Linking, StyleSheet, Switch, Platform, NativeModules, ActivityIndicator } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -54,6 +54,8 @@ export default function Settings({ appConfig, setDismiss }) {
   const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, widgetBackgroundColor, setWidgetBackgroundColor, widgetBackgroundOpacity, setWidgetBackgroundOpacity } = useSettings();
 
   const haptics = useHaptics();
+  const [isApplyingWidgetSettings, setIsApplyingWidgetSettings] = useState(false);
+  const [hasWidgetSettingsChanged, setHasWidgetSettingsChanged] = useState(false);
 
   const handleEasterEggFrequencyChange = useCallback((frequency) => {
     haptics.selection();
@@ -81,46 +83,64 @@ export default function Settings({ appConfig, setDismiss }) {
     haptics.light();
   }, [haptics]);
 
-  const handleWidgetBackgroundColorChange = useCallback(async (color) => {
+  const handleWidgetBackgroundColorChange = useCallback((color) => {
     haptics.selection();
     setWidgetBackgroundColor(color);
-
-    // Sync widget data with new color
-    if (Platform.OS === 'ios') {
-      try {
-        await syncInsultDatabaseWithWidget(allInsults.insults);
-
-        // Reload widget timelines
-        if (NativeModules.WidgetCenterModule) {
-          NativeModules.WidgetCenterModule.reloadAllTimelines();
-        }
-      } catch (error) {
-        console.error('Error syncing widget after color change:', error);
-      }
-    }
+    setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundColor, haptics]);
 
   const handleWidgetOpacityChange = useCallback((value) => {
     setWidgetBackgroundOpacity(value);
+    setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundOpacity]);
 
-  const handleWidgetOpacityChangeComplete = useCallback(async () => {
+  const handleWidgetOpacityChangeComplete = useCallback(() => {
+    haptics.light();
+  }, [haptics]);
+
+  const handleApplyWidgetSettings = useCallback(async () => {
+    if (!hasWidgetSettingsChanged) return;
+
+    console.log('🔵 Apply button pressed - starting widget settings sync');
+    setIsApplyingWidgetSettings(true);
     haptics.light();
 
-    // Sync widget data with new opacity
-    if (Platform.OS === 'ios') {
-      try {
+    try {
+      console.log('🔵 Platform:', Platform.OS);
+      console.log('🔵 Waiting 100ms for AsyncStorage...');
+
+      // Wait a bit to ensure AsyncStorage has finished writing
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      console.log('🔵 Calling syncInsultDatabaseWithWidget with', allInsults.insults.length, 'insults');
+
+      // Sync widget data with new settings
+      if (Platform.OS === 'ios') {
         await syncInsultDatabaseWithWidget(allInsults.insults);
+        console.log('🔵 syncInsultDatabaseWithWidget completed');
 
         // Reload widget timelines
         if (NativeModules.WidgetCenterModule) {
+          console.log('🔵 Calling WidgetCenterModule.reloadAllTimelines()');
           NativeModules.WidgetCenterModule.reloadAllTimelines();
+          console.log('🔵 reloadAllTimelines() called');
+        } else {
+          console.log('⚠️ WidgetCenterModule not available');
         }
-      } catch (error) {
-        console.error('Error syncing widget after opacity change:', error);
+      } else {
+        console.log('⚠️ Not iOS, skipping sync');
       }
+
+      setHasWidgetSettingsChanged(false);
+      haptics.success();
+      console.log('✅ Widget settings applied successfully');
+    } catch (error) {
+      console.error('❌ Error applying widget settings:', error);
+      haptics.error();
+    } finally {
+      setIsApplyingWidgetSettings(false);
     }
-  }, [haptics]);
+  }, [hasWidgetSettingsChanged, haptics]);
 
   const openGitHub = useCallback(() => {
     haptics.light();
@@ -380,6 +400,34 @@ export default function Settings({ appConfig, setDismiss }) {
                   </Text>
                 </View>
               </View>
+
+              {/* Apply Button */}
+              <PressableOpacity
+                style={[
+                  styles.applyButton,
+                  {
+                    backgroundColor: hasWidgetSettingsChanged ? colors.primary : colors.surface,
+                    borderWidth: hasWidgetSettingsChanged ? 0 : 1,
+                    borderColor: colors.divider,
+                    opacity: hasWidgetSettingsChanged && !isApplyingWidgetSettings ? 1 : 0.6
+                  }
+                ]}
+                onPress={handleApplyWidgetSettings}
+                disabled={!hasWidgetSettingsChanged || isApplyingWidgetSettings}
+              >
+                {isApplyingWidgetSettings ? (
+                  <View style={styles.applyButtonContent}>
+                    <ActivityIndicator size="small" color={colors.surface} />
+                    <Text style={[styles.applyButtonText, { marginLeft: 8, color: colors.surface }]}>Applying...</Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.applyButtonText, {
+                    color: hasWidgetSettingsChanged ? colors.surface : colors.textMuted
+                  }]}>
+                    {hasWidgetSettingsChanged ? 'Apply to Widget' : 'No Changes'}
+                  </Text>
+                )}
+              </PressableOpacity>
             </View>
           </View>
 
@@ -403,7 +451,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.5</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.9</Text>
             </View>
 
             <View style={styles.aboutRow}>
@@ -673,5 +721,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  applyButton: {
+    marginTop: 20,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  applyButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
