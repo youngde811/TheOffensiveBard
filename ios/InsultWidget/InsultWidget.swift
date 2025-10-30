@@ -294,19 +294,32 @@ struct SmallWidgetView: View {
     var entry: InsultEntry
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text("🎭")
-              .font(.title2)
+        ZStack {
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else if #available(iOSApplicationExtension 17.0, *) {
+                // On iOS 17+, containerBackground handles non-material backgrounds
+                Color.clear
+            } else {
+                // On iOS 16 and earlier, apply background here
+                entry.backgroundColor
+            }
 
-            Text(entry.insult)
-              .font(.system(size: 9))
-              .fontWeight(.medium)
-              .multilineTextAlignment(.center)
-              .lineLimit(4)
-              .foregroundColor(entry.insultTextColor)
-              .padding(.horizontal, 8)
+            VStack(spacing: 4) {
+                Text("🎭")
+                  .font(.title2)
+
+                Text(entry.insult)
+                  .font(.system(size: 9))
+                  .fontWeight(.medium)
+                  .multilineTextAlignment(.center)
+                  .lineLimit(4)
+                  .foregroundColor(entry.insultTextColor)
+                  .padding(.horizontal, 8)
+            }
+              .padding(8)
         }
-          .padding(8)
     }
 }
 
@@ -315,33 +328,46 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Title
-            Text("THE INSOLENT BARD")
-              .font(.system(size: 10, weight: .bold))
-              .foregroundColor(entry.titleColor)
-              .tracking(1.5)
+        ZStack {
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else if #available(iOSApplicationExtension 17.0, *) {
+                // On iOS 17+, containerBackground handles non-material backgrounds
+                Color.clear
+            } else {
+                // On iOS 16 and earlier, apply background here
+                entry.backgroundColor
+            }
 
-            Spacer()
+            VStack(alignment: .leading, spacing: 8) {
+                // Title
+                Text("THE INSOLENT BARD")
+                  .font(.system(size: 10, weight: .bold))
+                  .foregroundColor(entry.titleColor)
+                  .tracking(1.5)
 
-            // Insult text
-            Text(entry.insult)
-              .font(.custom("IMFellEnglish-Regular", size: 14))
-              .fontWeight(.semibold)
-              .foregroundColor(entry.insultTextColor)
-              .multilineTextAlignment(.leading)
-              .lineLimit(5)
-              .lineSpacing(3)
+                Spacer()
 
-            Spacer()
+                // Insult text
+                Text(entry.insult)
+                  .font(.custom("IMFellEnglish-Regular", size: 14))
+                  .fontWeight(.semibold)
+                  .foregroundColor(entry.insultTextColor)
+                  .multilineTextAlignment(.leading)
+                  .lineLimit(5)
+                  .lineSpacing(3)
 
-            // Timestamp
-            Text(entry.timestamp)
-              .font(.system(size: 9))
-              .foregroundColor(entry.timestampColor)
-              .opacity(0.7)
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                  .font(.system(size: 9))
+                  .foregroundColor(entry.timestampColor)
+                  .opacity(0.7)
+            }
+              .padding(16)
         }
-          .padding(16)
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -350,38 +376,51 @@ struct LargeWidgetView: View {
     var entry: InsultEntry
 
     var body: some View {
-        VStack(alignment: .center, spacing: 12) {
-            // Title with decorative elements
-            HStack {
-                Text("⚔️")
-                Text("THE INSOLENT BARD")
-                  .font(.system(size: 14, weight: .bold))
-                  .tracking(2)
-                Text("🎭")
+        ZStack {
+            if entry.isMaterialMode {
+                Rectangle()
+                  .fill(.regularMaterial)
+            } else if #available(iOSApplicationExtension 17.0, *) {
+                // On iOS 17+, containerBackground handles non-material backgrounds
+                Color.clear
+            } else {
+                // On iOS 16 and earlier, apply background here
+                entry.backgroundColor
             }
-              .foregroundColor(entry.titleColor)
 
-            Spacer()
+            VStack(alignment: .center, spacing: 12) {
+                // Title with decorative elements
+                HStack {
+                    Text("⚔️")
+                    Text("THE INSOLENT BARD")
+                      .font(.system(size: 14, weight: .bold))
+                      .tracking(2)
+                    Text("🎭")
+                }
+                  .foregroundColor(entry.titleColor)
 
-            // Insult text (larger)
-            Text(entry.insult)
-              .font(.custom("IMFellEnglish-Regular", size: 18))
-              .fontWeight(.bold)
-              .foregroundColor(entry.insultTextColor)
-              .multilineTextAlignment(.center)
-              .lineLimit(6)
-              .lineSpacing(5)
-              .padding(.horizontal, 20)
+                Spacer()
 
-            Spacer()
+                // Insult text (larger)
+                Text(entry.insult)
+                  .font(.custom("IMFellEnglish-Regular", size: 18))
+                  .fontWeight(.bold)
+                  .foregroundColor(entry.insultTextColor)
+                  .multilineTextAlignment(.center)
+                  .lineLimit(6)
+                  .lineSpacing(5)
+                  .padding(.horizontal, 20)
 
-            // Timestamp
-            Text(entry.timestamp)
-              .font(.system(size: 11))
-              .foregroundColor(entry.timestampColor)
-              .opacity(0.7)
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                  .font(.system(size: 11))
+                  .foregroundColor(entry.timestampColor)
+                  .opacity(0.7)
+            }
+              .padding(20)
         }
-          .padding(20)
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -396,20 +435,15 @@ struct InsultWidget: Widget {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
             if #available(iOSApplicationExtension 17.0, *) {
                 if entry.isMaterialMode {
+                    // For material mode, don't use containerBackground - let the view handle it
                     InsultWidgetEntryView(entry: entry)
-                      .containerBackground(.regularMaterial, for: .widget)
                 } else {
                     InsultWidgetEntryView(entry: entry)
                       .containerBackground(entry.backgroundColor, for: .widget)
                 }
             } else {
-                if entry.isMaterialMode {
-                    InsultWidgetEntryView(entry: entry)
-                      .background(.regularMaterial)
-                } else {
-                    InsultWidgetEntryView(entry: entry)
-                      .background(entry.backgroundColor)
-                }
+                // iOS 16 and earlier - always use background modifier
+                InsultWidgetEntryView(entry: entry)
             }
         }
           .configurationDisplayName("The Insolent Bard")
