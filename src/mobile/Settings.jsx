@@ -430,7 +430,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.6.12</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.6.13</Text>
             </View>
 
             <View style={styles.aboutRow}>

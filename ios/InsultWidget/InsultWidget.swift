@@ -289,6 +289,9 @@ struct SmallWidgetView: View {
                   .lineLimit(4)
                   .foregroundColor(entry.insultTextColor)
                   .padding(.horizontal, 8)
+                  .padding(.vertical, 6)
+                  .background(.ultraThinMaterial)
+                  .cornerRadius(8)
             }
               .padding(8)
         }
@@ -321,6 +324,9 @@ struct MediumWidgetView: View {
                   .multilineTextAlignment(.leading)
                   .lineLimit(5)
                   .lineSpacing(3)
+                  .padding(12)
+                  .background(.ultraThinMaterial)
+                  .cornerRadius(8)
 
                 Spacer()
 
@@ -366,6 +372,9 @@ struct LargeWidgetView: View {
                   .lineLimit(6)
                   .lineSpacing(5)
                   .padding(.horizontal, 20)
+                  .padding(.vertical, 12)
+                  .background(.ultraThinMaterial)
+                  .cornerRadius(12)
 
                 Spacer()
 
