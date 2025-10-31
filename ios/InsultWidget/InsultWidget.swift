@@ -290,8 +290,9 @@ struct SmallWidgetView: View {
                   .foregroundColor(entry.insultTextColor)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 6)
-                  .background(.ultraThinMaterial)
+                  .background(.thinMaterial)
                   .cornerRadius(8)
+                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
             }
               .padding(8)
         }
@@ -325,8 +326,9 @@ struct MediumWidgetView: View {
                   .lineLimit(5)
                   .lineSpacing(3)
                   .padding(12)
-                  .background(.ultraThinMaterial)
+                  .background(.thinMaterial)
                   .cornerRadius(8)
+                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
 
                 Spacer()
 
@@ -373,8 +375,9 @@ struct LargeWidgetView: View {
                   .lineSpacing(5)
                   .padding(.horizontal, 20)
                   .padding(.vertical, 12)
-                  .background(.ultraThinMaterial)
+                  .background(.thinMaterial)
                   .cornerRadius(12)
+                  .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
 
                 Spacer()
 
