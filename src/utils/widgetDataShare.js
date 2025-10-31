@@ -99,23 +99,17 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     debugLogger.info('Step 2: Reading widget customization settings...');
 
-    // Load widget background preferences
+    // Load widget background color
     let widgetBackgroundColor = DEFAULT_WIDGET_BACKGROUND_COLOR;
-    let widgetBackgroundOpacity = DEFAULT_WIDGET_BACKGROUND_OPACITY;
 
     try {
       const bgColor = await AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_COLOR);
-      const bgOpacity = await AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_OPACITY);
 
       if (bgColor !== null) {
         widgetBackgroundColor = bgColor;
       }
-      if (bgOpacity !== null) {
-        widgetBackgroundOpacity = parseInt(bgOpacity, 10);
-      }
 
       debugLogger.info('Step 2: Widget background color: ' + widgetBackgroundColor);
-      debugLogger.info('Step 2: Widget background opacity: ' + widgetBackgroundOpacity + '%');
     } catch (settingsError) {
       debugLogger.error('Step 2: Error reading widget settings, using defaults: ' + settingsError);
     }
@@ -127,7 +121,6 @@ export async function syncInsultDatabaseWithWidget(insults) {
       syncedAt: new Date().toISOString(),
       count: insultTexts.length,
       widgetBackgroundColor: widgetBackgroundColor,
-      widgetBackgroundOpacity: widgetBackgroundOpacity,
     };
 
     debugLogger.info('Step 3 complete: Data object ready');
@@ -159,7 +152,6 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
         debugLogger.success('Step 5 complete: Successfully read back ' + parsed.count + ' insults');
         debugLogger.success('Verified background color: ' + (parsed.widgetBackgroundColor || 'not set'));
-        debugLogger.success('Verified background opacity: ' + (parsed.widgetBackgroundOpacity || 'not set') + '%');
       } catch (parseError) {
         debugLogger.error('Step 5 failed: Could not parse verification data: ' + parseError.message);
 
