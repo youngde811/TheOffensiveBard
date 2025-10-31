@@ -309,7 +309,7 @@ struct SmallWidgetView: View {
           .padding(8)
           .background {
               if entry.isMaterialMode {
-                  Rectangle().fill(.regularMaterial)
+                  Color.clear.background(.regularMaterial)
               } else {
                   entry.backgroundColor
               }
@@ -351,7 +351,7 @@ struct MediumWidgetView: View {
           .padding(16)
           .background {
               if entry.isMaterialMode {
-                  Rectangle().fill(.regularMaterial)
+                  Color.clear.background(.regularMaterial)
               } else {
                   entry.backgroundColor
               }
@@ -398,7 +398,7 @@ struct LargeWidgetView: View {
           .padding(20)
           .background {
               if entry.isMaterialMode {
-                  Rectangle().fill(.regularMaterial)
+                  Color.clear.background(.regularMaterial)
               } else {
                   entry.backgroundColor
               }
