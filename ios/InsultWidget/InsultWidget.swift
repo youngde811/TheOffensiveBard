@@ -210,9 +210,7 @@ struct InsultProvider: TimelineProvider {
 
         // Read background customization settings
         let bgColorHex = json["widgetBackgroundColor"] as? String ?? "#f1eee5"
-        let bgOpacityPercent = json["widgetBackgroundOpacity"] as? Int ?? 100
-        let bgOpacity = Double(bgOpacityPercent) / 100.0
-        let backgroundColor = Color(hex: bgColorHex, opacity: bgOpacity)
+        let backgroundColor = Color(hex: bgColorHex, opacity: 1.0)
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
@@ -233,7 +231,7 @@ struct InsultProvider: TimelineProvider {
                   insult: insult,
                   timestamp: timestamp,
                   backgroundColor: backgroundColor,
-                  backgroundOpacity: bgOpacity,
+                  backgroundOpacity: 1.0,
                   backgroundColorHex: bgColorHex
                 ))
             }
