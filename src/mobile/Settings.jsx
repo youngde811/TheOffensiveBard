@@ -312,7 +312,7 @@ export default function Settings({ appConfig, setDismiss }) {
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Widget Customization</Text>
             <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
-              Customize the background color and opacity of your home screen widget
+              Customize the background color of your home screen widget
             </Text>
 
             <View style={styles.settingGroup}>
@@ -355,32 +355,7 @@ export default function Settings({ appConfig, setDismiss }) {
             <View style={styles.divider} />
 
             <View style={styles.settingGroup}>
-              <Text style={[styles.settingLabel, { color: colors.text }]}>Background Opacity</Text>
-              <Text style={[styles.settingDescription, { color: colors.textMuted }]}>
-                Adjust the transparency of the widget background
-              </Text>
-
-              <View style={styles.volumeContainer}>
-                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>0%</Text>
-                <Slider
-                  style={styles.slider}
-                  minimumValue={0}
-                  maximumValue={100}
-                  step={5}
-                  value={widgetBackgroundOpacity}
-                  onValueChange={handleWidgetOpacityChange}
-                  onSlidingComplete={handleWidgetOpacityChangeComplete}
-                  minimumTrackTintColor={colors.primary}
-                  maximumTrackTintColor={colors.divider}
-                  thumbTintColor={colors.primary}
-                />
-                <Text style={[styles.volumeLabel, { color: colors.textMuted }]}>100%</Text>
-              </View>
-              <Text style={[styles.volumeValue, { color: colors.text }]}>
-                Current: {widgetBackgroundOpacity}%
-              </Text>
-
-              {/* Preview of selected color with opacity */}
+              {/* Preview of selected color */}
               <View style={styles.previewContainer}>
                 <Text style={[styles.settingLabel, { color: colors.text, marginBottom: 8 }]}>Preview</Text>
                 <View
@@ -388,7 +363,6 @@ export default function Settings({ appConfig, setDismiss }) {
                     styles.previewBox,
                     {
                       backgroundColor: widgetBackgroundColor,
-                      opacity: widgetBackgroundOpacity / 100,
                       borderColor: colors.divider
                     }
                   ]}
@@ -456,7 +430,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.5.10</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.6.12</Text>
             </View>
 
             <View style={styles.aboutRow}>
