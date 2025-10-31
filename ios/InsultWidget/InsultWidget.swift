@@ -96,35 +96,21 @@ struct InsultEntry: TimelineEntry {
     let backgroundOpacity: Double
     let backgroundColorHex: String
 
-    // Check if material mode is enabled
-    var isMaterialMode: Bool {
-        backgroundColorHex == "#MATERIAL"
-    }
-
     // Computed property for text colors based on background brightness
     var insultTextColor: Color {
-        if isMaterialMode {
-            return Color.primary // System vibrant color that adapts to material
-        }
-        return Color(hex: "").isDark(hex: backgroundColorHex) ?
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(red: 0.9, green: 0.85, blue: 0.8) : // Light text for dark backgrounds
             Color(red: 0.545, green: 0.251, blue: 0.286) // Dark burgundy for light backgrounds
     }
 
     var titleColor: Color {
-        if isMaterialMode {
-            return Color.secondary // System secondary color for material
-        }
-        return Color(hex: "").isDark(hex: backgroundColorHex) ?
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(red: 0.6, green: 0.8, blue: 0.82) : // Lighter cadet blue for dark backgrounds
             Color(red: 0.373, green: 0.620, blue: 0.627) // Cadet blue for light backgrounds
     }
 
     var timestampColor: Color {
-        if isMaterialMode {
-            return Color.secondary.opacity(0.7) // Subtle secondary for material
-        }
-        return Color(hex: "").isDark(hex: backgroundColorHex) ?
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
             Color(white: 0.7) : // Light gray for dark backgrounds
             Color.gray // Gray for light backgrounds
     }
@@ -226,11 +212,7 @@ struct InsultProvider: TimelineProvider {
         let bgColorHex = json["widgetBackgroundColor"] as? String ?? "#f1eee5"
         let bgOpacityPercent = json["widgetBackgroundOpacity"] as? Int ?? 100
         let bgOpacity = Double(bgOpacityPercent) / 100.0
-
-        // Use placeholder color for material mode (actual material is applied in views)
-        let backgroundColor = bgColorHex == "#MATERIAL" ?
-            Color.clear :
-            Color(hex: bgColorHex, opacity: bgOpacity)
+        let backgroundColor = Color(hex: bgColorHex, opacity: bgOpacity)
 
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
@@ -294,26 +276,24 @@ struct SmallWidgetView: View {
     var entry: InsultEntry
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text("🎭")
-              .font(.title2)
+        ZStack {
+            // Custom background from settings
+            entry.backgroundColor
 
-            Text(entry.insult)
-              .font(.system(size: 9))
-              .fontWeight(.medium)
-              .multilineTextAlignment(.center)
-              .lineLimit(4)
-              .foregroundColor(entry.insultTextColor)
-              .padding(.horizontal, 8)
+            VStack(spacing: 4) {
+                Text("🎭")
+                  .font(.title2)
+
+                Text(entry.insult)
+                  .font(.system(size: 9))
+                  .fontWeight(.medium)
+                  .multilineTextAlignment(.center)
+                  .lineLimit(4)
+                  .foregroundColor(entry.insultTextColor)
+                  .padding(.horizontal, 8)
+            }
+              .padding(8)
         }
-          .padding(8)
-          .background {
-              if entry.isMaterialMode {
-                  Color.clear.background(.regularMaterial)
-              } else {
-                  entry.backgroundColor
-              }
-          }
     }
 }
 
@@ -322,40 +302,38 @@ struct MediumWidgetView: View {
     @Environment(\.colorScheme) var colorScheme
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Title
-            Text("THE INSOLENT BARD")
-              .font(.system(size: 10, weight: .bold))
-              .foregroundColor(entry.titleColor)
-              .tracking(1.5)
+        ZStack {
+            // Custom background from settings
+            entry.backgroundColor
 
-            Spacer()
+            VStack(alignment: .leading, spacing: 8) {
+                // Title
+                Text("THE INSOLENT BARD")
+                  .font(.system(size: 10, weight: .bold))
+                  .foregroundColor(entry.titleColor)
+                  .tracking(1.5)
 
-            // Insult text
-            Text(entry.insult)
-              .font(.custom("IMFellEnglish-Regular", size: 14))
-              .fontWeight(.semibold)
-              .foregroundColor(entry.insultTextColor)
-              .multilineTextAlignment(.leading)
-              .lineLimit(5)
-              .lineSpacing(3)
+                Spacer()
 
-            Spacer()
+                // Insult text
+                Text(entry.insult)
+                  .font(.custom("IMFellEnglish-Regular", size: 14))
+                  .fontWeight(.semibold)
+                  .foregroundColor(entry.insultTextColor)
+                  .multilineTextAlignment(.leading)
+                  .lineLimit(5)
+                  .lineSpacing(3)
 
-            // Timestamp
-            Text(entry.timestamp)
-              .font(.system(size: 9))
-              .foregroundColor(entry.timestampColor)
-              .opacity(0.7)
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                  .font(.system(size: 9))
+                  .foregroundColor(entry.timestampColor)
+                  .opacity(0.7)
+            }
+              .padding(16)
         }
-          .padding(16)
-          .background {
-              if entry.isMaterialMode {
-                  Color.clear.background(.regularMaterial)
-              } else {
-                  entry.backgroundColor
-              }
-          }
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -364,45 +342,43 @@ struct LargeWidgetView: View {
     var entry: InsultEntry
 
     var body: some View {
-        VStack(alignment: .center, spacing: 12) {
-            // Title with decorative elements
-            HStack {
-                Text("⚔️")
-                Text("THE INSOLENT BARD")
-                  .font(.system(size: 14, weight: .bold))
-                  .tracking(2)
-                Text("🎭")
+        ZStack {
+            // Custom background from settings
+            entry.backgroundColor
+
+            VStack(alignment: .center, spacing: 12) {
+                // Title with decorative elements
+                HStack {
+                    Text("⚔️")
+                    Text("THE INSOLENT BARD")
+                      .font(.system(size: 14, weight: .bold))
+                      .tracking(2)
+                    Text("🎭")
+                }
+                  .foregroundColor(entry.titleColor)
+
+                Spacer()
+
+                // Insult text (larger)
+                Text(entry.insult)
+                  .font(.custom("IMFellEnglish-Regular", size: 18))
+                  .fontWeight(.bold)
+                  .foregroundColor(entry.insultTextColor)
+                  .multilineTextAlignment(.center)
+                  .lineLimit(6)
+                  .lineSpacing(5)
+                  .padding(.horizontal, 20)
+
+                Spacer()
+
+                // Timestamp
+                Text(entry.timestamp)
+                  .font(.system(size: 11))
+                  .foregroundColor(entry.timestampColor)
+                  .opacity(0.7)
             }
-              .foregroundColor(entry.titleColor)
-
-            Spacer()
-
-            // Insult text (larger)
-            Text(entry.insult)
-              .font(.custom("IMFellEnglish-Regular", size: 18))
-              .fontWeight(.bold)
-              .foregroundColor(entry.insultTextColor)
-              .multilineTextAlignment(.center)
-              .lineLimit(6)
-              .lineSpacing(5)
-              .padding(.horizontal, 20)
-
-            Spacer()
-
-            // Timestamp
-            Text(entry.timestamp)
-              .font(.system(size: 11))
-              .foregroundColor(entry.timestampColor)
-              .opacity(0.7)
+              .padding(20)
         }
-          .padding(20)
-          .background {
-              if entry.isMaterialMode {
-                  Color.clear.background(.regularMaterial)
-              } else {
-                  entry.backgroundColor
-              }
-          }
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -415,7 +391,13 @@ struct InsultWidget: Widget {
     @available(iOSApplicationExtension 15.1, *)
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
-            InsultWidgetEntryView(entry: entry)
+            if #available(iOSApplicationExtension 17.0, *) {
+                InsultWidgetEntryView(entry: entry)
+                  .containerBackground(entry.backgroundColor, for: .widget)
+            } else {
+                InsultWidgetEntryView(entry: entry)
+                  .background(entry.backgroundColor)
+            }
         }
           .configurationDisplayName("The Insolent Bard")
           .description("Shakespearean insults that refresh every hour.")
