@@ -307,7 +307,13 @@ struct SmallWidgetView: View {
               .padding(.horizontal, 8)
         }
           .padding(8)
-          .background(entry.isMaterialMode ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(entry.backgroundColor))
+          .background {
+              if entry.isMaterialMode {
+                  Rectangle().fill(.regularMaterial)
+              } else {
+                  entry.backgroundColor
+              }
+          }
     }
 }
 
@@ -343,7 +349,13 @@ struct MediumWidgetView: View {
               .opacity(0.7)
         }
           .padding(16)
-          .background(entry.isMaterialMode ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(entry.backgroundColor))
+          .background {
+              if entry.isMaterialMode {
+                  Rectangle().fill(.regularMaterial)
+              } else {
+                  entry.backgroundColor
+              }
+          }
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -384,7 +396,13 @@ struct LargeWidgetView: View {
               .opacity(0.7)
         }
           .padding(20)
-          .background(entry.isMaterialMode ? AnyShapeStyle(.regularMaterial) : AnyShapeStyle(entry.backgroundColor))
+          .background {
+              if entry.isMaterialMode {
+                  Rectangle().fill(.regularMaterial)
+              } else {
+                  entry.backgroundColor
+              }
+          }
           .widgetURL(URL(string: GlobalConstants.widgetUrl))
     }
 }
@@ -397,12 +415,7 @@ struct InsultWidget: Widget {
     @available(iOSApplicationExtension 15.1, *)
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: InsultProvider()) { entry in
-            if #available(iOSApplicationExtension 17.0, *) {
-                InsultWidgetEntryView(entry: entry)
-                  .containerBackground(Color.clear, for: .widget)
-            } else {
-                InsultWidgetEntryView(entry: entry)
-            }
+            InsultWidgetEntryView(entry: entry)
         }
           .configurationDisplayName("The Insolent Bard")
           .description("Shakespearean insults that refresh every hour.")
