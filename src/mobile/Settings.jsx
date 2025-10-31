@@ -51,9 +51,20 @@ const WIDGET_BACKGROUND_COLORS = [
 
 export default function Settings({ appConfig, setDismiss }) {
   const { colors, themePreference, setThemeMode } = useTheme();
-  const { hapticsEnabled, toggleHaptics, easterEggFrequency, setEasterEggFrequency, soundEffect, setSoundEffect, soundVolume, setSoundVolume, widgetBackgroundColor, setWidgetBackgroundColor, widgetBackgroundOpacity, setWidgetBackgroundOpacity } = useSettings();
+  const { hapticsEnabled,
+          toggleHaptics,
+          easterEggFrequency,
+          setEasterEggFrequency,
+          soundEffect,
+          setSoundEffect,
+          soundVolume,
+          setSoundVolume,
+          widgetBackgroundColor,
+          setWidgetBackgroundColor
+        } = useSettings();
 
   const haptics = useHaptics();
+  
   const [isApplyingWidgetSettings, setIsApplyingWidgetSettings] = useState(false);
   const [hasWidgetSettingsChanged, setHasWidgetSettingsChanged] = useState(false);
 
@@ -85,24 +96,18 @@ export default function Settings({ appConfig, setDismiss }) {
 
   const handleWidgetBackgroundColorChange = useCallback((color) => {
     haptics.selection();
+    
     setWidgetBackgroundColor(color);
     setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundColor, haptics]);
-
-  const handleWidgetOpacityChange = useCallback((value) => {
-    setWidgetBackgroundOpacity(value);
-    setHasWidgetSettingsChanged(true);
-  }, [setWidgetBackgroundOpacity]);
-
-  const handleWidgetOpacityChangeComplete = useCallback(() => {
-    haptics.light();
-  }, [haptics]);
 
   const handleApplyWidgetSettings = useCallback(async () => {
     if (!hasWidgetSettingsChanged) return;
 
     console.log('🔵 Apply button pressed - starting widget settings sync');
+    
     setIsApplyingWidgetSettings(true);
+
     haptics.light();
 
     try {
@@ -117,12 +122,15 @@ export default function Settings({ appConfig, setDismiss }) {
       // Sync widget data with new settings
       if (Platform.OS === 'ios') {
         await syncInsultDatabaseWithWidget(allInsults.insults);
+        
         console.log('🔵 syncInsultDatabaseWithWidget completed');
 
         // Reload widget timelines
         if (NativeModules.WidgetCenterModule) {
           console.log('🔵 Calling WidgetCenterModule.reloadAllTimelines()');
+
           NativeModules.WidgetCenterModule.reloadAllTimelines();
+
           console.log('🔵 reloadAllTimelines() called');
         } else {
           console.log('⚠️ WidgetCenterModule not available');
@@ -132,10 +140,13 @@ export default function Settings({ appConfig, setDismiss }) {
       }
 
       setHasWidgetSettingsChanged(false);
+
       haptics.success();
+
       console.log('✅ Widget settings applied successfully');
     } catch (error) {
       console.error('❌ Error applying widget settings:', error);
+
       haptics.error();
     } finally {
       setIsApplyingWidgetSettings(false);
