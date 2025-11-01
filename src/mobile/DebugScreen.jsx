@@ -75,7 +75,9 @@ export default function DebugScreen({ setDismiss }) {
 
   const handleClearLogs = useCallback(() => {
     debugLogger.clear();
+
     setLogs([]);
+
     debugLogger.info('Logs cleared');
   }, []);
 

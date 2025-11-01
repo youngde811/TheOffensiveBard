@@ -34,7 +34,6 @@ const SETTINGS_KEYS = {
 
 // Defaults
 const DEFAULT_WIDGET_BACKGROUND_COLOR = '#f1eee5';
-const DEFAULT_WIDGET_BACKGROUND_OPACITY = 100;
 
 /**
  * Sync a random subset of insults to App Group UserDefaults for autonomous widget operation
@@ -45,6 +44,7 @@ const DEFAULT_WIDGET_BACKGROUND_OPACITY = 100;
 export async function syncInsultDatabaseWithWidget(insults) {
   if (Platform.OS !== 'ios') {
     debugLogger.info('Skipping sync - not iOS');
+    
     return;
   }
 

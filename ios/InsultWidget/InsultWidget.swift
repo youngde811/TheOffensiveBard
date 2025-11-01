@@ -114,6 +114,11 @@ struct InsultEntry: TimelineEntry {
             Color(white: 0.7) : // Light gray for dark backgrounds
             Color.gray // Gray for light backgrounds
     }
+
+    // Computed property for determining if we need thick material for light backgrounds
+    var needsThickMaterial: Bool {
+        !Color(hex: "").isDark(hex: backgroundColorHex)
+    }
 }
 
 // MARK: - Timeline Provider
@@ -290,7 +295,7 @@ struct SmallWidgetView: View {
                   .foregroundColor(entry.insultTextColor)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 6)
-                  .background(.thinMaterial)
+                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
                   .cornerRadius(8)
                   .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
             }
@@ -326,7 +331,7 @@ struct MediumWidgetView: View {
                   .lineLimit(5)
                   .lineSpacing(3)
                   .padding(12)
-                  .background(.thinMaterial)
+                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
                   .cornerRadius(8)
                   .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
 
@@ -375,7 +380,7 @@ struct LargeWidgetView: View {
                   .lineSpacing(5)
                   .padding(.horizontal, 20)
                   .padding(.vertical, 12)
-                  .background(.thinMaterial)
+                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
                   .cornerRadius(12)
                   .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
 
