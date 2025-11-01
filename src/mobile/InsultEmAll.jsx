@@ -22,7 +22,7 @@
 
 import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 
-import { View } from 'react-native';
+import { View, RefreshControl } from 'react-native';
 import { FlashList } from "@shopify/flash-list";
 
 import styles from '../styles/styles.js';
@@ -71,6 +71,7 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
   const [overlayVisible, setOverlayVisible] = useState(false);
   const [overlayInsult, setOverlayInsult] = useState('');
   const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
+  const [refreshing, setRefreshing] = useState(false);
 
   const seasonalIcon = useMemo(() => Utilities.getSeasonalIcon(season), [season]);
 
@@ -190,12 +191,14 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
   }, [haptics]);
 
   const handleRefresh = useCallback(() => {
+    setRefreshing(true);
     haptics.medium();
     // Call parent's refresh function to reload insults
     if (onRefresh) {
       onRefresh();
     }
     // Easter eggs will be re-selected automatically via useEffect when insults change
+    setRefreshing(false);
   }, [onRefresh, haptics]);
 
   const handleShareInsultAsImage = useCallback((item) => {
@@ -256,7 +259,15 @@ export default function InsultEmAll({ insults, appConfig, onRefresh }) {
               estimatedItemSize={80}
               extraData={selectedInsults}
               contentContainerStyle={{ paddingTop: 10 }}
-              renderItem={renderInsult} />
+              renderItem={renderInsult}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={handleRefresh}
+                  tintColor={colors.primary}
+                  colors={[colors.primary]}
+                />
+              } />
             {listVerticalOffset > listThreshold && (
               <FloatingPressable onPress={scrollToTop} />
             )}
