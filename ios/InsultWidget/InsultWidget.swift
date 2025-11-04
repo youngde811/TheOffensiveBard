@@ -152,6 +152,14 @@ struct InsultEntry: TimelineEntry {
             opacity: 0.95
         )
     }
+
+    // Computed property for adaptive shadow color to create raised effect
+    // Dark backgrounds need light shadows, light backgrounds need dark shadows
+    var insultBoxShadowColor: Color {
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
+            Color.white.opacity(0.3) : // Light shadow for dark backgrounds
+            Color.black.opacity(0.3)   // Dark shadow for light backgrounds
+    }
 }
 
 // MARK: - Timeline Provider
@@ -330,7 +338,7 @@ struct SmallWidgetView: View {
                   .padding(.vertical, 6)
                   .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(8)
-                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 4, x: 0, y: 2)
             }
               .padding(8)
         }
@@ -366,7 +374,7 @@ struct MediumWidgetView: View {
                   .padding(12)
                   .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(8)
-                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 4, x: 0, y: 2)
 
                 Spacer()
 
@@ -415,7 +423,7 @@ struct LargeWidgetView: View {
                   .padding(.vertical, 12)
                   .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(12)
-                  .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 5, x: 0, y: 3)
 
                 Spacer()
 
