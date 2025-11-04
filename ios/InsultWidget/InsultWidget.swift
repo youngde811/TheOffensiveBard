@@ -115,9 +115,50 @@ struct InsultEntry: TimelineEntry {
             Color.gray // Gray for light backgrounds
     }
 
-    // Computed property for determining if we need thick material for light backgrounds
-    var needsThickMaterial: Bool {
-        !Color(hex: "").isDark(hex: backgroundColorHex)
+    // Computed property for the insult box background color
+    // Returns a lighter shade of the widget background color
+    var insultBoxBackgroundColor: Color {
+        let hex = backgroundColorHex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+
+        Scanner(string: hex).scanHexInt64(&int)
+
+        let r, g, b: Double
+
+        switch hex.count {
+        case 3:
+            r = Double((int >> 8) * 17) / 255.0
+            g = Double((int >> 4 & 0xF) * 17) / 255.0
+            b = Double((int & 0xF) * 17) / 255.0
+        case 6:
+            r = Double(int >> 16) / 255.0
+            g = Double(int >> 8 & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        default:
+            r = 0.945
+            g = 0.933
+            b = 0.898
+        }
+
+        // For dark backgrounds, lighten by adding white
+        // For light backgrounds, lighten even more
+        let isDarkBg = Color(hex: "").isDark(hex: backgroundColorHex)
+        let lightenFactor = isDarkBg ? 0.15 : 0.08
+
+        return Color(
+            red: min(r + lightenFactor, 1.0),
+            green: min(g + lightenFactor, 1.0),
+            blue: min(b + lightenFactor, 1.0),
+            opacity: 0.95
+        )
+    }
+
+    // Computed property for adaptive shadow color to create raised effect
+    // Dark backgrounds need light shadows, light backgrounds need dark shadows
+    var insultBoxShadowColor: Color {
+        Color(hex: "").isDark(hex: backgroundColorHex) ?
+            Color.white.opacity(0.3) : // Light shadow for dark backgrounds
+            Color.black.opacity(0.3)   // Dark shadow for light backgrounds
     }
 }
 
@@ -295,9 +336,9 @@ struct SmallWidgetView: View {
                   .foregroundColor(entry.insultTextColor)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 6)
-                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
+                  .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(8)
-                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 4, x: 0, y: 2)
             }
               .padding(8)
         }
@@ -331,9 +372,9 @@ struct MediumWidgetView: View {
                   .lineLimit(5)
                   .lineSpacing(3)
                   .padding(12)
-                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
+                  .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(8)
-                  .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 4, x: 0, y: 2)
 
                 Spacer()
 
@@ -380,9 +421,9 @@ struct LargeWidgetView: View {
                   .lineSpacing(5)
                   .padding(.horizontal, 20)
                   .padding(.vertical, 12)
-                  .background(entry.needsThickMaterial ? .ultraThickMaterial : .ultraThinMaterial)
+                  .background(entry.insultBoxBackgroundColor)
                   .cornerRadius(12)
-                  .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 3)
+                  .shadow(color: entry.insultBoxShadowColor, radius: 5, x: 0, y: 3)
 
                 Spacer()
 
