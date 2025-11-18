@@ -46,7 +46,7 @@ export const AppProvider = ({ children }) => {
 
     try {
       const keys = await AsyncStorage.getAllKeys();
-      const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix));
+      const favoriteKeys = keys.filter(key => key.startsWith(keyPrefix) && !key.includes(':settings:'));
       const favoritesList = [];
 
       for (const key of favoriteKeys) {
