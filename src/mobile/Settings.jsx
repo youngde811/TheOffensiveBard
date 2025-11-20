@@ -470,11 +470,11 @@ export default function Settings({ appConfig, setDismiss }) {
                       {label}
                     </Text>
                     <Text style={[styles.frequencyPercentage, { color: colors.textMuted }]}>
-                      {value === LOG_LEVELS.ERROR.value && 'Only errors'}
-                      {value === LOG_LEVELS.WARNING.value && 'Errors and warnings'}
-                      {value === LOG_LEVELS.SUCCESS.value && 'Errors, warnings, and successes'}
-                      {value === LOG_LEVELS.INFO.value && 'Standard operational logs (recommended)'}
-                      {value === LOG_LEVELS.DEBUG.value && 'Everything (most verbose)'}
+                      {value === LOG_LEVELS.ERROR.value && 'Errors only'}
+                      {value === LOG_LEVELS.WARNING.value && '+ warnings'}
+                      {value === LOG_LEVELS.SUCCESS.value && '+ successes'}
+                      {value === LOG_LEVELS.INFO.value && 'Standard (recommended)'}
+                      {value === LOG_LEVELS.DEBUG.value && 'Everything'}
                     </Text>
                   </View>
                 </View>
@@ -488,7 +488,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.8.1</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.8.2</Text>
             </View>
 
             <View style={styles.aboutRow}>
