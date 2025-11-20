@@ -38,14 +38,17 @@ export default function DebugScreen({ setDismiss }) {
   const [logs, setLogs] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Refresh logs every second
+  // Refresh logs every five seconds (now includes widget logs)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setLogs(debugLogger.getLogs());
-    }, 1000);
+    const loadLogs = async () => {
+      const allLogs = await debugLogger.getAllLogs();
+      setLogs(allLogs);
+    };
+
+    const interval = setInterval(loadLogs, 5000);
 
     // Initial load
-    setLogs(debugLogger.getLogs());
+    loadLogs();
 
     return () => clearInterval(interval);
   }, []);
@@ -65,7 +68,7 @@ export default function DebugScreen({ setDismiss }) {
   }, []);
 
   const handleCopyLogs = useCallback(async () => {
-    const logsText = debugLogger.getLogsAsText();
+    const logsText = await debugLogger.getAllLogsAsText();
     await Clipboard.setStringAsync(logsText);
 
     debugLogger.success('Logs copied to clipboard');
@@ -73,8 +76,8 @@ export default function DebugScreen({ setDismiss }) {
     Alert.alert('Copied', 'Logs copied to clipboard');
   }, []);
 
-  const handleClearLogs = useCallback(() => {
-    debugLogger.clear();
+  const handleClearLogs = useCallback(async () => {
+    await debugLogger.clearAllLogs();
 
     setLogs([]);
 
@@ -93,6 +96,11 @@ export default function DebugScreen({ setDismiss }) {
     }
   };
 
+  const getSourceBadgeColor = (source) => {
+    // Use theme-aware colors
+    return source === 'widget' ? colors.accent || '#9b59b6' : colors.primary || '#3498db';
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <SafeAreaView style={styles.safeArea}>
@@ -102,10 +110,10 @@ export default function DebugScreen({ setDismiss }) {
         <View style={[styles.header, { backgroundColor: colors.surface }]}>
           <Text style={[styles.headerTitle, { color: colors.text }]}>Widget Debug Console</Text>
           <Text style={[styles.headerSubtitle, { color: colors.textMuted }]}>
-            Troubleshoot widget sync issues and view technical logs
+            Troubleshoot widget sync issues and view app + widget logs
           </Text>
           <Text style={[styles.logCount, { color: colors.textMuted }]}>
-            {logs.length} log entries
+            {logs.length} log entries (app + widget)
           </Text>
         </View>
 
@@ -151,9 +159,16 @@ export default function DebugScreen({ setDismiss }) {
           ) : (
             logs.map((log, index) => (
               <View key={index} style={styles.logEntry}>
-                <Text style={[styles.logTimestamp, { color: colors.textMuted }]}>
-                  {new Date(log.timestamp).toLocaleTimeString()}
-                </Text>
+                <View style={styles.logHeader}>
+                  <Text style={[styles.logTimestamp, { color: colors.textMuted }]}>
+                    {new Date(log.timestamp).toLocaleTimeString()}
+                  </Text>
+                  <View style={[styles.sourceBadge, { backgroundColor: getSourceBadgeColor(log.source) }]}>
+                    <Text style={styles.sourceBadgeText}>
+                      {log.source === 'widget' ? '📱 WIDGET' : '📲 APP'}
+                    </Text>
+                  </View>
+                </View>
                 <Text style={[styles.logMessage, { color: getLogColor(log.type) }]}>
                   [{log.type.toUpperCase()}] {log.message}
                 </Text>
@@ -240,9 +255,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
+  logHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
   logTimestamp: {
     fontSize: 11,
-    marginBottom: 4,
+  },
+  sourceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  sourceBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: '700',
   },
   logMessage: {
     fontSize: 13,
