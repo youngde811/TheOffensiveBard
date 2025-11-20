@@ -72,6 +72,10 @@ class WidgetLogger {
         if let logsData = try? JSONEncoder().encode(logs),
            let logsJson = String(data: logsData, encoding: .utf8) {
             sharedDefaults.set(logsJson, forKey: logsKey)
+
+            // Force synchronize to ensure write completes before widget terminates
+            sharedDefaults.synchronize()
+
             print("📝 Widget log: [\(type)] \(message)")
         }
     }
