@@ -27,6 +27,68 @@ struct GlobalConstants {
     static let widgetUrl = "insolentbard://share-insult"
 }
 
+// MARK: - Widget Logger
+class WidgetLogger {
+    static let shared = WidgetLogger()
+
+    private let appGroup = "group.com.bosshog811.TheInsolentBard"
+    private let logsKey = "widgetLogs"
+    private let maxLogs = 100
+
+    private init() {}
+
+    /// Log a message to shared UserDefaults as JSON
+    func log(_ message: String, type: String = "info") {
+        guard let sharedDefaults = UserDefaults(suiteName: appGroup) else {
+            print("⚠️ Failed to access UserDefaults for app group: \(appGroup)")
+            return
+        }
+
+        let timestamp = ISO8601DateFormatter().string(from: Date())
+
+        let logEntry: [String: String] = [
+            "timestamp": timestamp,
+            "type": type,
+            "message": message
+        ]
+
+        // Read existing logs
+        var logs: [[String: String]] = []
+        if let existingLogsData = sharedDefaults.string(forKey: logsKey),
+           let existingLogsJson = existingLogsData.data(using: .utf8),
+           let existingLogs = try? JSONDecoder().decode([[String: String]].self, from: existingLogsJson) {
+            logs = existingLogs
+        }
+
+        // Append new log
+        logs.append(logEntry)
+
+        // Keep only last maxLogs entries
+        if logs.count > maxLogs {
+            logs = Array(logs.suffix(maxLogs))
+        }
+
+        // Write back to UserDefaults
+        if let logsData = try? JSONEncoder().encode(logs),
+           let logsJson = String(data: logsData, encoding: .utf8) {
+            sharedDefaults.set(logsJson, forKey: logsKey)
+            print("📝 Widget log: [\(type)] \(message)")
+        }
+    }
+
+    func info(_ message: String) {
+        log(message, type: "info")
+    }
+
+    func success(_ message: String) {
+        log(message, type: "success")
+    }
+
+    func error(_ message: String) {
+        log(message, type: "error")
+    }
+}
+
 // MARK: - Color Helper
 extension Color {
     init(hex: String, opacity: Double = 1.0) {
@@ -165,7 +227,9 @@ struct InsultEntry: TimelineEntry {
 // MARK: - Timeline Provider
 struct InsultProvider: TimelineProvider {
     func placeholder(in context: Context) -> InsultEntry {
-        InsultEntry(
+        WidgetLogger.shared.info("Placeholder requested")
+
+        return InsultEntry(
           date: Date(),
           insult: "Thou churlish, motley-minded knave!",
           timestamp: "Just now",
@@ -176,6 +240,8 @@ struct InsultProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (InsultEntry) -> ()) {
+        WidgetLogger.shared.info("Snapshot requested (isPreview: \(context.isPreview))")
+
         // For preview, just show the first entry from our timeline
         let entries = generateTimelineEntries()
 
@@ -183,10 +249,14 @@ struct InsultProvider: TimelineProvider {
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<InsultEntry>) -> ()) {
+        WidgetLogger.shared.info("Timeline generation started")
+
         let entries = generateTimelineEntries()
 
         // Use .atEnd policy to regenerate timeline after 48 hours
         let timeline = Timeline(entries: entries, policy: .atEnd)
+
+        WidgetLogger.shared.success("Timeline generated with \(entries.count) entries")
 
         completion(timeline)
     }
@@ -200,6 +270,8 @@ struct InsultProvider: TimelineProvider {
 
         // Load the insult database
         guard let dataString = sharedDefaults?.string(forKey: "insultDatabase") else {
+            WidgetLogger.shared.error("No insult database found in UserDefaults")
+
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -211,6 +283,8 @@ struct InsultProvider: TimelineProvider {
         }
 
         guard let data = dataString.data(using: .utf8) else {
+            WidgetLogger.shared.error("Failed to convert database string to data")
+
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -222,6 +296,8 @@ struct InsultProvider: TimelineProvider {
         }
 
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            WidgetLogger.shared.error("Failed to parse database JSON")
+
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -233,6 +309,8 @@ struct InsultProvider: TimelineProvider {
         }
 
         guard let insults = json["insults"] as? [String] else {
+            WidgetLogger.shared.error("No insults array found in database")
+
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -244,6 +322,8 @@ struct InsultProvider: TimelineProvider {
         }
 
         guard !insults.isEmpty else {
+            WidgetLogger.shared.error("Insults array is empty")
+
             return [InsultEntry(
               date: Date(),
               insult: "Thou villainous tickle-brained canker-blossom!",
@@ -254,13 +334,17 @@ struct InsultProvider: TimelineProvider {
             )]
         }
 
+        WidgetLogger.shared.success("Loaded \(insults.count) insults from database")
+
         // Read background customization settings
         let bgColorHex = json["widgetBackgroundColor"] as? String ?? "#f1eee5"
         let backgroundColor = Color(hex: bgColorHex, opacity: 1.0)
 
+        WidgetLogger.shared.info("Widget background color: \(bgColorHex)")
+
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
-        
+
         let now = Date()
         let calendar = Calendar.current
 
