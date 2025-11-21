@@ -22,8 +22,10 @@ import { debugLogger } from './debugLogger';
 
 const METRICS_KEY_PREFIX = '@insolentbard:metrics:';
 const APP_STATE_KEY = `${METRICS_KEY_PREFIX}appState`;
+const COLD_START_KEY = `${METRICS_KEY_PREFIX}coldStart`;
 const MAX_EVENTS = 100;
 const MAX_AGE_DAYS = 7;
+const MAX_COLD_START_RECORDS = 10;
 
 /**
  * Record an app state transition
@@ -169,6 +171,129 @@ function pruneEvents(events) {
   return filtered;
 }
 
+// ==================== PERFORMANCE METRICS ====================
+
+/**
+ * Record a cold start time
+ * @param {number} durationMs - Cold start duration in milliseconds
+ */
+export async function recordColdStart(durationMs) {
+  try {
+    const event = {
+      timestamp: new Date().toISOString(),
+      duration: durationMs,
+      type: 'cold_start',
+    };
+
+    const records = await getColdStartHistory();
+    records.push(event);
+
+    // Keep only last MAX_COLD_START_RECORDS
+    const trimmed = records.slice(-MAX_COLD_START_RECORDS);
+
+    await AsyncStorage.setItem(COLD_START_KEY, JSON.stringify(trimmed));
+
+    debugLogger.debug(`Cold start recorded: ${durationMs}ms`);
+  } catch (error) {
+    debugLogger.error(`Failed to record cold start: ${error.message}`);
+  }
+}
+
+/**
+ * Get cold start history
+ * @returns {Promise<Array>} Array of cold start events
+ */
+export async function getColdStartHistory() {
+  try {
+    const data = await AsyncStorage.getItem(COLD_START_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    debugLogger.error(`Failed to read cold start history: ${error.message}`);
+    return [];
+  }
+}
+
+/**
+ * Get cold start statistics
+ * @returns {Promise<Object>} Cold start stats
+ */
+export async function getColdStartStats() {
+  const records = await getColdStartHistory();
+
+  if (records.length === 0) {
+    return {
+      count: 0,
+      average: 0,
+      min: 0,
+      max: 0,
+      last: null,
+    };
+  }
+
+  const durations = records.map(r => r.duration);
+  const sum = durations.reduce((a, b) => a + b, 0);
+  const average = sum / durations.length;
+  const min = Math.min(...durations);
+  const max = Math.max(...durations);
+  const last = records[records.length - 1];
+
+  return {
+    count: records.length,
+    average: Math.round(average),
+    min,
+    max,
+    last: last.duration,
+    lastTimestamp: last.timestamp,
+  };
+}
+
+/**
+ * Get storage metrics
+ * @returns {Promise<Object>} Storage statistics
+ */
+export async function getStorageMetrics() {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const allData = await AsyncStorage.multiGet(keys);
+
+    let totalSize = 0;
+    const breakdown = {};
+
+    allData.forEach(([key, value]) => {
+      const size = value ? value.length : 0;
+      totalSize += size;
+
+      // Categorize by key prefix
+      if (key.startsWith('@insolentbard:metrics:')) {
+        breakdown.metrics = (breakdown.metrics || 0) + size;
+      } else if (key.startsWith('@insolentbard:settings:')) {
+        breakdown.settings = (breakdown.settings || 0) + size;
+      } else if (key.startsWith('@insolentbard:logs:')) {
+        breakdown.logs = (breakdown.logs || 0) + size;
+      } else if (key === 'favoriteInsults') {
+        breakdown.favorites = (breakdown.favorites || 0) + size;
+      } else {
+        breakdown.other = (breakdown.other || 0) + size;
+      }
+    });
+
+    return {
+      totalKeys: keys.length,
+      totalSizeBytes: totalSize,
+      totalSizeKB: (totalSize / 1024).toFixed(2),
+      breakdown,
+    };
+  } catch (error) {
+    debugLogger.error(`Failed to get storage metrics: ${error.message}`);
+    return {
+      totalKeys: 0,
+      totalSizeBytes: 0,
+      totalSizeKB: '0.00',
+      breakdown: {},
+    };
+  }
+}
+
 /**
  * Export metrics as JSON for debugging
  * @returns {Promise<Object>} All metrics data
@@ -178,6 +303,9 @@ export async function exportMetrics() {
     const appState = await getAppStateHistory();
     const appStateStats = await getAppStateStats();
     const stateTimeBreakdown = await getStateTimeBreakdown();
+    const coldStart = await getColdStartHistory();
+    const coldStartStats = await getColdStartStats();
+    const storage = await getStorageMetrics();
 
     return {
       exportedAt: new Date().toISOString(),
@@ -185,6 +313,13 @@ export async function exportMetrics() {
         events: appState,
         stats: appStateStats,
         timeBreakdown: stateTimeBreakdown,
+      },
+      performance: {
+        coldStart: {
+          events: coldStart,
+          stats: coldStartStats,
+        },
+        storage,
       },
     };
   } catch (error) {

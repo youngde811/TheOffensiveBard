@@ -31,7 +31,10 @@ import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 
 import { Alert, AppState } from 'react-native';
-import { recordAppStateTransition } from './src/utils/metricsCollector';
+import { recordAppStateTransition, recordColdStart } from './src/utils/metricsCollector';
+
+// Track cold start time
+const appStartTime = Date.now();
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Keep the splash screen visible while we load fonts
@@ -197,6 +200,10 @@ export default function App() {
   React.useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
+
+      // Record cold start time
+      const coldStartDuration = Date.now() - appStartTime;
+      recordColdStart(coldStartDuration);
     }
   }, [fontsLoaded]);
 

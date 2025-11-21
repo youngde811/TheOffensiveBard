@@ -27,6 +27,8 @@ import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 import TimelinePreview from '../components/TimelinePreview';
 import AppStateHistory from '../components/AppStateHistory';
+import PerformanceMetrics from '../components/PerformanceMetrics';
+import LogStatistics from '../components/LogStatistics';
 
 export default function AppMetricsScreen({ appConfig, setDismiss }) {
   const { colors } = useTheme();
@@ -35,8 +37,8 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
   const sections = [
     { id: 'timeline', label: 'Widget Timeline', icon: '📈' },
     { id: 'state', label: 'App State', icon: '🔄' },
-    { id: 'performance', label: 'Performance', icon: '⚡', comingSoon: true },
-    { id: 'logs', label: 'Log Stats', icon: '📊', comingSoon: true },
+    { id: 'performance', label: 'Performance', icon: '⚡' },
+    { id: 'logs', label: 'Log Stats', icon: '📊' },
   ];
 
   return (
@@ -96,36 +98,9 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
         {/* Content Area */}
         <View style={styles.content}>
           {activeSection === 'timeline' && <TimelinePreview />}
-
           {activeSection === 'state' && <AppStateHistory />}
-
-          {activeSection === 'performance' && (
-            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
-              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
-                ⚡ Performance Metrics
-              </Text>
-              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
-                Cold start time, memory usage, storage stats
-              </Text>
-              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
-                Coming Soon!
-              </Text>
-            </View>
-          )}
-
-          {activeSection === 'logs' && (
-            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
-              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
-                📊 Log Statistics
-              </Text>
-              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
-                Error rates, log volume charts, top log types
-              </Text>
-              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
-                Coming Soon!
-              </Text>
-            </View>
-          )}
+          {activeSection === 'performance' && <PerformanceMetrics />}
+          {activeSection === 'logs' && <LogStatistics />}
         </View>
 
         {/* Done Button */}
@@ -196,34 +171,8 @@ const styles = StyleSheet.create({
   tabLabelActive: {
     color: 'white',
   },
-  comingSoonBadge: {
-    fontSize: 10,
-    fontStyle: 'italic',
-    marginLeft: 4,
-  },
   content: {
     flex: 1,
-  },
-  placeholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
-  },
-  placeholderText: {
-    fontSize: 20,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  placeholderSubtext: {
-    fontSize: 14,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  comingSoonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    fontStyle: 'italic',
   },
   footer: {
     padding: 16,
