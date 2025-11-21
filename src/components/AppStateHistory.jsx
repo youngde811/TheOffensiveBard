@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   statsCard: {
-    padding: 16,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#e0e0e0',
   },
@@ -250,46 +250,46 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   statValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 12,
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
   },
   stateIcon: {
-    fontSize: 16,
+    fontSize: 14,
   },
   timeBreakdownSection: {
-    marginTop: 12,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
   },
   sectionTitle: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   breakdownRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    marginBottom: 4,
+    gap: 4,
+    marginBottom: 2,
   },
   breakdownLabel: {
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: '500',
   },
   breakdownValue: {
-    fontSize: 13,
+    fontSize: 11,
   },
   scrollView: {
     flex: 1,
