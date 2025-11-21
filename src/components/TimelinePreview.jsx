@@ -92,27 +92,6 @@ export default function TimelinePreview() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* Stats Header */}
-      <View style={[styles.statsCard, { backgroundColor: colors.background }]}>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Total Insults:</Text>
-          <Text style={[styles.statValue, { color: colors.text }]}>{stats.totalInsults}</Text>
-        </View>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Timeline Length:</Text>
-          <Text style={[styles.statValue, { color: colors.text }]}>{stats.timelineLength} hours</Text>
-        </View>
-        {stats.syncedAt && (
-          <View style={styles.statRow}>
-            <Text style={[styles.statLabel, { color: colors.textMuted }]}>Last Synced:</Text>
-            <Text style={[styles.statValue, { color: colors.text }]}>
-              {new Date(stats.syncedAt).toLocaleString()}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      {/* Timeline List */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
@@ -124,6 +103,41 @@ export default function TimelinePreview() {
           />
         }
       >
+        {/* Stats Section */}
+        <View style={[styles.section, { backgroundColor: colors.background }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionIcon, { fontSize: 24 }]}>📊</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Overview</Text>
+          </View>
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Total Insults</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{stats.totalInsults}</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Timeline Length</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{stats.timelineLength}h</Text>
+            </View>
+          </View>
+
+          {stats.syncedAt && (
+            <View style={styles.syncInfo}>
+              <Text style={[styles.syncLabel, { color: colors.textMuted }]}>Last Synced:</Text>
+              <Text style={[styles.syncValue, { color: colors.text }]}>
+                {new Date(stats.syncedAt).toLocaleString()}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Timeline Section */}
+        <View style={[styles.section, { backgroundColor: colors.background }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionIcon, { fontSize: 24 }]}>📅</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>48-Hour Schedule</Text>
+          </View>
         {timeline.map((entry) => (
           <View
             key={entry.index}
@@ -156,6 +170,7 @@ export default function TimelinePreview() {
             </Text>
           </View>
         ))}
+        </View>
       </ScrollView>
     </View>
   );
@@ -164,6 +179,12 @@ export default function TimelinePreview() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   loadingText: {
     textAlign: 'center',
@@ -176,29 +197,65 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
   },
-  statsCard: {
+  section: {
+    margin: 12,
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    flexShrink: 0,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  statRow: {
+  sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  sectionIcon: {
+    fontSize: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  statBox: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderRadius: 8,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 12,
+    marginBottom: 4,
   },
   statValue: {
-    fontSize: 14,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  syncInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  syncLabel: {
+    fontSize: 12,
+  },
+  syncValue: {
+    fontSize: 12,
     fontWeight: '600',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingBottom: 20,
   },
   timelineEntry: {
     padding: 12,

@@ -153,6 +153,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     gap: 4,
     backgroundColor: '#f5f5f5',
+    minWidth: 110,
+    justifyContent: 'center',
   },
   tabActive: {
     shadowColor: '#000',
