@@ -30,7 +30,8 @@ import { AppProvider } from './src/contexts/AppContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
+import { recordAppStateTransition } from './src/utils/metricsCollector';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Keep the splash screen visible while we load fonts
@@ -198,6 +199,21 @@ export default function App() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  // Track app state transitions for metrics
+  React.useEffect(() => {
+    // Record initial state
+    recordAppStateTransition(AppState.currentState);
+
+    // Listen for state changes
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      recordAppStateTransition(nextAppState);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   if (!fontsLoaded) {
     return null;

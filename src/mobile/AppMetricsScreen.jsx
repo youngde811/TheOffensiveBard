@@ -26,6 +26,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 import TimelinePreview from '../components/TimelinePreview';
+import AppStateHistory from '../components/AppStateHistory';
 
 export default function AppMetricsScreen({ appConfig, setDismiss }) {
   const { colors } = useTheme();
@@ -33,7 +34,7 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
 
   const sections = [
     { id: 'timeline', label: 'Widget Timeline', icon: '📈' },
-    { id: 'state', label: 'App State', icon: '🔄', comingSoon: true },
+    { id: 'state', label: 'App State', icon: '🔄' },
     { id: 'performance', label: 'Performance', icon: '⚡', comingSoon: true },
     { id: 'logs', label: 'Log Stats', icon: '📊', comingSoon: true },
   ];
@@ -96,19 +97,7 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
         <View style={styles.content}>
           {activeSection === 'timeline' && <TimelinePreview />}
 
-          {activeSection === 'state' && (
-            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
-              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
-                🔄 App State History
-              </Text>
-              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
-                Timeline visualization of foreground/background transitions
-              </Text>
-              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
-                Coming Soon!
-              </Text>
-            </View>
-          )}
+          {activeSection === 'state' && <AppStateHistory />}
 
           {activeSection === 'performance' && (
             <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
