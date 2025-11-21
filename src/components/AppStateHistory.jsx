@@ -135,42 +135,6 @@ export default function AppStateHistory() {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
-      {/* Stats Header */}
-      <View style={[styles.statsCard, { backgroundColor: colors.background }]}>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Total Transitions:</Text>
-          <Text style={[styles.statValue, { color: colors.text }]}>{stats.totalTransitions}</Text>
-        </View>
-        <View style={styles.statRow}>
-          <Text style={[styles.statLabel, { color: colors.textMuted }]}>Current State:</Text>
-          <View style={styles.statValueRow}>
-            <Text style={styles.stateIcon}>{getStateIcon(stats.lastState)}</Text>
-            <Text style={[styles.statValue, { color: getStateColor(stats.lastState) }]}>
-              {stats.lastState}
-            </Text>
-          </View>
-        </View>
-
-        {/* Time Breakdown */}
-        {Object.keys(timeBreakdown).length > 0 && (
-          <View style={styles.timeBreakdownSection}>
-            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Time Spent:</Text>
-            {Object.entries(timeBreakdown).map(([state, duration]) => (
-              <View key={state} style={styles.breakdownRow}>
-                <Text style={styles.stateIcon}>{getStateIcon(state)}</Text>
-                <Text style={[styles.breakdownLabel, { color: colors.text }]}>
-                  {state}:
-                </Text>
-                <Text style={[styles.breakdownValue, { color: colors.textMuted }]}>
-                  {formatDuration(duration)}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* Event Timeline */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollViewContent}
@@ -182,6 +146,62 @@ export default function AppStateHistory() {
           />
         }
       >
+        {/* Stats Section */}
+        <View style={[styles.section, { backgroundColor: colors.background }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionIcon, { fontSize: 24 }]}>📊</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Overview</Text>
+          </View>
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statBox}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Total Transitions</Text>
+              <Text style={[styles.statValue, { color: colors.text }]}>{stats.totalTransitions}</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Text style={[styles.statLabel, { color: colors.textMuted }]}>Current State</Text>
+              <View style={styles.statValueRow}>
+                <Text style={styles.stateIcon}>{getStateIcon(stats.lastState)}</Text>
+                <Text style={[styles.statValue, { color: getStateColor(stats.lastState) }]}>
+                  {stats.lastState}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Time Breakdown */}
+          {Object.keys(timeBreakdown).length > 0 && (
+            <View style={styles.breakdownSection}>
+              <Text style={[styles.subsectionTitle, { color: colors.textMuted }]}>
+                Time Spent
+              </Text>
+              {Object.entries(timeBreakdown).map(([state, duration]) => (
+                <View
+                  key={state}
+                  style={styles.breakdownItem}
+                >
+                  <View style={styles.breakdownLeft}>
+                    <Text style={styles.stateIcon}>{getStateIcon(state)}</Text>
+                    <Text style={[styles.breakdownLabel, { color: colors.text }]}>
+                      {state}
+                    </Text>
+                  </View>
+                  <Text style={[styles.breakdownValue, { color: colors.textMuted }]}>
+                    {formatDuration(duration)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Event Timeline Section */}
+        <View style={[styles.section, { backgroundColor: colors.background }]}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionIcon, { fontSize: 24 }]}>📅</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Event Timeline</Text>
+          </View>
         {events.slice().reverse().map((event, index) => {
           const actualIndex = events.length - 1 - index;
           const nextEvent = actualIndex < events.length - 1 ? events[actualIndex + 1] : null;
@@ -221,6 +241,7 @@ export default function AppStateHistory() {
             </View>
           );
         })}
+        </View>
       </ScrollView>
     </View>
   );
@@ -229,6 +250,12 @@ export default function AppStateHistory() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   loadingText: {
     textAlign: 'center',
@@ -241,61 +268,86 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontStyle: 'italic',
   },
-  statsCard: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+  section: {
+    margin: 12,
+    padding: 16,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  statRow: {
+  sectionHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  sectionIcon: {
+    fontSize: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  subsectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  statBox: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 12,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderRadius: 8,
+  },
+  statLabel: {
+    fontSize: 12,
     marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 18,
+    fontWeight: '700',
   },
   statValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-  },
-  statLabel: {
-    fontSize: 12,
-  },
-  statValue: {
-    fontSize: 12,
-    fontWeight: '600',
+    gap: 6,
   },
   stateIcon: {
-    fontSize: 14,
+    fontSize: 16,
   },
-  timeBreakdownSection: {
+  breakdownSection: {
     marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
   },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: 4,
+  breakdownItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
-  breakdownRow: {
+  breakdownLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginBottom: 2,
+    gap: 8,
   },
   breakdownLabel: {
-    fontSize: 11,
+    fontSize: 14,
     fontWeight: '500',
+    textTransform: 'capitalize',
   },
   breakdownValue: {
-    fontSize: 11,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollViewContent: {
-    paddingBottom: 20,
+    fontSize: 13,
   },
   eventEntry: {
     padding: 12,
