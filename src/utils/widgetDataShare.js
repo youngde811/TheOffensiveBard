@@ -64,8 +64,8 @@ export async function syncInsultDatabaseWithWidget(insults) {
   debugLogger.info('SharedGroupPreferences module loaded successfully');
 
   try {
-    debugLogger.info('Starting sync with ' + insults.length + ' insults');
-    debugLogger.info('Will reduce to ' + WIDGET_INSULT_COUNT + ' insults in Step 1');
+    debugLogger.debug('Starting sync with ' + insults.length + ' insults');
+    debugLogger.debug('Will reduce to ' + WIDGET_INSULT_COUNT + ' insults in Step 1');
 
     // Test App Group access first
     debugLogger.info('Testing App Group access...');
@@ -73,11 +73,11 @@ export async function syncInsultDatabaseWithWidget(insults) {
 
     try {
       await SharedGroupPreferences.setItem('test_key', 'test_value', APP_GROUP);
-      
-      debugLogger.success('Test write succeeded');
+
+      debugLogger.debug('Test write succeeded');
 
       const testRead = await SharedGroupPreferences.getItem('test_key', APP_GROUP);
-      debugLogger.success('Test read succeeded: ' + testRead);
+      debugLogger.debug('Test read succeeded: ' + testRead);
     } catch (testError) {
       debugLogger.error('App Group test failed: ' + testError);
       debugLogger.error('This means the App Group is not accessible');
@@ -86,7 +86,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
     }
 
     // Extract just the insult text to minimize storage
-    debugLogger.info('Step 1: Extracting and sampling insult texts...');
+    debugLogger.debug('Step 1: Extracting and sampling insult texts...');
 
     const allInsultTexts = insults.map(item => item.insult || item);
 
@@ -94,10 +94,10 @@ export async function syncInsultDatabaseWithWidget(insults) {
     const shuffled = [...allInsultTexts].sort(() => Math.random() - 0.5);
     const insultTexts = shuffled.slice(0, WIDGET_INSULT_COUNT);
 
-    debugLogger.info('Step 1 complete: Selected ' + insultTexts.length + ' insults from ' + allInsultTexts.length + ' total');
-    debugLogger.info('Sample insult: ' + insultTexts[0]);
+    debugLogger.debug('Step 1 complete: Selected ' + insultTexts.length + ' insults from ' + allInsultTexts.length + ' total');
+    debugLogger.debug('Sample insult: ' + insultTexts[0]);
 
-    debugLogger.info('Step 2: Reading widget customization settings...');
+    debugLogger.debug('Step 2: Reading widget customization settings...');
 
     // Load widget background color
     let widgetBackgroundColor = DEFAULT_WIDGET_BACKGROUND_COLOR;
@@ -109,12 +109,12 @@ export async function syncInsultDatabaseWithWidget(insults) {
         widgetBackgroundColor = bgColor;
       }
 
-      debugLogger.info('Step 2: Widget background color: ' + widgetBackgroundColor);
+      debugLogger.debug('Step 2: Widget background color: ' + widgetBackgroundColor);
     } catch (settingsError) {
       debugLogger.error('Step 2: Error reading widget settings, using defaults: ' + settingsError);
     }
 
-    debugLogger.info('Step 3: Preparing data object...');
+    debugLogger.debug('Step 3: Preparing data object...');
 
     const data = {
       insults: insultTexts,
@@ -123,12 +123,12 @@ export async function syncInsultDatabaseWithWidget(insults) {
       widgetBackgroundColor: widgetBackgroundColor,
     };
 
-    debugLogger.info('Step 3 complete: Data object ready');
+    debugLogger.debug('Step 3 complete: Data object ready');
 
-    debugLogger.info('Step 4: Writing database to UserDefaults...');
-    debugLogger.info('  Key: ' + INSULT_DATABASE_KEY);
-    debugLogger.info('  App Group: ' + APP_GROUP);
-    debugLogger.info('  Data size: ' + JSON.stringify(data).length + ' characters');
+    debugLogger.debug('Step 4: Writing database to UserDefaults...');
+    debugLogger.debug('  Key: ' + INSULT_DATABASE_KEY);
+    debugLogger.debug('  App Group: ' + APP_GROUP);
+    debugLogger.debug('  Data size: ' + JSON.stringify(data).length + ' characters');
 
     await SharedGroupPreferences.setItem(
       INSULT_DATABASE_KEY,
@@ -136,10 +136,10 @@ export async function syncInsultDatabaseWithWidget(insults) {
       APP_GROUP
     );
 
-    debugLogger.success('Step 4 complete: Database written successfully');
+    debugLogger.debug('Step 4 complete: Database written successfully');
 
     // Verify the write
-    debugLogger.info('Step 5: Verifying write by reading back...');
+    debugLogger.debug('Step 5: Verifying write by reading back...');
 
     const verification = await SharedGroupPreferences.getItem(
       INSULT_DATABASE_KEY,
@@ -150,8 +150,8 @@ export async function syncInsultDatabaseWithWidget(insults) {
       try {
         const parsed = JSON.parse(verification);
 
-        debugLogger.success('Step 5 complete: Successfully read back ' + parsed.count + ' insults');
-        debugLogger.success('Verified background color: ' + (parsed.widgetBackgroundColor || 'not set'));
+        debugLogger.debug('Step 5 complete: Successfully read back ' + parsed.count + ' insults');
+        debugLogger.debug('Verified background color: ' + (parsed.widgetBackgroundColor || 'not set'));
       } catch (parseError) {
         debugLogger.error('Step 5 failed: Could not parse verification data: ' + parseError.message);
 
@@ -175,7 +175,7 @@ export async function syncInsultDatabaseWithWidget(insults) {
       return;
     }
 
-    debugLogger.success('All steps complete! Synced ' + insultTexts.length + ' insults with widget');
+    debugLogger.debug('All steps complete! Synced ' + insultTexts.length + ' insults with widget');
     debugLogger.success('Sync complete! Widget will reload automatically');
   } catch (error) {
     debugLogger.error('FATAL ERROR during sync: ' + error);

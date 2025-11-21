@@ -28,7 +28,7 @@ import { StatusBar } from 'expo-status-bar';
 import PressableOpacity from './PressableOpacity';
 import InsultsHeader from './InsultsHeader';
 
-import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS } from '../contexts/SettingsContext';
+import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS, LOG_LEVELS } from '../contexts/SettingsContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { getContrastingTextColor } from '../utils/colorUtils';
@@ -60,7 +60,9 @@ export default function Settings({ appConfig, setDismiss }) {
           soundVolume,
           setSoundVolume,
           widgetBackgroundColor,
-          setWidgetBackgroundColor
+          setWidgetBackgroundColor,
+          logLevel,
+          setLogLevel
         } = useSettings();
 
   const haptics = useHaptics();
@@ -94,9 +96,15 @@ export default function Settings({ appConfig, setDismiss }) {
     haptics.light();
   }, [haptics]);
 
+  const handleLogLevelChange = useCallback((level) => {
+    haptics.selection();
+
+    setLogLevel(level);
+  }, [setLogLevel, haptics]);
+
   const handleWidgetBackgroundColorChange = useCallback((color) => {
     haptics.selection();
-    
+
     setWidgetBackgroundColor(color);
     setHasWidgetSettingsChanged(true);
   }, [setWidgetBackgroundColor, haptics]);
@@ -435,13 +443,52 @@ export default function Settings({ appConfig, setDismiss }) {
             </Text>
           </View>
 
+          {/* Debug Settings */}
+          <View style={[styles.section, { backgroundColor: colors.surface }]}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Debug</Text>
+            <Text style={[styles.sectionDescription, { color: colors.textMuted }]}>
+              Control logging verbosity for troubleshooting
+            </Text>
+
+            { Object.entries(LOG_LEVELS).reverse().map(([key, { value, label }]) => (
+              <PressableOpacity
+                key={key}
+                style={styles.frequencyOption}
+                onPress={() => handleLogLevelChange(value)}
+              >
+                <View style={styles.radioRow}>
+                  <View style={[
+                    styles.radio,
+                    { borderColor: colors.primary }
+                  ]}>
+                    {logLevel === value && (
+                      <View style={[styles.radioInner, { backgroundColor: colors.primary }]} />
+                    )}
+                  </View>
+                  <View style={styles.frequencyInfo}>
+                    <Text style={[styles.frequencyLabel, { color: colors.text }]}>
+                      {label}
+                    </Text>
+                    <Text style={[styles.frequencyPercentage, { color: colors.textMuted }]}>
+                      {value === LOG_LEVELS.ERROR.value && 'Errors only'}
+                      {value === LOG_LEVELS.WARNING.value && '+ warnings'}
+                      {value === LOG_LEVELS.SUCCESS.value && '+ successes'}
+                      {value === LOG_LEVELS.INFO.value && 'Standard (recommended)'}
+                      {value === LOG_LEVELS.DEBUG.value && 'Everything'}
+                    </Text>
+                  </View>
+                </View>
+              </PressableOpacity>
+            ))}
+          </View>
+
           {/* About/Credits */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>About</Text>
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.7.0</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.8.4</Text>
             </View>
 
             <View style={styles.aboutRow}>

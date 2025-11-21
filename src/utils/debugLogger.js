@@ -21,21 +21,70 @@
 
 import { Platform } from 'react-native';
 import SharedGroupPreferences from 'react-native-shared-group-preferences';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const APP_GROUP = 'group.com.bosshog811.TheInsolentBard';
 const WIDGET_LOGS_KEY = 'widgetLogs';
+const LOG_LEVEL_KEY = '@insolentbard:settings:logLevel';
+
+// Log levels in order of verbosity (lower number = less verbose)
+export const LOG_LEVELS = {
+  ERROR: { value: 0, label: 'Error' },
+  WARNING: { value: 1, label: 'Warning' },
+  SUCCESS: { value: 2, label: 'Success' },
+  INFO: { value: 3, label: 'Info' },
+  DEBUG: { value: 4, label: 'Debug' },
+};
+
+const DEFAULT_LOG_LEVEL = LOG_LEVELS.INFO.value;
 
 class DebugLogger {
   constructor() {
     this.logs = [];
     this.maxLogs = 100; // Keep last 100 log entries
+    this.currentLogLevel = DEFAULT_LOG_LEVEL;
+    this.loadLogLevel();
   }
 
-  log(message, type = 'info') {
+  async loadLogLevel() {
+    try {
+      const level = await AsyncStorage.getItem(LOG_LEVEL_KEY);
+      if (level !== null) {
+        this.currentLogLevel = parseInt(level, 10);
+      }
+    } catch (error) {
+      console.error('Failed to load log level:', error);
+    }
+  }
+
+  async setLogLevel(level) {
+    try {
+      this.currentLogLevel = level;
+      await AsyncStorage.setItem(LOG_LEVEL_KEY, level.toString());
+    } catch (error) {
+      console.error('Failed to save log level:', error);
+    }
+  }
+
+  getLogLevel() {
+    return this.currentLogLevel;
+  }
+
+  shouldLog(messageLevel) {
+    return messageLevel <= this.currentLogLevel;
+  }
+
+  log(message, type = 'info', level = LOG_LEVELS.INFO.value) {
+    // Check if this log level should be captured
+    if (!this.shouldLog(level)) {
+      return;
+    }
+
     const entry = {
       timestamp: new Date().toISOString(),
       type,
       message: String(message),
+      level,
     };
 
     this.logs.push(entry);
@@ -49,16 +98,24 @@ class DebugLogger {
     console.log(`[Debug ${type.toUpperCase()}] ${message}`);
   }
 
-  error(message) {
-    this.log(message, 'error');
+  debug(message) {
+    this.log(message, 'debug', LOG_LEVELS.DEBUG.value);
   }
 
   info(message) {
-    this.log(message, 'info');
+    this.log(message, 'info', LOG_LEVELS.INFO.value);
   }
 
   success(message) {
-    this.log(message, 'success');
+    this.log(message, 'success', LOG_LEVELS.SUCCESS.value);
+  }
+
+  warning(message) {
+    this.log(message, 'warning', LOG_LEVELS.WARNING.value);
+  }
+
+  error(message) {
+    this.log(message, 'error', LOG_LEVELS.ERROR.value);
   }
 
   /**
@@ -87,16 +144,32 @@ class DebugLogger {
   }
 
   /**
+   * Map widget log type to log level value
+   */
+  getLogLevelFromType(type) {
+    const typeMap = {
+      'error': LOG_LEVELS.ERROR.value,
+      'warning': LOG_LEVELS.WARNING.value,
+      'success': LOG_LEVELS.SUCCESS.value,
+      'info': LOG_LEVELS.INFO.value,
+      'debug': LOG_LEVELS.DEBUG.value,
+    };
+    return typeMap[type] || LOG_LEVELS.INFO.value;
+  }
+
+  /**
    * Get all logs (app + widget) merged and sorted by timestamp
+   * Filters logs based on current log level
    * @returns {Promise<Array>} Array of all log entries sorted newest first
    */
   async getAllLogs() {
     const widgetLogs = await this.getWidgetLogs();
 
-    // Mark widget logs with source
+    // Mark widget logs with source and add level if missing
     const markedWidgetLogs = widgetLogs.map(log => ({
       ...log,
       source: 'widget',
+      level: log.level ?? this.getLogLevelFromType(log.type),
     }));
 
     // Mark app logs with source
@@ -105,10 +178,12 @@ class DebugLogger {
       source: 'app',
     }));
 
-    // Merge and sort by timestamp (newest first)
-    const allLogs = [...markedAppLogs, ...markedWidgetLogs].sort((a, b) => {
-      return new Date(b.timestamp) - new Date(a.timestamp);
-    });
+    // Merge, filter by log level, and sort by timestamp (newest first)
+    const allLogs = [...markedAppLogs, ...markedWidgetLogs]
+      .filter(log => log.level <= this.currentLogLevel)
+      .sort((a, b) => {
+        return new Date(b.timestamp) - new Date(a.timestamp);
+      });
 
     return allLogs;
   }
