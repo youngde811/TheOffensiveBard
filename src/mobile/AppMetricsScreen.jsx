@@ -1,0 +1,257 @@
+// App Metrics Screen - System-level metrics and visualizations
+
+// MIT License
+
+// Copyright (c) 2023 David Young
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+// documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+// rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+// Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+// WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+import React, { useState } from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+
+import { useTheme } from '../contexts/ThemeContext';
+import PressableOpacity from '../components/PressableOpacity';
+import InsultsHeader from '../components/InsultsHeader';
+import TimelinePreview from '../components/TimelinePreview';
+
+export default function AppMetricsScreen({ appConfig, setDismiss }) {
+  const { colors } = useTheme();
+  const [activeSection, setActiveSection] = useState('timeline');
+
+  const sections = [
+    { id: 'timeline', label: 'Widget Timeline', icon: '📈' },
+    { id: 'state', label: 'App State', icon: '🔄', comingSoon: true },
+    { id: 'performance', label: 'Performance', icon: '⚡', comingSoon: true },
+    { id: 'logs', label: 'Log Stats', icon: '📊', comingSoon: true },
+  ];
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
+        <StatusBar style="auto" />
+
+        {/* Header */}
+        <View style={{ zIndex: 1000, elevation: 10, marginTop: 4 }}>
+          <InsultsHeader appConfig={appConfig} />
+        </View>
+
+        {/* Page Title */}
+        <View style={[styles.titleBar, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.title, { color: colors.text }]}>📊 App Metrics</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+            System visualizations and technical insights
+          </Text>
+        </View>
+
+        {/* Section Tabs */}
+        <ScrollView
+          horizontal
+          style={[styles.tabBar, { backgroundColor: colors.surface }]}
+          contentContainerStyle={styles.tabBarContent}
+          showsHorizontalScrollIndicator={false}
+        >
+          {sections.map((section) => (
+            <PressableOpacity
+              key={section.id}
+              style={[
+                styles.tab,
+                activeSection === section.id && styles.tabActive,
+                activeSection === section.id && { backgroundColor: colors.primary }
+              ]}
+              onPress={() => !section.comingSoon && setActiveSection(section.id)}
+            >
+              <Text style={styles.tabIcon}>{section.icon}</Text>
+              <Text
+                style={[
+                  styles.tabLabel,
+                  activeSection === section.id && styles.tabLabelActive,
+                  { color: activeSection === section.id ? 'white' : colors.text }
+                ]}
+              >
+                {section.label}
+              </Text>
+              {section.comingSoon && (
+                <Text style={[styles.comingSoonBadge, { color: colors.textMuted }]}>
+                  Soon
+                </Text>
+              )}
+            </PressableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Content Area */}
+        <View style={styles.content}>
+          {activeSection === 'timeline' && <TimelinePreview />}
+
+          {activeSection === 'state' && (
+            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
+                🔄 App State History
+              </Text>
+              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
+                Timeline visualization of foreground/background transitions
+              </Text>
+              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
+                Coming Soon!
+              </Text>
+            </View>
+          )}
+
+          {activeSection === 'performance' && (
+            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
+                ⚡ Performance Metrics
+              </Text>
+              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
+                Cold start time, memory usage, storage stats
+              </Text>
+              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
+                Coming Soon!
+              </Text>
+            </View>
+          )}
+
+          {activeSection === 'logs' && (
+            <View style={[styles.placeholder, { backgroundColor: colors.surface }]}>
+              <Text style={[styles.placeholderText, { color: colors.textMuted }]}>
+                📊 Log Statistics
+              </Text>
+              <Text style={[styles.placeholderSubtext, { color: colors.textMuted }]}>
+                Error rates, log volume charts, top log types
+              </Text>
+              <Text style={[styles.comingSoonText, { color: colors.primary }]}>
+                Coming Soon!
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Done Button */}
+        <View style={styles.footer}>
+          <PressableOpacity
+            style={[styles.doneButton, { backgroundColor: colors.primary }]}
+            onPress={setDismiss}
+          >
+            <Text style={styles.doneButtonText}>Done</Text>
+          </PressableOpacity>
+        </View>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+  },
+  titleBar: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 13,
+  },
+  tabBar: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+  },
+  tabBarContent: {
+    padding: 12,
+    gap: 8,
+  },
+  tab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    gap: 6,
+    backgroundColor: '#f5f5f5',
+  },
+  tabActive: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  tabIcon: {
+    fontSize: 16,
+  },
+  tabLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  tabLabelActive: {
+    color: 'white',
+  },
+  comingSoonBadge: {
+    fontSize: 10,
+    fontStyle: 'italic',
+    marginLeft: 4,
+  },
+  content: {
+    flex: 1,
+  },
+  placeholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  placeholderText: {
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  placeholderSubtext: {
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  comingSoonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    fontStyle: 'italic',
+  },
+  footer: {
+    padding: 16,
+  },
+  doneButton: {
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  doneButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+});

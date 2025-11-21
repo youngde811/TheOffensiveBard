@@ -49,6 +49,7 @@ import FavoriteInsults from './src/mobile/FavoriteInsults';
 import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 import DebugScreen from './src/mobile/DebugScreen';
+import AppMetricsScreen from './src/mobile/AppMetricsScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const appConfig = require("./assets/appconfig.json");
@@ -74,6 +75,14 @@ function SettingsMainPage() {
 
   return (
     <Settings appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
+  );
+}
+
+function AppMetricsMainPage() {
+  const navigation = useNavigation();
+
+  return (
+    <AppMetricsScreen appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -116,6 +125,12 @@ function ThemedDrawerNavigator() {
     title: "Settings",
     iconName: "cog",
     component: SettingsMainPage
+  },
+  {
+    key: "AppMetricsMainPage",
+    title: "App Metrics",
+    iconName: "bar-graph",
+    component: AppMetricsMainPage
   },
   {
     key: "DebugMainPage",
