@@ -30,7 +30,11 @@ import { AppProvider } from './src/contexts/AppContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 
-import { Alert } from 'react-native';
+import { Alert, AppState } from 'react-native';
+import { recordAppStateTransition, recordColdStart } from './src/utils/metricsCollector';
+
+// Track cold start time
+const appStartTime = Date.now();
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 // Keep the splash screen visible while we load fonts
@@ -49,6 +53,7 @@ import FavoriteInsults from './src/mobile/FavoriteInsults';
 import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 import DebugScreen from './src/mobile/DebugScreen';
+import AppMetricsScreen from './src/mobile/AppMetricsScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 
 const appConfig = require("./assets/appconfig.json");
@@ -74,6 +79,14 @@ function SettingsMainPage() {
 
   return (
     <Settings appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
+  );
+}
+
+function AppMetricsMainPage() {
+  const navigation = useNavigation();
+
+  return (
+    <AppMetricsScreen appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -116,6 +129,12 @@ function ThemedDrawerNavigator() {
     title: "Settings",
     iconName: "cog",
     component: SettingsMainPage
+  },
+  {
+    key: "AppMetricsMainPage",
+    title: "App Metrics",
+    iconName: "bar-graph",
+    component: AppMetricsMainPage
   },
   {
     key: "DebugMainPage",
@@ -181,8 +200,27 @@ export default function App() {
   React.useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
+
+      // Record cold start time
+      const coldStartDuration = Date.now() - appStartTime;
+      recordColdStart(coldStartDuration);
     }
   }, [fontsLoaded]);
+
+  // Track app state transitions for metrics
+  React.useEffect(() => {
+    // Record initial state
+    recordAppStateTransition(AppState.currentState);
+
+    // Listen for state changes
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      recordAppStateTransition(nextAppState);
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   if (!fontsLoaded) {
     return null;
