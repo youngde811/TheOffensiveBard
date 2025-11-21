@@ -95,6 +95,7 @@ export default function PerformanceMetrics() {
     <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -225,6 +226,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   loadingText: {
     textAlign: 'center',

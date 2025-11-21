@@ -115,6 +115,7 @@ export default function TimelinePreview() {
       {/* Timeline List */}
       <ScrollView
         style={styles.scrollView}
+        contentContainerStyle={styles.scrollViewContent}
         refreshControl={
           <RefreshControl
             refreshing={isRefreshing}
@@ -194,6 +195,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollViewContent: {
+    paddingBottom: 20,
   },
   timelineEntry: {
     padding: 12,
