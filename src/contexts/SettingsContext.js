@@ -19,8 +19,12 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { debugLogger, LOG_LEVELS } from '../utils/debugLogger';
 
 const SettingsContext = createContext();
+
+// Export LOG_LEVELS for use in Settings UI
+export { LOG_LEVELS };
 
 // Easter egg frequency percentages
 export const EASTER_EGG_FREQUENCY = {
@@ -43,6 +47,7 @@ const SETTINGS_KEYS = {
   SOUND_VOLUME: '@insolentbard:settings:soundVolume',
   WIDGET_BACKGROUND_COLOR: '@insolentbard:settings:widgetBackgroundColor',
   WIDGET_BACKGROUND_OPACITY: '@insolentbard:settings:widgetBackgroundOpacity',
+  LOG_LEVEL: '@insolentbard:settings:logLevel',
 };
 
 // Default sound volume (30%)
@@ -59,19 +64,21 @@ export function SettingsProvider({ children }) {
   const [soundVolume, setSoundVolume] = useState(DEFAULT_SOUND_VOLUME);
   const [widgetBackgroundColor, setWidgetBackgroundColor] = useState(DEFAULT_WIDGET_BACKGROUND_COLOR);
   const [widgetBackgroundOpacity, setWidgetBackgroundOpacity] = useState(DEFAULT_WIDGET_BACKGROUND_OPACITY);
+  const [logLevel, setLogLevel] = useState(LOG_LEVELS.INFO.value);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load settings from AsyncStorage on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const [haptics, frequency, sound, volume, bgColor, bgOpacity] = await Promise.all([
+        const [haptics, frequency, sound, volume, bgColor, bgOpacity, level] = await Promise.all([
           AsyncStorage.getItem(SETTINGS_KEYS.HAPTICS_ENABLED),
           AsyncStorage.getItem(SETTINGS_KEYS.EASTER_EGG_FREQUENCY),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_EFFECT),
           AsyncStorage.getItem(SETTINGS_KEYS.SOUND_VOLUME),
           AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_COLOR),
           AsyncStorage.getItem(SETTINGS_KEYS.WIDGET_BACKGROUND_OPACITY),
+          AsyncStorage.getItem(SETTINGS_KEYS.LOG_LEVEL),
         ]);
 
         if (haptics !== null) {
@@ -91,6 +98,12 @@ export function SettingsProvider({ children }) {
         }
         if (bgOpacity !== null) {
           setWidgetBackgroundOpacity(parseInt(bgOpacity, 10));
+        }
+        if (level !== null) {
+          const levelValue = parseInt(level, 10);
+          setLogLevel(levelValue);
+          // Also update debugLogger
+          debugLogger.setLogLevel(levelValue);
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -176,6 +189,20 @@ export function SettingsProvider({ children }) {
     }
   }, []);
 
+  // Set log level
+  const setLogLevelPref = useCallback(async (level) => {
+    try {
+      setLogLevel(level);
+
+      // Update debugLogger immediately
+      await debugLogger.setLogLevel(level);
+
+      await AsyncStorage.setItem(SETTINGS_KEYS.LOG_LEVEL, level.toString());
+    } catch (error) {
+      console.error('Error saving log level:', error);
+    }
+  }, []);
+
   const value = {
     hapticsEnabled,
     toggleHaptics,
@@ -190,6 +217,8 @@ export function SettingsProvider({ children }) {
     setWidgetBackgroundColor: setWidgetBackgroundColorPref,
     widgetBackgroundOpacity,
     setWidgetBackgroundOpacity: setWidgetBackgroundOpacityPref,
+    logLevel,
+    setLogLevel: setLogLevelPref,
     isLoading,
   };
 

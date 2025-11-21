@@ -44,7 +44,10 @@ class WidgetLogger {
             return
         }
 
-        let timestamp = ISO8601DateFormatter().string(from: Date())
+        // Use ISO8601 format with fractional seconds for proper sorting
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions.insert(.withFractionalSeconds)
+        let timestamp = formatter.string(from: Date())
 
         let logEntry: [String: String] = [
             "timestamp": timestamp,
