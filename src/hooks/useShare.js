@@ -34,8 +34,7 @@ export const useShare = () => {
         ...options
       };
 
-      // iOS supports 'url' separately, Android includes it in message
-      if (Platform.OS === 'ios' && options.url) {
+      if (options.url) {
         shareOptions.url = options.url;
       }
 
@@ -43,16 +42,13 @@ export const useShare = () => {
 
       if (result.action === Share.sharedAction) {
         if (result.activityType) {
-          // Shared with specific activity (iOS)
           console.log(`Shared via ${result.activityType}`);
         } else {
-          // Shared (Android)
           console.log('Content shared successfully');
         }
         
         return true;
       } else if (result.action === Share.dismissedAction) {
-        // User dismissed the share sheet
         console.log('Share cancelled');
         
         return false;

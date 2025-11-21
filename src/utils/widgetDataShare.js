@@ -42,12 +42,6 @@ const DEFAULT_WIDGET_BACKGROUND_COLOR = '#f1eee5';
  * @param {Array} insults - Array of all insult objects from insults-10k.json
  */
 export async function syncInsultDatabaseWithWidget(insults) {
-  if (Platform.OS !== 'ios') {
-    debugLogger.info('Skipping sync - not iOS');
-    
-    return;
-  }
-
   // Check if SharedGroupPreferences is available (required)
   if (!SharedGroupPreferences) {
     debugLogger.error('SharedGroupPreferences module not available');

@@ -17,8 +17,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-// NB: The color manipulation code here is courtesy of Claude-4. It understands graphics way better than
-// I do.
+// NB: The color manipulation code here is courtesy of Claude Sonnet 4. It understands graphics and color algorithms
+// way better than I do.
 
 import WidgetKit
 import SwiftUI
@@ -47,6 +47,7 @@ class WidgetLogger {
         // Use ISO8601 format with fractional seconds for proper sorting
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions.insert(.withFractionalSeconds)
+
         let timestamp = formatter.string(from: Date())
 
         let logEntry: [String: String] = [
@@ -57,6 +58,7 @@ class WidgetLogger {
 
         // Read existing logs
         var logs: [[String: String]] = []
+
         if let existingLogsData = sharedDefaults.string(forKey: logsKey),
            let existingLogsJson = existingLogsData.data(using: .utf8),
            let existingLogs = try? JSONDecoder().decode([[String: String]].self, from: existingLogsJson) {

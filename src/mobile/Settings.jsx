@@ -110,7 +110,9 @@ export default function Settings({ appConfig, setDismiss }) {
   }, [setWidgetBackgroundColor, haptics]);
 
   const handleApplyWidgetSettings = useCallback(async () => {
-    if (!hasWidgetSettingsChanged) return;
+    if (!hasWidgetSettingsChanged) {
+      return;
+    }
 
     console.log('🔵 Apply button pressed - starting widget settings sync');
     

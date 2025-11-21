@@ -42,6 +42,7 @@ export default function DebugScreen({ setDismiss }) {
   useEffect(() => {
     const loadLogs = async () => {
       const allLogs = await debugLogger.getAllLogs();
+
       setLogs(allLogs);
     };
 

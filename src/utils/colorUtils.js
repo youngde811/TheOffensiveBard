@@ -17,6 +17,8 @@
 // COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 // OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+// All code here courtesy of Claude Sonnet  4.
+
 /**
  * Determine if a hex color is considered "dark" using relative luminance
  * Based on WCAG (Web Content Accessibility Guidelines) formula

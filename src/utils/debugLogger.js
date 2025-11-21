@@ -200,12 +200,9 @@ class DebugLogger {
    * Clear widget logs from shared UserDefaults
    */
   async clearWidgetLogs() {
-    if (Platform.OS !== 'ios') {
-      return;
-    }
-
     try {
       await SharedGroupPreferences.setItem(WIDGET_LOGS_KEY, JSON.stringify([]), APP_GROUP);
+      
       console.log('Widget logs cleared');
     } catch (error) {
       console.error('Failed to clear widget logs:', error);
@@ -217,6 +214,7 @@ class DebugLogger {
    */
   async clearAllLogs() {
     this.clear();
+    
     await this.clearWidgetLogs();
   }
 
