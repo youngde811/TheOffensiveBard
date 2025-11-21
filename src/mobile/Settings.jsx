@@ -490,7 +490,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.8.4</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.9.1</Text>
             </View>
 
             <View style={styles.aboutRow}>

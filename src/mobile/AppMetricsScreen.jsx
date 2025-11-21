@@ -23,8 +23,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { useTheme } from '../contexts/ThemeContext';
-import PressableOpacity from '../components/PressableOpacity';
-import InsultsHeader from '../components/InsultsHeader';
+import PressableOpacity from './PressableOpacity';
+import InsultsHeader from './InsultsHeader';
 import TimelinePreview from '../components/TimelinePreview';
 
 export default function AppMetricsScreen({ appConfig, setDismiss }) {
