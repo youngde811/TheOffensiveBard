@@ -3,12 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		6C1EFDF92ED4CEEF00407E62 /* SystemMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C1EFDF72ED4CEEF00407E62 /* SystemMetrics.swift */; };
+		6C1EFDFA2ED4CEEF00407E62 /* SystemMetrics.m in Sources */ = {isa = PBXBuildFile; fileRef = 6C1EFDF62ED4CEEF00407E62 /* SystemMetrics.m */; };
 		6C3A5C282EAAAEF000717BF2 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C3A5C272EAAAEF000717BF2 /* WidgetKit.framework */; };
 		6C3A5C2A2EAAAEF000717BF2 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6C3A5C292EAAAEF000717BF2 /* SwiftUI.framework */; };
 		6C3A5C372EAAAEF200717BF2 /* InsultWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 6C3A5C262EAAAEF000717BF2 /* InsultWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -44,6 +46,8 @@
 		13B07F961A680F5B00A75B9A /* TheInsolentBard.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TheInsolentBard.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = TheInsolentBard/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TheInsolentBard/Info.plist; sourceTree = "<group>"; };
+		6C1EFDF62ED4CEEF00407E62 /* SystemMetrics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SystemMetrics.m; sourceTree = "<group>"; };
+		6C1EFDF72ED4CEEF00407E62 /* SystemMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemMetrics.swift; sourceTree = "<group>"; };
 		6C3A5C262EAAAEF000717BF2 /* InsultWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = InsultWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6C3A5C272EAAAEF000717BF2 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		6C3A5C292EAAAEF000717BF2 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -112,6 +116,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		6C1EFDF82ED4CEEF00407E62 /* SystemMetrics */ = {
+			isa = PBXGroup;
+			children = (
+				6C1EFDF62ED4CEEF00407E62 /* SystemMetrics.m */,
+				6C1EFDF72ED4CEEF00407E62 /* SystemMetrics.swift */,
+			);
+			path = SystemMetrics;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -122,6 +135,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				6C1EFDF82ED4CEEF00407E62 /* SystemMetrics */,
 				6C3A5C3F2EAAAF9300717BF2 /* InsultWidgetExtension.entitlements */,
 				13B07FAE1A68108700A75B9A /* TheInsolentBard */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -324,6 +338,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6C1EFDF92ED4CEEF00407E62 /* SystemMetrics.swift in Sources */,
+				6C1EFDFA2ED4CEEF00407E62 /* SystemMetrics.m in Sources */,
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
