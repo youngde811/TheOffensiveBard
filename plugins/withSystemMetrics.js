@@ -24,42 +24,36 @@ const path = require("path");
  * Expo config plugin to add SystemMetrics native module files to Xcode project
  */
 const withSystemMetrics = (config) => {
-  return withXcodeProject(config, async (config) => {
+  return withXcodeProject(config, (config) => {
     const xcodeProject = config.modResults;
-    const projectRoot = config.modRequest.projectRoot;
 
-    // Paths to the SystemMetrics files
+    // Paths to the SystemMetrics files relative to ios directory
     const swiftFile = path.join("SystemMetrics", "SystemMetrics.swift");
     const objcFile = path.join("SystemMetrics", "SystemMetrics.m");
 
     // Get the main app target
-    const targets = xcodeProject.getTargetsByType("application");
-    if (targets.length === 0) {
-      console.warn("No application target found in Xcode project");
+    const target = xcodeProject.getFirstTarget();
+    if (!target) {
+      console.warn("⚠️  SystemMetrics: No target found in Xcode project");
       return config;
     }
 
-    const target = targets[0];
     const targetUuid = target.uuid;
 
     // Add Swift file to project
     if (!xcodeProject.hasFile(swiftFile)) {
-      const swiftFileRef = xcodeProject.addSourceFile(
-        swiftFile,
-        { target: targetUuid },
-        xcodeProject.findPBXGroupKey({ name: "TheInsolentBard" })
-      );
-      console.log("Added SystemMetrics.swift to Xcode project");
+      xcodeProject.addSourceFile(swiftFile, { target: targetUuid });
+      console.log("✓ SystemMetrics: Added SystemMetrics.swift");
+    } else {
+      console.log("✓ SystemMetrics: SystemMetrics.swift already in project");
     }
 
     // Add Objective-C bridge file to project
     if (!xcodeProject.hasFile(objcFile)) {
-      const objcFileRef = xcodeProject.addSourceFile(
-        objcFile,
-        { target: targetUuid },
-        xcodeProject.findPBXGroupKey({ name: "TheInsolentBard" })
-      );
-      console.log("Added SystemMetrics.m to Xcode project");
+      xcodeProject.addSourceFile(objcFile, { target: targetUuid });
+      console.log("✓ SystemMetrics: Added SystemMetrics.m");
+    } else {
+      console.log("✓ SystemMetrics: SystemMetrics.m already in project");
     }
 
     return config;
