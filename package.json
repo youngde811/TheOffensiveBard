@@ -1,6 +1,6 @@
 {
   "name": "TheOffensiveBard",
-  "version": "2.9.8",
+  "version": "2.9.9",
   "private": true,
   "scripts": {
     "android": "expo run:android",

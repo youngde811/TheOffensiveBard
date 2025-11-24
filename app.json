@@ -2,7 +2,7 @@
   "expo": {
     "name": "The Insolent Bard",
     "slug": "theoffensivebard",
-    "version": "2.9.8",
+    "version": "2.9.9",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -53,7 +53,8 @@
     "owner": "cbr500r2911",
     "plugins": [
       "expo-font",
-      "./plugins/withInsultWidget"
+      "./plugins/withInsultWidget",
+      "./plugins/withSystemMetrics"
     ]
   }
 }
