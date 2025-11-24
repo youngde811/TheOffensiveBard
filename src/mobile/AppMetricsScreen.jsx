@@ -29,6 +29,7 @@ import TimelinePreview from '../components/TimelinePreview';
 import AppStateHistory from '../components/AppStateHistory';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import LogStatistics from '../components/LogStatistics';
+import SystemMetrics from '../components/SystemMetrics';
 
 export default function AppMetricsScreen({ appConfig, setDismiss }) {
   const { colors } = useTheme();
@@ -38,6 +39,7 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
     { id: 'timeline', label: 'Widget Timeline', icon: '📈' },
     { id: 'state', label: 'App State', icon: '🔄' },
     { id: 'performance', label: 'Performance', icon: '⚡' },
+    { id: 'system', label: 'System', icon: '📱' },
     { id: 'logs', label: 'Log Stats', icon: '📊' },
   ];
 
@@ -100,6 +102,7 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
           {activeSection === 'timeline' && <TimelinePreview />}
           {activeSection === 'state' && <AppStateHistory />}
           {activeSection === 'performance' && <PerformanceMetrics />}
+          {activeSection === 'system' && <SystemMetrics />}
           {activeSection === 'logs' && <LogStatistics />}
         </View>
 
