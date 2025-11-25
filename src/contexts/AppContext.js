@@ -37,8 +37,11 @@ export const AppProvider = ({ children }) => {
   const [season, year] = Utilities.thisSeason();
   const [favorites, setFavorites] = useState([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+  const [creations, setCreations] = useState([]);
+  const [isLoadingCreations, setIsLoadingCreations] = useState(false);
 
   const keyPrefix = '@insolentbard:';
+  const creationKeyPrefix = '@insolentbard:creation:';
   const smstag = 'sms://&body=';
 
   const fetchFavorites = useCallback(async () => {
@@ -114,6 +117,122 @@ export const AppProvider = ({ children }) => {
     }
   }, [fetchFavorites]);
 
+  // Creations functions
+  const fetchCreations = useCallback(async () => {
+    setIsLoadingCreations(true);
+
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const creationKeys = keys.filter(key => key.startsWith(creationKeyPrefix));
+      const creationsList = [];
+
+      for (const key of creationKeys) {
+        try {
+          const creation = await AsyncStorage.getItem(key);
+
+          if (creation) {
+            const parsed = JSON.parse(creation);
+
+            if (parsed && parsed.id !== undefined && parsed.insult) {
+              creationsList.push(parsed);
+            } else {
+              console.warn('Removing corrupted creation:', key);
+              await AsyncStorage.removeItem(key);
+            }
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse creation, removing:', key, parseError.message);
+          await AsyncStorage.removeItem(key);
+        }
+      }
+
+      // Sort by createdAt descending (newest first)
+      creationsList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setCreations(creationsList);
+    } catch (error) {
+      console.error('Error fetching creations:', error);
+      setCreations([]);
+    } finally {
+      setIsLoadingCreations(false);
+    }
+  }, []);
+
+  const addCreation = useCallback(async (insultText) => {
+    // Check for duplicate
+    const existingCreation = creations.find(c => c.insult === insultText);
+    if (existingCreation) {
+      return { success: false, reason: 'duplicate' };
+    }
+
+    // Guard against AsyncStorage not being ready
+    if (!AsyncStorage) {
+      console.error('AsyncStorage not available');
+      return { success: false, reason: 'error' };
+    }
+
+    const id = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    const newCreation = {
+      id,
+      insult: insultText,
+      createdAt: Date.now(),
+    };
+
+    const key = creationKeyPrefix + id;
+
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(newCreation));
+      await fetchCreations();
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error adding creation:', error);
+
+      return { success: false, reason: 'error' };
+    }
+  }, [creations, fetchCreations]);
+
+  const removeCreation = useCallback(async (item) => {
+    const key = creationKeyPrefix + item.id;
+
+    try {
+      await AsyncStorage.removeItem(key);
+      await fetchCreations();
+
+      return true;
+    } catch (error) {
+      console.error('Error removing creation:', error);
+
+      return false;
+    }
+  }, [fetchCreations]);
+
+  const clearAllCreations = useCallback(async () => {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      const creationKeys = keys.filter(key => key.startsWith(creationKeyPrefix));
+
+      await AsyncStorage.multiRemove(creationKeys);
+      await fetchCreations();
+
+      return true;
+    } catch (error) {
+      console.error('Error clearing creations:', error);
+
+      return false;
+    }
+  }, [fetchCreations]);
+
+  const copyCreationToFavorites = useCallback(async (creation) => {
+    // Generate new ID for favorite to avoid conflicts
+    const newId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    const favoriteItem = {
+      id: newId,
+      insult: creation.insult,
+    };
+
+    return await addFavorite(favoriteItem);
+  }, [addFavorite]);
+
   const appConstants = {
     season,
     year,
@@ -124,6 +243,13 @@ export const AppProvider = ({ children }) => {
     fetchFavorites,
     addFavorite,
     removeFavorite,
+    creations,
+    isLoadingCreations,
+    fetchCreations,
+    addCreation,
+    removeCreation,
+    clearAllCreations,
+    copyCreationToFavorites,
   };
 
   return (
