@@ -50,6 +50,7 @@ import RNRestart from 'react-native-restart';
 
 import InsultPage from './src/mobile/InsultPage';
 import FavoriteInsults from './src/mobile/FavoriteInsults';
+import MixYourOwn from './src/mobile/MixYourOwn';
 import Settings from './src/mobile/Settings';
 import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 import DebugScreen from './src/mobile/DebugScreen';
@@ -71,6 +72,14 @@ function FavoritesMainPage() {
 
   return (
     <FavoriteInsults appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
+  );
+}
+
+function MixYourOwnMainPage() {
+  const navigation = useNavigation();
+
+  return (
+    <MixYourOwn appConfig={appConfig} setDismiss={() => navigation.jumpTo(initialRoute)} />
   );
 }
 
@@ -123,6 +132,12 @@ function ThemedDrawerNavigator() {
     title: "Favorite Insults",
     iconName: "heart-outlined",
     component: FavoritesMainPage
+  },
+  {
+    key: "MixYourOwnMainPage",
+    title: "Mix Your Own",
+    iconName: "lab-flask",
+    component: MixYourOwnMainPage
   },
   {
     key: "SettingsMainPage",

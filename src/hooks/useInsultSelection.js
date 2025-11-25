@@ -40,8 +40,9 @@ export function useInsultSelection(mode = 'main') {
   const [selectedInsults, setSelectedInsults] = useState([]);
 
   // Determine comparison key based on mode
+  // 'favorites' and 'creations' use item.id, 'main' uses item.insult
   const getKey = useCallback((item) => {
-    return mode === 'favorites' ? item.id : item.insult;
+    return (mode === 'favorites' || mode === 'creations') ? item.id : item.insult;
   }, [mode]);
 
   // Extract insult text from item
