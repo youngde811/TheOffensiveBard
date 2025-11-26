@@ -19,7 +19,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.bosshog811.TheInsolentBard",
-      "buildNumber": "2.11.3",
+      "buildNumber": "2.11.4",
       "requireFullScreen": true,
       "icon": "./assets/icon-ios.png",
       "splash": {
