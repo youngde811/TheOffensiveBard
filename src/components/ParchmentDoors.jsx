@@ -30,7 +30,7 @@ import {
   Pressable,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -117,7 +117,7 @@ export default function ParchmentDoors({ insult, onOpen, visible }) {
           onPress={handleOpen}
         >
           <View style={styles.latchInner}>
-            <Ionicons name="lock-open-outline" size={28} color="#4a3728" />
+            <MaterialCommunityIcons name="fleur-de-lis" size={22} color="#4a3728" />
           </View>
         </Pressable>
       </View>
