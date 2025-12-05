@@ -21,7 +21,7 @@
 
 import 'react-native-gesture-handler';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useFonts } from 'expo-font';
 import { IMFellEnglish_400Regular } from '@expo-google-fonts/im-fell-english';
 import * as SplashScreen from 'expo-splash-screen';
@@ -30,7 +30,7 @@ import { AppProvider } from './src/contexts/AppContext';
 import { ThemeProvider, useTheme } from './src/contexts/ThemeContext';
 import { SettingsProvider } from './src/contexts/SettingsContext';
 
-import { Alert, AppState } from 'react-native';
+import { Alert, AppState, View, StyleSheet } from 'react-native';
 import { recordAppStateTransition, recordColdStart } from './src/utils/metricsCollector';
 
 // Track cold start time
@@ -56,8 +56,10 @@ import EmbeddedWebView from './src/mobile/EmbeddedWebView';
 import DebugScreen from './src/mobile/DebugScreen';
 import AppMetricsScreen from './src/mobile/AppMetricsScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import ParchmentDoors from './src/components/ParchmentDoors';
 
 const appConfig = require("./assets/appconfig.json");
+const allInsults = require('./assets/data/insults-10k.json');
 
 const initialRoute = "The Insolent Bard";
 
@@ -212,6 +214,16 @@ export default function App() {
     'IMFellEnglish': IMFellEnglish_400Regular,
   });
 
+  // Parchment Doors state
+  const [doorsOpen, setDoorsOpen] = useState(false);
+  const [featuredInsult, setFeaturedInsult] = useState('');
+
+  // Pick random insult for parchment doors on mount
+  React.useEffect(() => {
+    const randomIndex = Math.floor(Math.random() * allInsults.insults.length);
+    setFeaturedInsult(allInsults.insults[randomIndex].insult);
+  }, []);
+
   React.useEffect(() => {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
@@ -290,9 +302,18 @@ export default function App() {
         <SettingsProvider>
           <AppProvider>
             <SafeAreaProvider>
-              <NavigationContainer>
-                <ThemedDrawerNavigator />
-              </NavigationContainer>
+              <View style={appStyles.container}>
+                <NavigationContainer>
+                  <ThemedDrawerNavigator />
+                </NavigationContainer>
+
+                {/* Parchment Doors - renders above everything including header */}
+                <ParchmentDoors
+                  insult={featuredInsult}
+                  onOpen={() => setDoorsOpen(true)}
+                  visible={!doorsOpen && fontsLoaded}
+                />
+              </View>
             </SafeAreaProvider>
           </AppProvider>
         </SettingsProvider>
@@ -300,3 +321,9 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
+const appStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});

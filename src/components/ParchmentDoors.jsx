@@ -65,7 +65,7 @@ export default function ParchmentDoors({ insult, onOpen, visible }) {
   }
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={styles.container}>
       {/* Left Door */}
       <Animated.View
         style={[
@@ -96,8 +96,13 @@ export default function ParchmentDoors({ insult, onOpen, visible }) {
         />
       </Animated.View>
 
-      {/* Content overlay (insult text and latch) */}
-      <View style={styles.contentOverlay} pointerEvents="box-none">
+      {/* Content overlay (title, insult text, and latch) */}
+      <View style={[styles.contentOverlay, { paddingTop: insets.top }]} pointerEvents="box-none">
+        {/* App Title */}
+        <View style={styles.titleContainer}>
+          <Text style={styles.titleText}>The Insolent Bard</Text>
+        </View>
+
         {/* Featured Insult */}
         <View style={styles.insultContainer}>
           <Text style={styles.insultText}>{insult}</Text>
@@ -160,8 +165,21 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+  titleContainer: {
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
+  titleText: {
+    fontFamily: 'BlackChancery',
+    fontSize: 32,
+    color: '#4a3728',
+    textAlign: 'center',
+    textShadowColor: 'rgba(255, 255, 255, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
   insultContainer: {
-    marginTop: '40%',
+    marginTop: '25%',
     paddingHorizontal: 30,
   },
   insultText: {

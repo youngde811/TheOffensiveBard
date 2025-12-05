@@ -27,7 +27,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 
 import InsultEmAll from './InsultEmAll';
-import ParchmentDoors from '../components/ParchmentDoors';
 
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -64,8 +63,6 @@ export default function TheOffensiveBardInsults({ appConfig }) {
   const { colors, isDark } = useTheme();
   const [insultData, setInsultData] = useState([]);
   const [appIsReady, setAppIsReady] = useState(false);
-  const [doorsOpen, setDoorsOpen] = useState(false);
-  const [featuredInsult, setFeaturedInsult] = useState('');
 
   const [fontsLoaded] = useFonts({
     'Inter-Black': require('../../assets/fonts/Inter-Black.otf')
@@ -76,10 +73,6 @@ export default function TheOffensiveBardInsults({ appConfig }) {
     async function prepare() {
       const sample = getRandomSample(allInsults.insults, SAMPLE_SIZE);
       setInsultData(sample);
-
-      // Pick a random insult for the parchment doors
-      const randomIndex = Math.floor(Math.random() * allInsults.insults.length);
-      setFeaturedInsult(allInsults.insults[randomIndex].insult);
 
       // Sync full database with widget for autonomous operation
       await syncInsultDatabaseWithWidget(allInsults.insults);
@@ -120,13 +113,6 @@ export default function TheOffensiveBardInsults({ appConfig }) {
           :
           null}
       </SafeAreaView>
-
-      {/* Parchment Doors - shown on cold start only */}
-      <ParchmentDoors
-        insult={featuredInsult}
-        onOpen={() => setDoorsOpen(true)}
-        visible={!doorsOpen && appIsReady}
-      />
     </View>
   );
 }
