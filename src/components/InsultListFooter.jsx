@@ -23,6 +23,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import PressableOpacity from '../mobile/PressableOpacity';
 import styles from '../styles/styles.js';
+import { useTheme } from '../contexts/ThemeContext';
 
 /**
  * Configurable footer component for insult lists
@@ -31,6 +32,7 @@ import styles from '../styles/styles.js';
  * @param {string} mode - 'main' or 'favorites' - determines styling
  */
 export default function InsultListFooter({ buttons, hasSelection, mode = 'main' }) {
+  const { colors } = useTheme();
   const buttonStyle = mode === 'favorites' ? 'favoritesButtons' : 'insultButtons';
   const disabledStyle = mode === 'favorites' ? 'disabledFavoritesButtons' : 'disabledInsultButtons';
   const textStyle = mode === 'favorites' ? 'favoritesButtonText' : 'insultButtonText';
@@ -38,22 +40,24 @@ export default function InsultListFooter({ buttons, hasSelection, mode = 'main' 
 
   return (
     <View style={styles[footerStyle]}>
-      {buttons.map((button, index) => (
-        <React.Fragment key={button.label}>
-          {index > 0 && <View style={styles.spacer} />}
-          <PressableOpacity
-            style={
-              button.requiresSelection && !hasSelection
-                ? styles[disabledStyle]
-                : styles[buttonStyle]
-            }
-            title={button.label}
-            onPress={button.onPress}
-            disabled={button.requiresSelection && !hasSelection}>
-            <Text style={styles[textStyle]}>{button.label}</Text>
-          </PressableOpacity>
-        </React.Fragment>
-      ))}
+      {buttons.map((button, index) => {
+        const isDisabled = button.requiresSelection && !hasSelection;
+        return (
+          <React.Fragment key={button.label}>
+            {index > 0 && <View style={styles.spacer} />}
+            <PressableOpacity
+              style={[
+                styles[isDisabled ? disabledStyle : buttonStyle],
+                isDisabled && { backgroundColor: colors.disabled },
+              ]}
+              title={button.label}
+              onPress={button.onPress}
+              disabled={isDisabled}>
+              <Text style={styles[textStyle]}>{button.label}</Text>
+            </PressableOpacity>
+          </React.Fragment>
+        );
+      })}
     </View>
   );
 }
