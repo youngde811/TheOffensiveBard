@@ -249,28 +249,41 @@ struct InsultProvider: TimelineProvider {
     }
 
     func getSnapshot(in context: Context, completion: @escaping (InsultEntry) -> ()) {
-        WidgetLogger.shared.info("Snapshot requested (isPreview: \(context.isPreview))")
+        WidgetLogger.shared.info("Snapshot requested (isPreview: \(context.isPreview), family: \(context.family))")
 
         // For preview, just show the first entry from our timeline
-        let entries = generateTimelineEntries()
+        let entries = generateTimelineEntries(for: context.family)
 
         completion(entries.first ?? placeholder(in: context))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<InsultEntry>) -> ()) {
-        WidgetLogger.shared.info("Timeline generation started")
+        WidgetLogger.shared.info("Timeline generation started for family: \(context.family)")
 
-        let entries = generateTimelineEntries()
+        let entries = generateTimelineEntries(for: context.family)
 
         // Use .atEnd policy to regenerate timeline after 48 hours
         let timeline = Timeline(entries: entries, policy: .atEnd)
 
-        WidgetLogger.shared.success("Timeline generated with \(entries.count) entries")
+        WidgetLogger.shared.success("Timeline generated with \(entries.count) entries for \(context.family)")
 
         completion(timeline)
     }
 
-    private func generateTimelineEntries() -> [InsultEntry] {
+    /// Returns the maximum insult length for a given widget family
+    /// Lock screen widgets need shorter insults to fit without truncation
+    private func maxInsultLength(for family: WidgetFamily) -> Int {
+        switch family {
+        case .accessoryInline:
+            return 30  // Very short - 6% of insults (612)
+        case .accessoryRectangular:
+            return 40  // Short - 95% of insults (9,501)
+        default:
+            return Int.max  // No limit for home screen widgets
+        }
+    }
+
+    private func generateTimelineEntries(for family: WidgetFamily = .systemMedium) -> [InsultEntry] {
         let sharedDefaults = UserDefaults(suiteName: "group.com.bosshog811.TheInsolentBard")
 
         // Default background settings
@@ -351,14 +364,37 @@ struct InsultProvider: TimelineProvider {
 
         WidgetLogger.shared.info("Widget background color: \(bgColorHex)")
 
+        // Filter insults by length for lock screen widgets
+        let maxLength = maxInsultLength(for: family)
+        let eligibleInsults: [String]
+        if maxLength == Int.max {
+            eligibleInsults = insults
+        } else {
+            eligibleInsults = insults.filter { $0.count <= maxLength }
+            WidgetLogger.shared.info("Filtered to \(eligibleInsults.count) insults (max \(maxLength) chars) for \(family)")
+        }
+
+        // Fallback if no insults meet the criteria
+        guard !eligibleInsults.isEmpty else {
+            WidgetLogger.shared.error("No insults found within length limit of \(maxLength)")
+            return [InsultEntry(
+              date: Date(),
+              insult: "Thou art a knave!",
+              timestamp: "Now",
+              backgroundColor: backgroundColor,
+              backgroundOpacity: 1.0,
+              backgroundColorHex: bgColorHex
+            )]
+        }
+
         // Generate 48 timeline entries (one per hour for 48 hours)
         var entries: [InsultEntry] = []
 
         let now = Date()
         let calendar = Calendar.current
 
-        // Randomly select 48 insults from the database
-        let selectedInsults = selectRandomInsults(from: insults, count: 48)
+        // Randomly select 48 insults from the eligible pool
+        let selectedInsults = selectRandomInsults(from: eligibleInsults, count: 48)
 
         for (index, insult) in selectedInsults.enumerated() {
             // Each entry is 1 hour apart
@@ -532,10 +568,47 @@ struct LargeWidgetView: View {
     }
 }
 
+// MARK: - Lock Screen Widget Views (iOS 16+)
+
+@available(iOSApplicationExtension 16.0, *)
+struct AccessoryRectangularView: View {
+    var entry: InsultEntry
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text("🎭")
+                .font(.system(size: 16))
+            Text(entry.insult)
+                .font(.custom("IMFellEnglish-Regular", size: 13))
+                .lineLimit(2)
+                .minimumScaleFactor(0.8)
+        }
+        .widgetAccentable()
+    }
+}
+
+@available(iOSApplicationExtension 16.0, *)
+struct AccessoryInlineView: View {
+    var entry: InsultEntry
+
+    var body: some View {
+        Text("🎭 \(entry.insult)")
+    }
+}
+
 // MARK: - Widget Configuration
 
 struct InsultWidget: Widget {
     let kind: String = "InsultWidget"
+
+    /// Supported widget families, including lock screen widgets for iOS 16+
+    private var supportedWidgetFamilies: [WidgetFamily] {
+        var families: [WidgetFamily] = [.systemSmall, .systemMedium, .systemLarge]
+        if #available(iOSApplicationExtension 16.0, *) {
+            families.append(contentsOf: [.accessoryRectangular, .accessoryInline])
+        }
+        return families
+    }
 
     @available(iOSApplicationExtension 15.1, *)
     var body: some WidgetConfiguration {
@@ -550,7 +623,7 @@ struct InsultWidget: Widget {
         }
           .configurationDisplayName("The Insolent Bard")
           .description("Shakespearean insults that refresh every hour.")
-          .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+          .supportedFamilies(supportedWidgetFamilies)
     }
 }
 
@@ -566,6 +639,18 @@ struct InsultWidgetEntryView: View {
             MediumWidgetView(entry: entry)
         case .systemLarge:
             LargeWidgetView(entry: entry)
+        case .accessoryRectangular:
+            if #available(iOSApplicationExtension 16.0, *) {
+                AccessoryRectangularView(entry: entry)
+            } else {
+                EmptyView()
+            }
+        case .accessoryInline:
+            if #available(iOSApplicationExtension 16.0, *) {
+                AccessoryInlineView(entry: entry)
+            } else {
+                EmptyView()
+            }
         default:
             MediumWidgetView(entry: entry)
         }
