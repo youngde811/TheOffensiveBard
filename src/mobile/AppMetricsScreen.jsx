@@ -24,14 +24,13 @@ import { StatusBar } from 'expo-status-bar';
 
 import { useTheme } from '../contexts/ThemeContext';
 import PressableOpacity from './PressableOpacity';
-import InsultsHeader from './InsultsHeader';
 import TimelinePreview from '../components/TimelinePreview';
 import AppStateHistory from '../components/AppStateHistory';
 import PerformanceMetrics from '../components/PerformanceMetrics';
 import LogStatistics from '../components/LogStatistics';
 import SystemMetrics from '../components/SystemMetrics';
 
-export default function AppMetricsScreen({ appConfig, setDismiss }) {
+export default function AppMetricsScreen({ setDismiss }) {
   const { colors } = useTheme();
   const [activeSection, setActiveSection] = useState('timeline');
 
@@ -47,11 +46,6 @@ export default function AppMetricsScreen({ appConfig, setDismiss }) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
         <StatusBar style="auto" />
-
-        {/* Header */}
-        <View style={{ zIndex: 1000, elevation: 10, marginTop: 4 }}>
-          <InsultsHeader appConfig={appConfig} />
-        </View>
 
         {/* Page Title */}
         <View style={[styles.titleBar, { backgroundColor: colors.surface }]}>
@@ -129,8 +123,14 @@ const styles = StyleSheet.create({
   },
   titleBar: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    marginHorizontal: 8,
+    marginTop: 8,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
   title: {
     fontSize: 24,
