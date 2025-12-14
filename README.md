@@ -17,6 +17,7 @@ Because "Thou art a churlish, motley-minded knave" will always hit harder than "
 - **Parchment Doors** - Theatrical app launch experience with a featured insult displayed on aged parchment; tap the golden latch to reveal the insult list
 - **Mix Your Own** - Craft custom Shakespearean insults by selecting from 50 authentic adjectives, compound adjectives, and nouns; save your creations and copy them to Favorites
 - **Autonomous Home Screen Widget** - Add a widget to your home screen that displays a new insult every hour, completely autonomously - no app interaction needed!
+- **Lock Screen Widget (iOS 16+)** - Add The Insolent Bard to your lock screen for instant insults at a glance
 - **Share as Image** - Long-press easter eggs to share beautiful parchment-styled images
 - **Swipe Gestures** - Swipe left on any insult to reveal quick actions (favorite/unfavorite and share as image)
 - **Parchment Card Design** - Beautiful card-style list items with depth, shadows, and aged parchment background

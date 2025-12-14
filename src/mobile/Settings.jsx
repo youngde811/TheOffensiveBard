@@ -26,7 +26,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import PressableOpacity from './PressableOpacity';
-import InsultsHeader from './InsultsHeader';
 
 import { useSettings, EASTER_EGG_FREQUENCY, SOUND_EFFECTS, LOG_LEVELS } from '../contexts/SettingsContext';
 import { useTheme, THEME_MODES } from '../contexts/ThemeContext';
@@ -173,11 +172,7 @@ export default function Settings({ appConfig, setDismiss }) {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <SafeAreaView style={styles.safeArea} edges={['bottom', 'left', 'right']}>
         <StatusBar style="auto" />
-        <View style={{ zIndex: 1000, elevation: 10, marginTop: 4 }}>
-          <InsultsHeader appConfig={appConfig} />
-        </View>
-
-        <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        <ScrollView style={[styles.scrollView, { marginTop: 8 }]} contentContainerStyle={styles.scrollContent}>
           {/* Appearance */}
           <View style={[styles.section, { backgroundColor: colors.surface }]}>
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Appearance</Text>
@@ -490,7 +485,7 @@ export default function Settings({ appConfig, setDismiss }) {
 
             <View style={styles.aboutRow}>
               <Text style={[styles.aboutLabel, { color: colors.textMuted }]}>Version</Text>
-              <Text style={[styles.aboutValue, { color: colors.text }]}>2.13.3</Text>
+              <Text style={[styles.aboutValue, { color: colors.text }]}>2.13.10</Text>
             </View>
 
             <View style={styles.aboutRow}>
