@@ -190,6 +190,10 @@ function ThemedDrawerNavigator() {
           backgroundColor: colors.headerBackground,
         },
         headerTintColor: colors.text,
+        headerTitleStyle: {
+          fontFamily: 'IMFellEnglish',
+          fontSize: 20,
+        },
       }}
     >
       {screens.map(drawer =>
